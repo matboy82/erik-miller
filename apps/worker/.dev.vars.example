@@ -1,0 +1,2 @@
+# The WS-0 Worker needs no secrets. Add approved WS-2 bindings later.
+# Set actual values with Wrangler secrets, never in tracked files.

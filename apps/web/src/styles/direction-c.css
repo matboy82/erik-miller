@@ -1,0 +1,12 @@
+:root {
+  --brand-espresso: #1E1B17;
+  --brand-linen: #F3EEE5;
+  --brand-bronze: #8C6A45;
+  --brand-fog: #A39E93;
+  --brand-cream: #EAE3D5;
+  --color-text: var(--brand-espresso);
+  --color-paper: var(--brand-linen);
+  --color-accent: var(--brand-bronze);
+  --color-surface: var(--brand-cream);
+  --font-display: 'Newsreader', Georgia, serif;
+}

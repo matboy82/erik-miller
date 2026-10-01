@@ -1,0 +1,13 @@
+:root {
+  --brand-ink: #1B2420;
+  --brand-paper: #F6F1E7;
+  --brand-brass: #A8824A;
+  --brand-clay: #9C4A2F;
+  --brand-sage: #7D8B7A;
+  --brand-stone: #E8E0D0;
+  --color-text: var(--brand-ink);
+  --color-paper: var(--brand-paper);
+  --color-accent: var(--brand-clay);
+  --color-surface: var(--brand-stone);
+  --font-display: 'Fraunces', Georgia, serif;
+}

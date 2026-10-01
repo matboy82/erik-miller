@@ -1,0 +1,12 @@
+:root {
+  --brand-graphite: #23262B;
+  --brand-paper: #FAF8F3;
+  --brand-amber: #C97A1F;
+  --brand-steel: #5B6470;
+  --brand-line: #E4DFD4;
+  --color-text: var(--brand-graphite);
+  --color-paper: var(--brand-paper);
+  --color-accent: var(--brand-steel);
+  --color-surface: var(--brand-line);
+  --font-display: 'Archivo', Arial, sans-serif;
+}
