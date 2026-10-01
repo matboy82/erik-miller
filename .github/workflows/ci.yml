@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -21,28 +24,33 @@ jobs:
         if: always()
         with:
           name: lighthouse-reports
-          path: .lighthouseci/reports
+          path: .lighthouseci
+          include-hidden-files: true
   test-deploy:
     needs: verify
-    if: vars.ENABLE_TEST_DEPLOYS == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: needs.verify.result == 'success' && vars.ENABLE_TEST_DEPLOYS == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     environment: test
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
-      DEPLOY_BRANCH: ${{ github.head_ref || github.ref_name }}
+    concurrency:
+      group: test-deploy-${{ github.event_name == 'push' && 'main' || format('pr-{0}', github.event.pull_request.number) }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Upload draft to the test Pages project
-        run: npx --no-install wrangler pages deploy apps/web/dist --project-name "$PAGES_PROJECT" --branch "$DEPLOY_BRANCH"
-      - name: Deploy scaffold Worker to test
-        if: github.event_name == 'push'
-        working-directory: apps/worker
-        run: npx --no-install wrangler deploy
+      - name: Deploy verified test resources
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ENABLE_TEST_DEPLOYS: ${{ vars.ENABLE_TEST_DEPLOYS }}
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: node scripts/test-deployment.mjs

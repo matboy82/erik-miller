@@ -89,7 +89,7 @@ Inspection baseline: HEAD `a9a80faf84a720582f56a6b56069a1796fe32205` with existi
 
 The current scaffold supplies health tests, token/control isolation checks, and mobile LHCI. It does not yet supply content records, content/placeholder build guards, full alternate-copy/asset exclusion checks, or a JobTread verification harness. Those are planning/implementation gaps, not passing evidence. Real approved Miller content, restricted remote access, and authorized live operations may delay specific scenario branches; keep them unverified until executed.
 
-The only local stack ADR is [0001](../../architecture/decisions/0001-bootstrap-foundation.md), marked Proposed; the referenced accepted source ADR is still missing. Technical planning must reconcile it before relying on the stack contract. This QA plan accepts no new ADR and selects no integration/provider design.
+At the QA inspection baseline, [0001](../../architecture/decisions/0001-bootstrap-foundation.md) was Proposed and the accepted source ADR was missing. Update, 2026-10-01: the [accepted source frontend ADR](../../architecture/decisions/ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md) is now supplied. MR-01 technical planning proposes a dated reconciliation in 0001; this QA plan accepts no new ADR and selects no integration/provider design.
 
 **Open QA decisions**: None. Concrete environment values, supported JobTread operations, cleanup policy, and Erik's production approvals must be settled in the relevant technical contract or execution gate. Their absence cannot be treated as successful verification or authorize mutation.
 

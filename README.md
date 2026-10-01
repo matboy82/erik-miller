@@ -20,6 +20,8 @@ npm run lighthouse
 
 `check` validates skills, lints, typechecks, tests, builds both workspaces, and verifies review-control/token isolation for all three production directions. Lighthouse requires Chrome.
 
+`lighthouse` measures the review home page three times with mobile settings, retains individual reports under `.lighthouseci`, and enforces scores ≥90 and optimistic LCP strictly below 2,500ms. Equality fails. See the [accepted frontend ADR](docs/architecture/decisions/ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md), [bootstrap reconciliation](docs/architecture/decisions/0001-bootstrap-foundation.md), and [test deployment decision](docs/architecture/decisions/0002-test-deployment-isolation.md). The health Worker proves test infrastructure; production intake hosting remains a WS-2 decision.
+
 ## Layout
 
 - `apps/web`: Astro 7, React integration, TypeScript, static output, self-hosted fonts.

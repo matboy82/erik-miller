@@ -17,7 +17,7 @@
     "test": "node --test apps/worker/test/*.test.ts scripts/test/*.test.mjs",
     "skills:validate": "node scripts/validate-skills.mjs",
     "check": "npm run skills:validate && npm run lint && npm run typecheck && npm test && npm run build && npm run check:production",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun && node scripts/check-lighthouse.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
