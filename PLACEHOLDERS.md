@@ -4,12 +4,12 @@ Every Open entry blocks production. Close entries only after the unblock conditi
 
 | ID | Placeholder | Owner | Unblock condition | Status |
 |---|---|---|---|---|
-| INFRA-01 | Cloudflare test account/project | Matt/BIS | Confirm account, configure restricted CI secrets, authorize deploy, capture live Pages/Worker checks | Open |
-| INFRA-02 | GitHub repository/CI | Matt/BIS | Confirm BIS org/repo, authorize push, configure test environment and branch protection, capture CI run | Open |
+| INFRA-01 | Cloudflare test project (account available, Matt confirms 2026-10-01) | Matt/BIS | Configure project and restricted CI secrets, authorize deploy, capture live Pages/Worker checks | Open |
+| INFRA-02 | GitHub repository/CI (account available, Matt confirms 2026-10-01) | Matt/BIS | Confirm BIS org/repo, authorize push, configure test environment and branch protection, capture CI run | Open |
 | BRAND-01 | Direction/tagline/logo | Erik/Matt | Record choice + ADR, complete final mark, create brand lock | Open |
-| CONTENT-01 | Photos/writeups | Erik | Supply approved Miller project assets and provenance | Open |
-| CRM-01 | JobTread Pave | Matt/BIS | Approved WS-2 contract + official verification; configure server-side secret | Open |
-| SCHED-01 | Scheduler | Matt/Erik | Choose account/availability; pass booking QA | Open |
+| CONTENT-01 | Photos/writeups (Erik collecting; stock/Draft development substitutes approved 2026-10-01) | Erik/Matt | Supply approved Miller project assets and provenance; replace all development stock/Draft content, recording each substitute's source/license when added | Open |
+| CRM-01 | JobTread Pave (API key available, Matt confirms 2026-10-01) | Matt/BIS | Approved WS-2 contract + official verification; configure server-side secret | Open |
+| SCHED-01 | Scheduler: evaluate native JobTread homeowner booking first | Matt/Erik | Verify native booking capabilities; select external booking only if needed, configure availability, and pass booking QA | Open |
 | DESIGN-01 | Design fee/package | Erik | Approve fee, package, and copy | Open |
 | ANALYTICS-01 | GA4 baseline | Matt/BIS | Verify measurement ID + approved tracking/privacy behavior | Open |
 | NOTIFY-01 | Email/SMS | Matt/BIS | Configure approved provider, secrets, recipients, behavior | Open |

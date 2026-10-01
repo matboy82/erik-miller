@@ -1,6 +1,6 @@
 ---
 type: branding-kit
-status: draft
+status: approved
 owner: Matt
 created: 2026-10-01
 updated: 2026-10-01
@@ -8,9 +8,9 @@ tags: [branding, miller-remodeling, design]
 related: [["PRD - 2026-10-01"], ["Project Scope - DRAFT 2026-10-01"], ["Miller Remodeling (Erik Miller) - Lead Record"]]
 ---
 
-# Branding Kit: Miller Remodeling LLC — DRAFT 2026-10-01
+# Branding Kit: Miller Remodeling LLC — 2026-10-01
 
-> **Status: DRAFT for Matt's review, then Erik's pick.** This kit exists for one reason: the site must look like *Erik's company*, not like every AI-generated contractor template. Three creative directions are specified below with full tokens; **Erik picks one**, it locks like the stack ADR, and Codex builds against it.
+> **Status: Approved — Matt, 2026-10-01; Erik's direction pick remains a delivery dependency.** This kit exists for one reason: the site must look like *Erik's company*, not like every AI-generated contractor template. Three creative directions are specified below with full tokens; **Erik picks one**, it locks like the stack ADR, and Codex builds against it.
 
 ## 1. Brand truth (who Erik is, in one paragraph)
 
@@ -108,6 +108,8 @@ For the buyer whose home is already beautiful and wants it handled accordingly. 
 ## 7. Photography & art direction (all directions)
 
 **Rule zero: real jobs only. No stock photography of smiling contractors with crossed arms.** Every image on the site should be traceable to a Miller Remodeling project.
+
+**Development exception approved by Matt, 2026-10-01:** licensed online stock assets and clearly marked Draft writeups may be used in development/test builds while Erik supplies photos. Label them as development placeholders, record sources/licenses and replacement ownership in `PLACEHOLDERS.md`, and make photos/writeups replaceable without changing page layouts. The real-jobs-only rule governs production; stock assets must not be presented as Miller projects or shipped as portfolio proof.
 
 - **The shot list per job:** before (honest, unstaged) → during (craft in progress: tile lines, joinery, designer reviewing plans on site) → after (finished space, natural light) → finished-product video (60–90s slow walkthrough, no music-video editing).
 - **People:** Erik and the designer at work — reviewing plans at a kitchen table, walking a client through the 3D model. Candid over posed. Hands and materials close-ups (tile, wood grain, hardware) as texture.
