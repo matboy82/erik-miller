@@ -10,6 +10,8 @@
 
 **MR-01 deployment amendment (2026-10-01)**: Matt requested Cloudflare Git integration. GitHub verifies only; Cloudflare publishes independently. The updated F2 scenario below replaces the prior GitHub-gated upload matrix.
 
+**MR-04 booking amendment (2026-10-02)**: Matt confirms JobTread lacks the required homeowner booking functions and selects Erik's Google Workspace/Calendly direction. This supersedes J3's native-first discovery and pending provider-selection requirements. Record the native gap as Unsupported with owner-confirmed evidence, then assess external-provider/calendar entitlements and direct JobTread integration prerequisites. Skip native-booking tests; do not claim external booking behavior has passed. J1/J2/F4 and later implementation QA remain required. No account setup is authorized.
+
 ## Decision and boundaries
 
 Prove that the review foundation is reachable and safe, brand alternatives remain reviewable, temporary content can be replaced without layout changes, and JobTread capabilities have evidence before dependent features are promised. The stories already record approval; this plan does not change them.
@@ -48,7 +50,7 @@ AC references point to the numbered criteria in the linked stories. Each row def
 | C3 | MR-03 AC6; MR-02 AC5 | In isolated fixtures, unresolved included stock/Draft content or any Open root placeholder rejects production readiness/build. An otherwise eligible fixture excludes all development media and invented writeups from the complete artifact tree, including unreferenced copied files. Bypass/hide-only attempts must fail. Keep actual placeholders and brand approval unchanged; fixture success is not production readiness. |
 | J1 | MR-04 AC1, AC2, AC6 | Capture official API/upload references with retrieval date/version and intended permissions/boundary. After explicit synthetic-operation authorization, create one customer and linked job, write representative required custom fields, and upload a nonprivate licensed test image through the official flow. Retrieve and compare links/field values and downloaded photo identity (checksum or equivalent); record returned-record checks, observed limits, sanitized evidence, gaps, and cleanup results. Documentation-only success cannot satisfy live checks. |
 | J2 | MR-04 AC3, AC6 | In the same approved boundary, investigate a repeated synthetic submission, customer-success/job-failure, job-success/photo-failure, and transient API error. Observe safe cases where supported; use local external-boundary doubles for otherwise unsafe faults and label those simulated. Record how to detect incomplete/duplicate records, supported recovery actions, uncertainty, and cleanup. Do not claim durable retry, idempotency, or lead preservation is implemented. |
-| J3 | MR-04 AC4, AC5, AC6 | Complete the native-booking matrix below using official evidence and permitted observations. Recommend native only when every required capability is verified; otherwise list gaps and propose an external booking page, with direct-integration feasibility under the no-Zapier/Make constraint. Report unresolved prerequisites and block affected dependent commitments; Matt/Erik select the provider later. |
+| J3 | MR-04 amended AC4, AC5, AC6 | Record Matt's owner-confirmed native-booking gap and Google Workspace/Calendly direction. Map the required outcomes below to external-provider/calendar access, entitlements and JobTread association prerequisites. Assess direct-integration feasibility without Zapier/Make using official sources; mark unknown external behavior Unverified and block affected commitments. No native-booking testing or account setup. |
 
 ## Quality protocols
 
@@ -61,9 +63,9 @@ These are **Required** story bars. No competitor comparison or discretionary gau
 
 Missing Chrome, unreproducible settings, absent variant evidence, only screenshots for artifact isolation, or only local evidence for live behavior makes the corresponding result **unverified**, not passed. Local results do not prove remote CI or deployment quality.
 
-## JobTread booking matrix
+## Booking requirements matrix
 
-J3 must report each row as **Verified**, **Unsupported**, or **Unverified**, with source/date, observation boundary, evidence, limits, and impact. Documentation and observations remain separately identified. A marketing claim or missing documentation does not establish support or lack of support.
+After the 2026-10-02 amendment, these rows define the external booking requirements and prerequisite assessment. Record the native homeowner-booking gap separately as **Unsupported**, sourced to Matt's confirmation. For Google Workspace/Calendly, use **Verified**, **Unsupported**, or **Unverified**, with source/date, boundary, evidence, limits and impact; separate official documentation, observations and owner-confirmed findings. Missing documentation is not proof of lack of support.
 
 | Required capability | Verification focus |
 |---|---|
@@ -75,7 +77,7 @@ J3 must report each row as **Verified**, **Unsupported**, or **Unverified**, wit
 | Cancellation and rescheduling | Observe appointment/state updates and resulting availability. |
 | Customer/job association | Retrieve the appointment and verify its association to the intended synthetic records. |
 
-Calendar sync and project task scheduling alone satisfy none of the public self-booking claims. Unsupported/unverified capability is a valid finding for this verification story, but blocks the corresponding downstream feature until an approved resolution exists.
+Calendar sync and project task scheduling alone do not prove public self-booking. The external direction is selected; unresolved provider capabilities, entitlements or association contracts still block corresponding implementation commitments. The amendment settles system ownership and does not waive downstream booking behavior checks.
 
 ## Data, environments, and CI
 

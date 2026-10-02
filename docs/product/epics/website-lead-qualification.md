@@ -6,6 +6,7 @@
 **Sources**: [Product brief](../briefs/prd-2026-10-01.md), [branding kit](../../brand/branding-kit-2026-10-01.md)
 **Approval recorded**: Matt, 2026-10-01 — “I just approved it all, the status is Approved.”
 **Scope amendment**: Matt, 2026-10-01 — stock assets and draft writeups may support development; real content must be easily swappable. Cloudflare/GitHub accounts and the JobTread API key are available. Evaluate JobTread booking before selecting an external scheduler.
+**Booking amendment**: Matt, 2026-10-02 — required homeowner booking functions are unavailable in JobTread; use Erik's Google Workspace/Calendly. This supersedes native-first discovery and pending provider selection below. External integration/configuration still needs its later approved contract and verification; JobTread remains the system of record for customer/job intake.
 **Next gate**: Create the QA plan for approved stories `MR-01` through `MR-04`, then obtain QA-plan approval.
 
 ## Outcome and users
