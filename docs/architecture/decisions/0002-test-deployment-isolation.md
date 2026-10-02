@@ -6,6 +6,14 @@
 **Work item**: MR-01
 **Governing artifacts**: [Story](../../product/stories/website-lead-qualification/mr-01.md), [developer spec](../../specs/website-lead-qualification/mr-01.spec.md), [accepted frontend stack](ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md)
 
+## Accepted amendment: automatic deployment ? 2026-10-01
+
+Matt explicitly instructed: ?Take the deploy flag out?. This amendment replaces the opt-in flag and flag-based recovery guidance in the original decision below. Passing `main` pushes automatically publish Pages and the health Worker; passing same-repository PRs automatically publish Pages previews. `ENABLE_TEST_DEPLOYS` is no longer read. Keep successful verification, environment `test`, credential isolation, fork exclusion, stale-main checks, noindex, and live checks. Required environment approval settings still apply.
+
+To halt future runs after a publication failure, disable the Verify workflow in GitHub Actions, cancel queued runs, and inspect any active publication and sanitized resource outcomes. Disabling the workflow does not undo a deployment or cancel active publication. Recovery still requires a known-good revision and renewed live checks. This local amendment grants no commit, push, account change, production, or DNS authorization.
+
+The original accepted decision is retained below for history. The story, spec, QA matrix, and setup guide now reflect this amendment.
+
 ## Context
 
 The static site needs a persistent review URL and per-PR previews. CI must verify fork contributions without granting Cloudflare access. A test health Worker proves hosting only; the accepted frontend ADR defers actual intake hosting to WS-2.

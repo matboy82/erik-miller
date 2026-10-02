@@ -28,7 +28,7 @@ jobs:
           include-hidden-files: true
   test-deploy:
     needs: verify
-    if: needs.verify.result == 'success' && vars.ENABLE_TEST_DEPLOYS == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+    if: needs.verify.result == 'success' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     environment: test
     concurrency:
@@ -50,7 +50,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GITHUB_TOKEN: ${{ github.token }}
-          ENABLE_TEST_DEPLOYS: ${{ vars.ENABLE_TEST_DEPLOYS }}
           VERIFY_RESULT: ${{ needs.verify.result }}
           PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
         run: node scripts/test-deployment.mjs

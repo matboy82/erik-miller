@@ -5,6 +5,14 @@
 **Scope**: Complete approved [manifest](../specs/website-lead-qualification/mr-01.work-packages.md), sequential P1–P3
 **Result**: NOT READY — evidence incomplete. P1 and P2 local implementation/verification are complete; P3 remote execution is blocked.
 
+## Deployment flag removal ? 2026-10-01
+
+Matt explicitly requested removal of the deploy flag. The local workflow and deployment planner now require successful verification and an eligible event, without `ENABLE_TEST_DEPLOYS`. The story, spec, QA matrix, setup guide, and dated amendment to accepted ADR 0002 reflect that instruction. Earlier flag-related observations and setup advice below are historical and superseded by this amendment. No commit, push, settings change, or deployment was performed for this change.
+
+The updated focused suite first failed in the expected two places: the planner rejected a passing main event without the flag, and the workflow still referenced the flag. After removal, `node --test scripts/test/test-deployment.test.mjs` reported 8 tests, 8 pass, 0 fail. Failed verification, fork isolation, stale-main, noindex, credential isolation, and live-response guards remain covered locally. This does not establish remote publication.
+
+`npm run check` initially stopped at the Worker dry run because the sandbox denied parent-directory access. The authorized retry outside the sandbox exited 0: 29 skills validated, lint and type checks passed, 15 tests passed with 0 failures, the review site built, the Worker dry run succeeded, and production isolation passed for A, B, and C. `git diff --check` passed. No new browser Lighthouse measurement or remote publication was run for this flag removal.
+
 ## Contract and baseline
 
 The stakeholder outcome is a verified persistent noindex review site, distinct same-repository PR previews, and a healthy test Worker. The [approved spec](../specs/website-lead-qualification/mr-01.spec.md), approved story/QA plan, and accepted source/0001/0002 ADRs govern this work. No production, DNS, intake, JobTread, brand, dependency, or content-model change is included.

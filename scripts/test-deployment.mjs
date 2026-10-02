@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 export function planDeployment(env, event) {
-  if (env.ENABLE_TEST_DEPLOYS !== 'true' || env.VERIFY_RESULT !== 'success') throw new Error('Deployment not authorized.');
+  if (env.VERIFY_RESULT !== 'success') throw new Error('Deployment not authorized.');
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(env.PAGES_PROJECT ?? '')
     || !/^[\w.-]+\/[\w.-]+$/.test(env.GITHUB_REPOSITORY ?? '') || !/^[a-f0-9]{40}$/.test(env.GITHUB_SHA ?? '')) {
     throw new Error('Invalid deployment configuration.');
@@ -136,7 +136,7 @@ async function runDeployment() {
     if (plan.worker) notes.push(`Persistent site: https://${plan.project}.pages.dev`);
     notes.push(`Pages branch: ${plan.branch}`);
   } catch {
-    notes.push(`Test deployment failed at ${stage}; previously published resources may remain. Disable test deployments and inspect sanitized evidence before recovery.`);
+    notes.push(`Test deployment failed at ${stage}; previously published resources may remain. Pause the Verify workflow in GitHub Actions and inspect sanitized evidence before recovery.`);
     process.exitCode = 1;
   } finally {
     const summary = notes.join('\n');

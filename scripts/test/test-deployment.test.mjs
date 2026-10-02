@@ -7,7 +7,7 @@ import test from 'node:test';
 import { planDeployment, verifyReviewArtifact, verifyLiveSite, verifyLiveWorker, assertCurrentMain } from '../test-deployment.mjs';
 
 const sha = 'a'.repeat(40);
-const base = { ENABLE_TEST_DEPLOYS: 'true', VERIFY_RESULT: 'success', GITHUB_EVENT_NAME: 'push',
+const base = { VERIFY_RESULT: 'success', GITHUB_EVENT_NAME: 'push',
   GITHUB_REF: 'refs/heads/main', GITHUB_SHA: sha, GITHUB_REPOSITORY: 'bis/miller', PAGES_PROJECT: 'erik-miller' };
 test('F2 main and same-repository PR have isolated deployment plans', () => {
   assert.deepEqual(planDeployment(base, {}), { branch: 'main', worker: true, project: 'erik-miller', sha });
@@ -17,9 +17,8 @@ test('F2 main and same-repository PR have isolated deployment plans', () => {
   pr.pull_request.head.repo.full_name = 'fork/miller';
   assert.throws(() => planDeployment({ ...base, GITHUB_EVENT_NAME: 'pull_request', GITHUB_REF: 'refs/pull/12/merge' }, pr), /not authorized/);
 });
-test('F2 disabled, failed, skipped, cancelled, wrong event/ref and missing config reject', () => {
+test('F2 failed, skipped, cancelled, wrong event/ref and missing config reject', () => {
   for (const override of [
-    { ENABLE_TEST_DEPLOYS: 'false' }, { ENABLE_TEST_DEPLOYS: '' },
     ...['failure', 'cancelled', 'skipped', ''].map((VERIFY_RESULT) => ({ VERIFY_RESULT })),
     { GITHUB_EVENT_NAME: 'pull_request_target' }, { GITHUB_REF: 'refs/heads/other' },
     { PAGES_PROJECT: '' }, { PAGES_PROJECT: '$(unsafe)' }, { GITHUB_SHA: '' },
@@ -79,6 +78,7 @@ test('F2 workflow keeps secrets exclusively in guarded deployment step', () => {
   assert.ok(deploy);
   assert.doesNotMatch(verify, /secrets\./);
   assert.doesNotMatch(workflow, /pull_request_target/);
+  assert.doesNotMatch(workflow, /ENABLE_TEST_DEPLOYS/);
   assert.match(deploy, /needs: verify/);
   assert.match(deploy, /needs\.verify\.result == 'success'/);
   assert.match(deploy, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/);
@@ -90,13 +90,13 @@ test('F2 workflow keeps secrets exclusively in guarded deployment step', () => {
   assert.match(verify, /include-hidden-files: true/);
 });
 
-test('F2 deployment command rejects disabled execution without retaining credentials', () => {
+test('F2 deployment command rejects failed verification without retaining credentials', () => {
   const directory = mkdtempSync(join(tmpdir(), 'miller-deploy-command-'));
   try {
     const eventPath = join(directory, 'event.json');
     writeFileSync(eventPath, '{}');
     const result = spawnSync(process.execPath, ['scripts/test-deployment.mjs'], {
-      encoding: 'utf8', env: { ...base, ENABLE_TEST_DEPLOYS: 'false', GITHUB_EVENT_PATH: eventPath,
+      encoding: 'utf8', env: { ...base, VERIFY_RESULT: 'failure', GITHUB_EVENT_PATH: eventPath,
         CLOUDFLARE_API_TOKEN: 'harmless-credential-sentinel' },
     });
     assert.equal(result.status, 1, result.stderr);
