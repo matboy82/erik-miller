@@ -69,9 +69,9 @@ test('F3 live site requires HTTPS test hostname, successful page/robots and all 
 });
 test('F3 live health requires test Worker, scaffold payload, and no-store', async () => {
   const good = () => Response.json({ status: 'ok', service: 'miller-remodeling-intake', stage: 'scaffold' }, { headers: { 'cache-control': 'no-store' } });
-  await verifyLiveWorker('https://miller-remodeling-intake-test.bis.workers.dev', async () => good());
+  await verifyLiveWorker('https://erik-miller.bis.workers.dev', async () => good());
   await assert.rejects(verifyLiveWorker('https://production.bis.workers.dev', async () => good()));
-  await assert.rejects(verifyLiveWorker('https://miller-remodeling-intake-test.bis.workers.dev', async () => Response.json({ status: 'ok' })));
+  await assert.rejects(verifyLiveWorker('https://erik-miller.bis.workers.dev', async () => Response.json({ status: 'ok' })));
 });
 test('F2 workflow keeps secrets exclusively in guarded deployment step', () => {
   const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');

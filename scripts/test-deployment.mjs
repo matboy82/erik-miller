@@ -63,7 +63,7 @@ function testUrl(value, kind, project) {
   const url = new URL(value);
   const validHost = kind === 'pages'
     ? url.hostname === `${project}.pages.dev` || /^[a-z0-9-]+$/.test(url.hostname.split('.')[0]) && url.hostname.endsWith(`.${project}.pages.dev`)
-    : /^miller-remodeling-intake-test\.[a-z0-9-]+\.workers\.dev$/.test(url.hostname);
+    : /^erik-miller\.[a-z0-9-]+\.workers\.dev$/.test(url.hostname);
   if (url.protocol !== 'https:' || !validHost || url.port || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
     throw new Error('Invalid test deployment URL.');
   }
@@ -126,7 +126,7 @@ async function runDeployment() {
     if (plan.worker) {
       await assertCurrentMain(env);
       stage = 'Worker publication';
-      const workerOutput = wrangler(['deploy', '--name', 'miller-remodeling-intake-test'], 'apps/worker');
+      const workerOutput = wrangler(['deploy', '--name', 'erik-miller'], 'apps/worker');
       const workerUrl = deploymentUrl(workerOutput, 'worker');
       notes.push(`Worker published: ${workerUrl}`);
       stage = 'Worker live check';
