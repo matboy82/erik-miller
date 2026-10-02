@@ -16,7 +16,7 @@ A Worker project is a separate resource and cannot act as the Pages destination.
 
 | Pages setting | Value |
 |---|---|
-| Project name | erik-miller if available; otherwise an available test-site name |
+| Project name | erik-miller-web (distinct from the erik-miller Worker) |
 | Production branch | main |
 | Framework preset | None (use the explicit command below) |
 | Root directory | Leave blank: repository root |
