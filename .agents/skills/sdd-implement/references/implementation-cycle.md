@@ -4,7 +4,7 @@ Read this reference before editing product code.
 
 ## Establish the contract
 
-1. Read the target repository's instructions, active project profile, approved story, QA plan, developer spec, complete work-package manifest, and required extension artifacts.
+1. Read the target repository's instructions, active project profile, approved story, QA plan, developer spec, complete work-package manifest, approved release spec when present, and required extension artifacts.
 2. Read orientation documents and inspect manifests, source, tests, ownership boundaries, and infrastructure declared by the profile or discovered on disk. Do not assume a language, framework, package manager, directory layout, or test runner.
 3. Read and apply the shared TDD practices. Apply the shared codebase-design lens only when approved scope creates or materially changes a module, interface, dependency seam, or test surface.
 4. Read every ADR and `ADR not required` rationale named by the approved package. Accept only its named proposed ADRs under the shared ADR workflow before product-code changes.
@@ -18,7 +18,8 @@ Read this reference before editing product code.
    - verification commands resolved from the profile and repository;
    - contract, data, security, operational, rollout, and rollback constraints;
    - required ADR and current-state documentation work;
-   - approved quality-bar protocol and classification, when present.
+   - approved quality-bar protocol and classification, when present;
+   - the release-spec development/test boundary and named release-only gates, when present.
 8. Build a targeted impact map of affected public contracts, callers, consumers, shared dependencies, persistence, configuration, and tests. Classify blast radius under repository review rules.
 
 Stop before implementation when approval or selected scope is ambiguous, artifacts conflict materially, a required decision is unresolved, the active profile cannot be resolved, or safe implementation requires an unapproved change.

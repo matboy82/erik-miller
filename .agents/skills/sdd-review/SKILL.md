@@ -15,7 +15,7 @@ Read and apply [the shared SDD approval rules](../_shared/sdd-approval-status.md
 
 Read and apply [the shared human-reviewability rules](../_shared/sdd-human-reviewability.md) before accepting the approved review contract and when returning or persisting review findings and remediation scope.
 
-Read and apply [the shared ADR workflow](../_shared/adr-workflow.md). ADR trigger and conformance checks are required review evidence.
+Read and apply [the shared ADR workflow](../_shared/adr-workflow.md). ADR trigger and conformance checks are required review evidence. Read the [release-spec contract](../_shared/sdd-release-spec-contract.md) when a release spec exists.
 
 Read and apply [the shared artifact contracts](../_shared/sdd-artifact-contracts.md) and [provider-neutral artifact identity rules](../_shared/sdd-artifact-identity.md). Use the configured work-item-keyed review artifact for every persistent result.
 
@@ -24,6 +24,7 @@ Inputs:
 - Approved story.
 - Approved QA plan.
 - Approved developer spec and work package.
+- Approved release spec when one exists.
 - Current diff or changed files.
 
 Output:
@@ -44,7 +45,7 @@ Procedure:
    - Identify known callers and consumers using targeted grep/glob and focused file reads.
    - Identify existing tests that exercise affected consumers, not only tests for the changed code.
    - Classify blast radius as Low, Medium, or High.
-8. Map each acceptance criterion to implementation and tests.
+8. Map each acceptance criterion to implementation and tests. For only those approved release-spec gates, mark live/production proof `Deferred to release`; distinguish that disposition from proving the acceptance criterion or accepting the story. Code-review may approve implementation only when all development/test criteria are proven and release deferrals remain explicit blockers for `$sdd-release`.
 9. Identify blockers, scope drift, missing tests, ADR/documentation drift, cross-impact risks, and operational risks.
 10. Choose verification expectations by blast radius:
    - Low: targeted tests are usually enough when only private implementation changed.
@@ -79,6 +80,8 @@ Required review sections:
 - ADR and documentation assessment: trigger result, records inspected, status, conformance, and amendment/supersession evidence.
 - Quality-bar assessment when applicable: reference, protocol, classification, evidence, and separate result.
 - Blockers and non-blocking improvements.
+
+Verdicts apply to implementation quality and conformance; they do not mean the story is accepted or release-ready when release-spec gates remain.
 
 Verdicts:
 

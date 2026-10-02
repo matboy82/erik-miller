@@ -11,7 +11,7 @@ Every Open entry blocks production. Close entries only after the unblock conditi
 | CONTENT-SUB-01 | [Wide kitchen photo and Draft writeup](docs/content/substitutes/content-sub-01.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
 | CONTENT-SUB-02 | [Portrait kitchen photo and longer Draft writeup](docs/content/substitutes/content-sub-02.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
 | CRM-01 | JobTread Pave (API key available, Matt confirms 2026-10-01) | Matt/BIS | Approved WS-2 contract + official verification; configure server-side secret | Open |
-| SCHED-01 | Erik's Google Workspace/Calendly booking direction (Matt, 2026-10-02) | Matt/Erik | Approve the external booking contract, confirm access/entitlements and JobTread association, configure availability, and pass booking QA | Open |
+| SCHED-01 | Erik's Google Calendar Appointment Schedule (phone/in-person, no web conference) | Matt/Erik | Confirm Workspace entitlement/settings and approved booking-page details; verify appointment association to the intended JobTread record; pass booking QA | Open |
 | DESIGN-01 | Design fee/package | Erik | Approve fee, package, and copy | Open |
 | ANALYTICS-01 | GA4 baseline | Matt/BIS | Verify measurement ID + approved tracking/privacy behavior | Open |
 | NOTIFY-01 | Email/SMS | Matt/BIS | Configure approved provider, secrets, recipients, behavior | Open |

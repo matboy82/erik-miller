@@ -66,6 +66,10 @@ Required A-state mobile bar: **Bar met locally**. Windows NT `10.0.19045.0`, Lig
 
 Strict aggregated LCP is 1058.2631ms, below 2500ms. SEO is 63 in all three runs and remains warning-only for intentional noindex. Pinned SHA-256 references: lockfile `3341F52F5B7D5EB8C23DB74990B894F22BBEA955A43269C030C96538B3390A04`; LHCI config `DB044F2356831740D9786728E8D6046A749AF182968192B0AF45E718CB89340A`; 2026-10-01 branding kit `D5E2A378A1FFCB19AA22BC22A975BA9AA579B3129A226418F60C6B17E39906CB`.
 
+## Remediation status — 2026-10-02
+
+Implementation remains present. The approved fix work has not established current-candidate fresh-checkout F1 or current Cloudflare F2–F4 evidence. The code-review verdict remains Block; INFRA-01/02 remain Open. Local aggregate verification is recorded in the MR-04 report; it does not replace the isolated Node 24/npm ci/Lighthouse protocol or remote proof.
+
 Sensitivity: temporary changes allowing LCP equality, fork publication, credential sentinel leakage, and missing HTML noindex each made the owning test fail with the expected assertion. Exact original bytes were restored in `finally`; owning tests then passed. Synthetic API/HTTP responses test true external boundaries and establish no live behavior. Existing health characterization tests remain unchanged because they already prove that local contract.
 
 ## Traceability and remaining proof

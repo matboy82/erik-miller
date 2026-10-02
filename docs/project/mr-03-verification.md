@@ -1,5 +1,9 @@
 # MR-03 implementation evidence — 2026-10-02
 
+## Remediation status — 2026-10-02
+
+Implementation remains present. No new current-candidate manual B2/C2 accessibility/reflow evidence or real Miller replacement assets/sign-off were collected in this remediation pass. The code-review verdict remains Block; the real-content branch remains Unverified and matching content placeholders remain Open.
+
 **Verdict**: NOT READY — evidence incomplete.
 **Evaluated scope**: Complete MR-03 manifest, P1–P3, selected by Matt (“all”) on 2026-10-02.
 **Contract**: Approved [story](../product/stories/website-lead-qualification/mr-03.md), [QA plan](../qa/test-plans/website-lead-qualification.testplan.md), [spec](../specs/website-lead-qualification/mr-03.spec.md), [packages](../specs/website-lead-qualification/mr-03.work-packages.md), and Accepted [0004](../architecture/decisions/0004-project-content-eligibility.md).

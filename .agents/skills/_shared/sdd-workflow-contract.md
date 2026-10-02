@@ -8,7 +8,7 @@ This contract defines the stable lifecycle. Project profiles may add phases, but
 2. Epic defines the product outcome and scope; human approval is required.
 3. Stories define small observable slices; human approval is required.
 4. QA plan defines risks, test seams, and evidence; human approval is required.
-5. Technical planning defines the developer spec, work packages, and required proposed ADRs; human approval is required.
+5. Technical planning defines the developer spec, work packages, any required release spec, and required proposed ADRs; human approval is required.
 6. Implementation executes only approved packages and produces evidence.
 7. Review returns an evidence-based verdict and approved remediation when needed.
 8. Release planning defines readiness, rollout, verification, and rollback.

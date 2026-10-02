@@ -7,7 +7,8 @@
 **Approval recorded**: Matt, 2026-10-01 — “I just approved it all, the status is Approved.”
 **Scope amendment**: Matt, 2026-10-01 — stock assets and draft writeups may support development; real content must be easily swappable. Cloudflare/GitHub accounts and the JobTread API key are available. Evaluate JobTread booking before selecting an external scheduler.
 **Booking amendment**: Matt, 2026-10-02 — required homeowner booking functions are unavailable in JobTread; use Erik's Google Workspace/Calendly. This supersedes native-first discovery and pending provider selection below. External integration/configuration still needs its later approved contract and verification; JobTread remains the system of record for customer/job intake.
-**Next gate**: Create the QA plan for approved stories `MR-01` through `MR-04`, then obtain QA-plan approval.
+**Booking direction update**: Matt, 2026-10-02 — use Google Calendar Appointment Schedules, managed by Erik, with phone and in-person options and no web conferences. This later decision supersedes Calendly in the prior amendment; the JobTread booking gap remains. Google account setup and JobTread appointment association still need the MR-08 contract and evidence.
+**Next gate**: The approved MR-01–MR-04 review-fix spec and manifest precede MR-05 and the remaining story sequence. MR-05–MR-13 and their QA plan are approved for technical planning; their developer specs, work packages, and triggered ADRs remain Draft pending human approval.
 
 ## Outcome and users
 
@@ -78,7 +79,7 @@ Stories → QA plan → technical spec/packages/required ADRs → implementation
 ## Dependencies and material risks
 
 - **Business and brand decisions:** fee/package, fit thresholds, questions, service coverage, availability, and Erik's direction/tagline/logo control customer behavior and release readiness.
-- **External access and contracts:** Matt confirms Cloudflare and GitHub accounts exist, has the JobTread API key, and can add secrets using the [test setup guide](../../operations/cloudflare-test.md). Project/repository configuration, CI secret wiring, and live integration evidence remain to be established. Evaluate JobTread's homeowner self-booking support first; select Calendly or another booking page only if needed. Pave verification must establish field/photo/appointment behavior before dependent work.
+- **External access and contracts:** Matt confirms Cloudflare and GitHub accounts exist, has the JobTread API key, and can add secrets using the [test setup guide](../../operations/cloudflare-test.md). Project/repository configuration, CI secret wiring, and live integration evidence remain to be established. JobTread's required homeowner self-booking functions are owner-confirmed unsupported. Erik manages booking with Google Calendar Appointment Schedules; verify Workspace entitlements and the required JobTread appointment association before dependent production commitments. Pave verification establishes supported lead/field/photo operations.
 - **Content and policy:** missing approved photos, writeups, review evidence, or usage rights can block production. Draft content supports review only; it cannot satisfy the placeholder gate.
 - **Lead loss and privacy:** outages, partial delivery, duplicate records, and unsafe uploads can undermine trust. Approved QA must cover these failures and operator recovery, using synthetic/redacted data.
 - **Adoption and conversion:** a long wizard or difficult publishing workflow can reduce use. Measure drop-off and conduct Erik's timed walkthroughs rather than assuming usability.
@@ -113,8 +114,26 @@ Matt assigned starting number `01` on 2026-10-01 for the four-story local batch;
 
 These approved stories establish the foundation before dependent lead, wizard, booking, publishing, and release stories.
 
+### Remaining story planning (2026-10-02)
+
+The approved [MR-01–MR-04 review-fix spec](../../specs/website-lead-qualification/mr-01-through-mr-04.fix.spec.md) and its [work-package manifest](../../specs/website-lead-qualification/mr-01-through-mr-04.fix.work-packages.md) precede the remaining story sequence. Matt assigned local keys sequentially beginning with MR-05. Stories and sequencing:
+
+| Key | Outcome | Depends on |
+|---|---|---|
+| [MR-05](../stories/website-lead-qualification/mr-05.md) | General inquiries reliably reach JobTread | MR-01–MR-04 remediation/re-review; MR-04 supported contract |
+| [MR-06](../stories/website-lead-qualification/mr-06.md) | Service, process, portfolio and service-area pages | Foundation, MR-02/03; contact and qualification paths |
+| [MR-07](../stories/website-lead-qualification/mr-07.md) | Qualification wizard and complete fit brief | MR-05; Erik's questions and fit rules |
+| [MR-08](../stories/website-lead-qualification/mr-08.md) | Qualified-consultation booking through Google Appointment Schedules | MR-07; Workspace entitlements and verified JobTread appointment association |
+| [MR-09](../stories/website-lead-qualification/mr-09.md) | Erik previews, self-approves, and directly publishes portfolio content without PRs | MR-06; MR-03 content rules |
+| [MR-10](../stories/website-lead-qualification/mr-10.md) | Completed-job review requests and approved testimonials | MR-06/MR-09; verified JobTread workflow and review policy |
+| [MR-11](../stories/website-lead-qualification/mr-11.md) | Search foundations and visibility baseline | MR-06/MR-09/MR-10; verified business/profile facts |
+| [MR-12](../stories/website-lead-qualification/mr-12.md) | Sustainable portfolio-to-social content cadence (bonus WS-7) | MR-09/MR-11; approved real project and posting authorization |
+| [MR-13](../stories/website-lead-qualification/mr-13.md) | Operational handover and release evidence | Applicable completed stories, reviews, sign-offs and release plans |
+
+The approved QA plan covers MR-01–MR-13. Technical specs and packages for MR-05–MR-13 are drafted under separate approval gates; the existing MR-01–MR-04 contracts remain unchanged.
+
 Do not invent these values or mark their placeholder entries complete. Any resulting change to approved scope or success measures requires an explicit amendment.
 
 ## Next gate
 
-Epic and story approval and local key assignment are recorded. The next phase is `$sdd-qa-plan` for `MR-01` through `MR-04`; technical planning and implementation follow their separate gates.
+MR-01–MR-04 remain governed by their approved contracts and remediation. MR-05–MR-13 and their QA plan are approved for technical planning. The current technical-planning gate is the draft per-story specs/packages and Proposed ADRs; implementation, review, release, production, and external actions remain separate gates.

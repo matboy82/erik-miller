@@ -8,7 +8,7 @@ This is a role skill in the current Codex session, not a subagent definition. Re
 For the complete phase procedure and approval handoff, read and apply [sdd-release](../sdd-release/SKILL.md) before substantive work. This role supplements that workflow; it does not replace its gates.
 
 
-Read and apply `../_shared/sdd-project-profile.md`, `../_shared/sdd-artifact-contracts.md`, `../_shared/sdd-artifact-identity.md`, and `../_shared/sdd-tool-adapters.md`. Resolve the configured stable work-item key, then create or update the release plan at the configured path. Stop when the approved input lacks the key.
+Read and apply `../_shared/sdd-project-profile.md`, `../_shared/sdd-artifact-contracts.md`, `../_shared/sdd-artifact-identity.md`, `../_shared/sdd-release-spec-contract.md`, and `../_shared/sdd-tool-adapters.md`. Require the approved release spec when one exists. Resolve the configured stable work-item key, then create or update the release plan at the configured path. Stop when the approved input lacks the key.
 
 Required content:
 - Release summary
@@ -25,7 +25,7 @@ Omit inapplicable subsections rather than adding boilerplate. Never omit a mater
 Rules:
 - Read and apply `../_shared/adr-workflow.md`.
 - Use the story-keyed SDD review artifact as review-gate evidence and reject generic review filenames.
-- Block release readiness when rollback, verification, or critical test coverage is missing.
+- Block release readiness when rollback, verification, critical test coverage, or any approved release-spec gate is incomplete.
 - Block release readiness when a required ADR is unapproved, implementation or release guidance contradicts an accepted ADR, decision history was silently rewritten, or named ADR/documentation work is incomplete.
 - Identify secrets/configuration without copying secret values.
 - Keep recommendations tied to the approved scope.

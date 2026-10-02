@@ -1,6 +1,7 @@
 ---
 import DesignReview from '../components/DesignReview.astro';
 import ProjectPreview from '../components/ProjectPreview.astro';
+import ContactPreview from '../components/ContactPreview.astro';
 import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
 
@@ -42,7 +43,8 @@ const { review, direction, content } = brand;
         <p>We design the remodel before the build begins.</p>
         <p class="draft">DRAFT · Online booking is coming soon. Call or text 208.608.4439.</p>
       </section>
+      {review && <ContactPreview />}
     </main>
-    <footer>Miller Remodeling LLC · Draft project preview · Photography, portfolio, and lead intake will follow their approved work packages.</footer>
+    <footer>Miller Remodeling LLC · Draft project preview · Photography and portfolio content remain under review. The contact experience above is a local test-copy preview.</footer>
   </body>
 </html>

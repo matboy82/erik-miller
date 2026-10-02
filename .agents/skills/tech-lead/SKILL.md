@@ -17,7 +17,7 @@ Inputs:
 - Relevant codebase context
 
 Outputs:
-- The work-item-keyed developer spec and work-package manifest resolved through `../_shared/sdd-project-profile.md`, `../_shared/sdd-artifact-contracts.md`, and `../_shared/sdd-artifact-identity.md`
+- The work-item-keyed developer spec and work-package manifest resolved through `../_shared/sdd-project-profile.md`, `../_shared/sdd-artifact-contracts.md`, and `../_shared/sdd-artifact-identity.md`; add a release spec when checks must be deferred to rollout.
 - `Proposed` ADRs required by `../_shared/adr-workflow.md`
 
 The developer spec must include the minimum decision content from the artifact contract. Use these sections when relevant:
@@ -48,4 +48,4 @@ Rules:
 - Keep work packages manual and sequential; do not create launch pads or fanout scripts.
 - Keep package ownership non-overlapping.
 - Include required ADR, amendment, supersession, and current-state documentation work in named packages.
-- End with `STOP: Human approves the spec, work package manifest, and every named Proposed ADR before implementation.`
+- End with `STOP: Human approves the developer spec, work-package manifest, any release spec, and every named Proposed ADR before implementation.`

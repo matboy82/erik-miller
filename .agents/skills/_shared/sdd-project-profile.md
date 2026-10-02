@@ -16,7 +16,7 @@ Repository instructions and the profile may strengthen safety, evidence, or appr
 A project profile may define:
 
 - **Work-item identity:** provider name, human-facing label, key pattern, filename normalization, whether an external item is required, and the adapter used to read or update it.
-- **Artifact paths:** path templates for briefs, epics, stories, QA plans, specs, work packages, reviews, stakeholder reviews, release plans, diagnostics, and ADRs.
+- **Artifact paths:** path templates for briefs, epics, stories, QA plans, specs, work packages, release specs, reviews, stakeholder reviews, release plans, diagnostics, and ADRs.
 - **Repository discovery:** orientation documents, project manifests, source roots, test roots, infrastructure roots, generated-code boundaries, and ownership maps.
 - **Verification:** commands or command-discovery rules for targeted tests, suites, coverage, static analysis, builds, contracts, integration tests, and formatting.
 - **Tool adapters:** capabilities and preferred local skill, MCP server, app, CLI, or API adapter, following the shared tool-adapter contract.

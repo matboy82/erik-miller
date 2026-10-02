@@ -25,5 +25,21 @@ h2 { font-size: clamp(28px, 4vw, 40px); }
 .project-preview figcaption { margin-top: 12px; font-size: 14px; overflow-wrap: anywhere; }
 .project-notice { border-left: 3px solid var(--color-accent); padding-left: 12px; font-size: 14px; }
 .project-writeup { max-width: 70ch; overflow-wrap: anywhere; }
+.contact-preview { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1fr); gap: clamp(32px, 7vw, 88px); padding: 64px 0; border-top: 1px solid var(--color-decoration); }
+.contact-intro { max-width: 480px; }
+.contact-intro h2 { margin: 12px 0 20px; }
+.demo-notice, .demo-note { padding: 12px 16px; border-left: 3px solid var(--color-accent); background: var(--color-surface); font-size: 14px; }
+.contact-card { display: grid; gap: 10px; padding: clamp(20px, 4vw, 36px); background: var(--color-surface); border: 1px solid var(--color-decoration); border-radius: 4px; }
+.contact-card label { margin-top: 8px; font-weight: 600; }
+.contact-card input, .contact-card textarea { width: 100%; padding: 12px; border: 1px solid var(--color-decoration); border-radius: 3px; background: var(--color-paper); color: var(--color-text); font: inherit; }
+.contact-card textarea { resize: vertical; }
+.field-hint, .demo-note { color: var(--color-text); font-size: 14px; }
+.demo-note { margin: 0 0 8px; }
+.preview-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.preview-actions .button { font: inherit; cursor: pointer; margin: 0; }
+.button-secondary { background: transparent; color: var(--color-text); border: 1px solid var(--color-text); }
+.form-status { min-height: 1.6em; margin: 8px 0 0; font-weight: 600; }
+.form-status.is-error { color: #8c2f25; }
 footer { font-size: 14px; border-top: 1px solid var(--color-decoration); }
-@media (max-width: 640px) { header { align-items: flex-start; flex-direction: column; } .hero { padding: 40px 0; } .process ol { grid-template-columns: 1fr; gap: 8px; } }
+@media (max-width: 720px) { .contact-preview { grid-template-columns: 1fr; gap: 24px; padding: 40px 0; } }
+@media (max-width: 640px) { header { align-items: flex-start; flex-direction: column; } .hero { padding: 40px 0; } .process ol { grid-template-columns: 1fr; gap: 8px; } .preview-actions { flex-direction: column; align-items: stretch; } }

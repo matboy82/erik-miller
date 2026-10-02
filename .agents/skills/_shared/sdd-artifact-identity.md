@@ -14,7 +14,7 @@ Read `.agents/sdd-project.md` as defined by the shared project-profile rules.
 
 ## Apply identity
 
-Use the same normalized key for story, developer spec, work packages, review, stakeholder review, and release plan paths resolved through the shared artifact contract.
+Use the same normalized key for story, developer spec, work packages, release spec, review, stakeholder review, and release plan paths resolved through the shared artifact contract.
 
 The SDD review artifact is the single persistent record for code-review and required adversarial-review verdicts. Preserve both verdicts in that file. Use the stakeholder-review artifact only when persistence is explicitly requested.
 

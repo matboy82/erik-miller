@@ -10,7 +10,7 @@
 
 ## Artifact paths
 
-Use the shared default epic, story, QA, spec, work-package, review, stakeholder-review, and release paths.
+Use the shared default epic, story, QA, spec, work-package, release-spec, review, stakeholder-review, and release-plan paths.
 - Brief: `docs/product/briefs/prd-2026-10-01.md` (unchanged Draft source).
 - Brand: `docs/brand/branding-kit-2026-10-01.md` (unchanged Draft source).
 - ADR directory: `docs/architecture/decisions/`.

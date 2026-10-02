@@ -6,6 +6,10 @@
 **Work item**: MR-03
 **Governing artifacts**: Approved [story](../../product/stories/website-lead-qualification/mr-03.md), Approved [spec](../../specs/website-lead-qualification/mr-03.spec.md), and [packages](../../specs/website-lead-qualification/mr-03.work-packages.md).
 
+## Proposed MR-09 publication amendment — 2026-10-02
+
+Matt has directed a later owner-operated publication flow: Erik previews the exact rendered portfolio content, personally approves it, and publishes without a PR; the approved content update then triggers the site's normal build/deployment path. This proposed change is specified in [0008](0008-mobile-portfolio-authoring-and-approval.md) and [MR-09](../../specs/website-lead-qualification/mr-09.spec.md). Until 0008 is approved and implemented, this accepted decision remains operative: local Content Layer records are the source, exact Erik sign-off is required, and no remote publishing workflow exists. If 0008 is accepted, it supersedes only the publication/approval recording mechanism; the content provenance, hash matching, production eligibility, and Open-placeholder rules in this ADR remain unchanged.
+
 ## Context
 
 MR-03 authorizes licensed stock photos and Draft writeups for development review, with replacement through content records. Production requires approved Miller material and no Open root placeholder. The current output verifier handles brand/font isolation and rejects all binary files; adding project media needs an explicit eligibility and asset-ownership policy.

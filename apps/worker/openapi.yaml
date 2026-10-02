@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: Miller Remodeling Intake API
+  version: 1.0.0
+  description: Synthetic/demo contract. Live intake remains disabled until listed operational and owner approvals are complete.
+servers:
+  - url: https://worker.test
+paths:
+  /intake/contact:
+    post:
+      summary: Submit a general inquiry
+      description: The caller creates a UUID key for a new inquiry and reuses it for retries. Receipt is returned only after D1 commit and Queue enqueue.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Inquiry'
+      responses:
+        '202':
+          description: Durably accepted for asynchronous delivery.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receipt' }
+        '400':
+          description: Safe field-level validation error; no dispatch occurs.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+        '409':
+          description: Idempotency key was reused for different content.
+        '410':
+          description: The receipt exists but the payload retention period ended.
+        '503':
+          description: Intake is disabled or durable acceptance/queueing failed; receipt is not claimed.
+  /operator/intake/{receiptId}:
+    get:
+      summary: Read safe delivery status
+      security: [{ cloudflareAccess: [] }]
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Receipt alias, state, timestamps, attempt count, and safe error category only.
+        '401': { description: Access identity is missing, invalid, or not allowlisted. }
+        '404': { description: Receipt not found. }
+  /operator/intake/{receiptId}/retry:
+    post:
+      summary: Retry a non-ambiguous delayed or failed delivery
+      security: [{ cloudflareAccess: [] }]
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '202': { description: Retry queued. }
+        '409': { description: State requires reconciliation or is not retryable. }
+  /operator/intake/{receiptId}/reconcile:
+    post:
+      summary: Record operator readback of an ambiguous JobTread write
+      security: [{ cloudflareAccess: [] }]
+      parameters:
+        - in: path
+          name: receiptId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [step, outcome]
+              properties:
+                step: { type: string, enum: [account, location, contact, job] }
+                outcome: { type: string, enum: [present, absent] }
+                recordId: { type: string, maxLength: 128, description: Required when outcome is present. }
+      responses:
+        '202': { description: Reconciliation recorded and safe continuation queued. }
+        '409': { description: The receipt does not require reconciliation. }
+components:
+  securitySchemes:
+    cloudflareAccess:
+      type: apiKey
+      in: header
+      name: Cf-Access-Jwt-Assertion
+  schemas:
+    Inquiry:
+      type: object
+      additionalProperties: false
+      required: [name, message]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        email: { type: string, format: email, maxLength: 254 }
+        phone: { type: string, minLength: 1, maxLength: 32 }
+        message: { type: string, minLength: 1, maxLength: 5000 }
+      oneOf:
+        - required: [email]
+          not: { required: [phone] }
+        - required: [phone]
+          not: { required: [email] }
+    Receipt:
+      type: object
+      additionalProperties: false
+      required: [receiptId, state]
+      properties:
+        receiptId: { type: string, format: uuid }
+        state: { const: accepted }
+    ValidationError:
+      type: object
+      additionalProperties: false
+      required: [error, fields]
+      properties:
+        error: { const: validation_failed }
+        fields: { type: array, items: { type: string } }

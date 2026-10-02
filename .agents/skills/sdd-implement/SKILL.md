@@ -16,6 +16,7 @@ Read and apply:
 - [the shared human-reviewability rules](../_shared/sdd-human-reviewability.md) before accepting the implementation contract or writing persistent remediation/gate evidence;
 - [the shared artifact contracts](../_shared/sdd-artifact-contracts.md) for every approved or persistent artifact;
 - [the shared ADR workflow](../_shared/adr-workflow.md) for every named or newly triggered decision;
+- the [release-spec contract](../_shared/sdd-release-spec-contract.md) when a work-item release spec exists;
 - [the shared TDD practices](../_shared/tdd-practices.md) during implementation and evidence evaluation;
 - [the shared codebase-design lens](../_shared/codebase-design.md) only when approved scope changes a module, interface, dependency seam, or test surface;
 - [the shared tool-adapter contract](../_shared/sdd-tool-adapters.md) only when an external capability is required.
@@ -25,6 +26,7 @@ Read and apply:
 - Approved story and acceptance criteria.
 - Approved QA plan.
 - Approved developer spec and work-package manifest.
+- Approved release spec when one exists; a Draft release spec cannot authorize evidence deferral.
 - Explicit package scope: named package IDs or an explicit request for the complete manifest.
 - Current worktree and target-repository instructions.
 - Any required artifacts from enabled workflow extensions.
@@ -37,6 +39,7 @@ Optional discovery artifacts and quality bars enrich the contract only when the 
 2. Work through selected packages sequentially. Do not use fanout or automatic parallel agents.
 3. After the implementation diff exists, read and execute [the evidence gate](references/evidence-gate.md).
 4. Fix in-scope defects and repeat affected evidence checks until the gate passes or a genuine blocker requires human action.
+5. Report implementation/test completion separately from release readiness. Only an Approved release spec can classify named external checks as deferred to the release phase.
 
 ## Completion
 

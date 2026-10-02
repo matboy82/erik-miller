@@ -4,7 +4,9 @@ Read this reference after the implementation diff exists. Re-read approved outco
 
 ## Prove the outcome
 
-- Map every in-scope acceptance criterion and selected-package definition of done to exact implementation and observable test evidence. Mark each `Proven`, `Partial`, `Missing`, or `Blocked`.
+Read the approved release spec when present. Map criteria to development/test or release-only exactly as it classifies them. Use `Deferred to release` only for a named gate in an Approved release spec; missing implementation, local tests, required quality-bar evidence, or manual checks are not deferrable merely because rollout is later.
+
+- Map every acceptance criterion and selected-package definition of done to implementation and evidence. Mark development/test criteria `Proven`, `Partial`, `Missing`, or `Blocked`; mark only approved release-spec gates `Deferred to release` and name their release evidence.
 - Verify stakeholder role, workflow, benefit, errors, and explicit out-of-scope boundaries—not only internal mechanics.
 - Exercise the closest practical public boundary for stakeholder-critical behavior.
 - Inspect known consumers and backward compatibility for every changed contract.
@@ -50,7 +52,7 @@ Resolve commands from the active profile and target repository. Run package comm
 
 Return `PASS — evidence-complete within evaluated scope` only when:
 
-- every selected package definition of done and in-scope acceptance criterion is proven;
+- every selected package definition of done and development/test criterion is proven; any `Deferred to release` criterion is explicitly named in an Approved release spec and remains a release blocker;
 - required tests pass at the approved levels and demonstrate sensitivity for critical behavior;
 - required build, static analysis, coverage, contract, and integration checks pass;
 - required quality bars are met;
@@ -63,7 +65,7 @@ Otherwise return `NOT READY — evidence incomplete or defects remain`. Distingu
 
 ## Final report
 
-Lead with verdict and scope, then provide decision-relevant evidence only:
+Lead with verdict and scope, then provide decision-relevant evidence only. State development/test completion separately from story acceptance and release readiness:
 
 1. Proven stakeholder outcome.
 2. Compact AC/DoD traceability with implementation, test, sensitivity, and status.

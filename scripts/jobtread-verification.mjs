@@ -11,6 +11,14 @@ const KINDS = ['customer', 'location', 'job', 'upload', 'file'];
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const text = (value) => typeof value === 'string' && value.length > 0 && value.length <= 200;
 const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
+const isoCalendarDate = (value) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  if (year < 1 || month < 1 || month > 12) return false;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return day >= 1 && day <= days[month - 1];
+};
 const safeOrigin = (value) => {
   try {
     const url = new URL(value);
@@ -23,7 +31,7 @@ const safeOrigin = (value) => {
 
 function validPlan(plan) {
   return plan?.version === 1 && plan.apiVersion === API_VERSION
-    && plan.approvedBy === 'Matt' && /^\d{4}-\d{2}-\d{2}$/.test(plan.approvedOn || '')
+    && plan.approvedBy === 'Matt' && isoCalendarDate(plan.approvedOn)
     && text(plan.organizationId) && ['isolated-synthetic', 'business-synthetic'].includes(plan.boundary)
     && /^MR04-[a-zA-Z0-9-]{1,19}$/.test(plan.runMarker || '')
     && plan.customFieldValues && typeof plan.customFieldValues === 'object' && !Array.isArray(plan.customFieldValues)

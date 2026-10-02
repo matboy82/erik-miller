@@ -25,10 +25,10 @@ Default flow:
 1. Product brief -> epic.
 2. Approved epic -> stories.
 3. Approved stories -> QA plan.
-4. Approved stories and QA plan -> developer spec, required Proposed ADRs, and manual work package manifest.
-5. Approved spec/package/ADRs -> implementation by the human-selected specialist.
+4. Approved stories and QA plan -> developer spec, required Proposed ADRs, manual work-package manifest, and a release spec when development/test exit differs from release evidence.
+5. Approved spec/package/release-spec/ADRs -> implementation by the human-selected specialist.
 6. Review gate.
-7. Release plan.
+7. Release plan after review; production deployment remains separately authorized.
 
 Insert declared project phases at their configured point. Do not treat an undeclared tool or artifact as a new gate.
 

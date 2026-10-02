@@ -1,0 +1,32 @@
+<section class="contact-preview" aria-labelledby="contact-title">
+  <div class="contact-intro">
+    <p class="eyebrow">General inquiries</p>
+    <h2 id="contact-title">Tell us about your project</h2>
+    <p>Share a little about what you have in mind and how we can reach you.</p>
+    <p class="demo-notice"><strong>Review preview:</strong> These are fictional sample details. Nothing is sent or saved.</p>
+  </div>
+
+  <div class="contact-card" id="contact-preview" role="group" aria-describedby="demo-note">
+    <p id="demo-note" class="demo-note">Sample details are fixed for this preview. No real contact information is collected.</p>
+    <label for="sample-name">Your name</label>
+    <input id="sample-name" name="name" value="Sample Homeowner" readonly />
+
+    <label for="sample-contact">Email or phone</label>
+    <input id="sample-contact" name="contact" value="homeowner@example.invalid" readonly />
+    <span class="field-hint">How can we reach you?</span>
+
+    <label for="sample-message">What would you like help with?</label>
+    <textarea id="sample-message" name="message" rows="4" readonly>We are exploring a kitchen remodel and would like to learn about the design process.</textarea>
+
+    <div class="preview-actions" aria-label="Preview sample outcomes">
+      <button type="button" class="button" data-preview="success">Preview confirmation</button>
+      <button type="button" class="button button-secondary" data-preview="invalid">Preview validation</button>
+    </div>
+    <p class="form-status" id="form-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+</section>
+
+<script>
+  import { initializeContactPreview } from '../scripts/contact-preview.js';
+  initializeContactPreview(document);
+</script>

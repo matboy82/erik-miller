@@ -90,6 +90,23 @@ test('incomplete, unapproved or invalid boundaries refuse live dispatch', async 
   }
 });
 
+test('approval dates require real ISO calendar days before credentials or dispatch', async () => {
+  for (const approvedOn of ['2026-02-29', '2026-04-31', '2026-13-01', '2026-00-10', '0000-01-01']) {
+    let credentialCalls = 0;
+    let dispatchCalls = 0;
+    const result = await runProbe({ scenario: 'intake', live: true, plan: { ...plan(), approvedOn }, image,
+      credentialProvider: () => { credentialCalls++; return credentialProvider(); }, saveInventory: () => {},
+      transport: async () => { dispatchCalls++; } });
+    assert.equal(result.errorCategory, 'invalid-plan', approvedOn);
+    assert.equal(credentialCalls, 0, approvedOn);
+    assert.equal(dispatchCalls, 0, approvedOn);
+  }
+  for (const approvedOn of ['2024-02-29', '2026-02-28', '2026-04-30']) {
+    const result = await runProbe({ plan: { ...plan(), approvedOn } });
+    assert.equal(result.stage, 'validated', approvedOn);
+  }
+});
+
 test('unknown scenarios cannot dispatch and cannot leak their input', async () => {
   const result = await runProbe({ scenario: 'https://private.test/?key=secret-sentinel', live: true, plan: plan() });
   assert.equal(result.errorCategory, 'invalid-scenario');

@@ -4,5 +4,32 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "INTAKE_DB",
+      "database_name": "miller-remodeling-intake",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "INTAKE_QUEUE", "queue": "miller-intake-delivery" }
+    ],
+    "consumers": [
+      {
+        "queue": "miller-intake-delivery",
+        "dead_letter_queue": "miller-intake-dead-letter",
+        "max_retries": 5,
+        "max_batch_size": 10
+      },
+      {
+        "queue": "miller-intake-dead-letter",
+        "max_retries": 1,
+        "max_batch_size": 10
+      }
+    ]
+  },
+  "triggers": { "crons": ["0 * * * *"] }
 }

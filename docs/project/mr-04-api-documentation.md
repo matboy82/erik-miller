@@ -4,6 +4,8 @@
 **Checked**: 2026-10-02
 **Evidence**: Public documentation and schema only; no credential used, customer queried, or record changed.
 
+**Current booking amendment (2026-10-02)**: The Google Workspace/Calendly wording below records Matt's earlier decision and is superseded. The current selection is Erik-managed Google Calendar Appointment Schedules with phone or in-person appointments and no web conferences. Workspace entitlement/settings and JobTread appointment association remain Unverified.
+
 ## Finding
 
 JobTread exposes the operations needed for the intake capability test. Correct the proposed sequence to **customer → location → job**, then upload and attach the photo. Reliable duplicate/retry handling remains unverified. Matt subsequently confirmed the native homeowner-booking gap and selected Google Workspace/Calendly; that owner-confirmed finding is recorded below, separately from the API evidence.
@@ -61,6 +63,6 @@ The schema gaps alone did not prove native booking unsupported. The following ow
 
 Matt states: “I already know booking and other functionality doesn't exist in jobtread, we'll hook into Eriks' google workspace/calendly for those functions.” Record the required native homeowner-booking workflow as **Unsupported**, with **Owner-confirmed** evidence. This is Matt's domain confirmation, not a live API-test result and not a claim that JobTread lacks its documented task/notification features.
 
-Google Workspace/Calendly is the selected direction. Skip native-booking discovery. Amended J3 documents external-provider/calendar access and entitlements, direct-integration feasibility without Zapier/Make, and the JobTread record-association contract still needed. Provider behavior and account setup are not verified or implemented by this decision.
+Google Calendar Appointment Schedules is the current selected direction. Skip native-booking discovery. Amended J3 documents Google account access and entitlements, direct-integration feasibility without Zapier/Make, and the JobTread record-association contract still needed. Provider behavior and account setup are not verified or implemented by this decision.
 
 This check supplies the documented operation inventory for technical planning. J1 live record/photo checks, J2 recovery observations and amended J3's external prerequisite assessment remain outstanding.

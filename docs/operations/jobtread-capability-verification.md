@@ -95,4 +95,4 @@ For `retain-approved`, do not delete; record retained synthetic records and the 
 
 Save only sanitized results to [MR-04 evidence](../project/mr-04-verification.md): scenario, evidence kind, safe comparisons, stage/error category, recovery and cleanup status. Credentials, raw IDs, private responses, headers and signed URLs stay out of repository/logs.
 
-Matt confirmed native homeowner booking is unsupported. Erik's Google Workspace/Calendly is the selected direction. MR-04 assesses external prerequisites; booking configuration, real recipients, Google/Calendly credentials and event synchronization require a later approved contract.
+Matt confirmed native homeowner booking is unsupported. The current selected direction is Erik-managed Google Calendar Appointment Schedules, with phone/in-person modes and no web conferences; this supersedes the earlier Calendly direction. MR-04 records the account/entitlement and JobTread association prerequisites only. No booking configuration, live recipients, Google credentials, or event synchronization is authorized by this capability runbook.

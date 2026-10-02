@@ -15,7 +15,7 @@ Read and apply [the shared SDD approval rules](../_shared/sdd-approval-status.md
 
 Read and apply [the shared human-reviewability rules](../_shared/sdd-human-reviewability.md) when drafting, revising, or presenting the developer spec, work-package manifest, and proposed ADRs for approval.
 
-Read and apply [the shared artifact contracts](../_shared/sdd-artifact-contracts.md) and [provider-neutral artifact identity rules](../_shared/sdd-artifact-identity.md). Derive story-specific paths from the configured stable work-item key.
+Read and apply [the shared artifact contracts](../_shared/sdd-artifact-contracts.md), [provider-neutral artifact identity rules](../_shared/sdd-artifact-identity.md), and the [release-spec contract](../_shared/sdd-release-spec-contract.md). Derive story-specific paths from the configured stable work-item key.
 
 Read and apply [the shared ADR workflow](../_shared/adr-workflow.md). Evaluate its trigger on every technical-planning run.
 
@@ -31,6 +31,7 @@ Inputs:
 Outputs:
 
 - The work-item-keyed developer spec and work-package manifest at paths resolved from the active profile and artifact contract.
+- A work-item-keyed release spec when acceptance or operational evidence must be deferred to rollout.
 - A new `Proposed` ADR for each triggered decision not already governed by an accepted ADR.
 
 Procedure:
@@ -46,8 +47,9 @@ Procedure:
 9. Write only the developer-spec sections that apply. Lead with the intended change, scope boundaries, affected contracts, and approval decisions; then cover relevant interface, data, user-interface or non-UI behavior, edge cases, approved test seams, documentation/ADR impact, verification, rollout/rollback, and definition of done. Reference approved acceptance criteria and QA scenarios instead of copying them.
 10. Describe interfaces, data shapes, and dependency direction at contract level. Include a short signature or example only when prose would be less precise; do not include implementation-sized code samples or file-by-file narration.
 11. Write a compact manual work-package manifest with sequential packages only. Each package names its outcome, scope, dependencies, allowed touch points, definition of done, and verification without repeating the developer spec. Include every required ADR, amendment, supersession, and current-state documentation change as a named deliverable. Use those packages as the decomposition for any later SDD gauntlet; do not create gauntlet-specific implementation slices.
-12. Apply the human-reviewability edit to the spec, manifest, and proposed ADRs before presenting the approval set. If the complete contract remains difficult to review, propose a smaller story or package split.
-13. Do not include fanout, launch pads, background agent instructions, or parallel orchestration.
+12. When creating a release spec, classify every relevant check as development/test or release-only under the shared release-spec contract. Approval is part of the technical-planning gate; the artifact does not authorize rollout.
+13. Apply the human-reviewability edit to the spec, manifest, release spec, and proposed ADRs before presenting the approval set. If the complete contract remains difficult to review, propose a smaller story or package split.
+14. Do not include fanout, launch pads, background agent instructions, or parallel orchestration.
 
 Required gate:
-`STOP: Human approves the spec, work package manifest, and every named Proposed ADR before implementation.`
+`STOP: Human approves the developer spec, work-package manifest, any release spec, and every named Proposed ADR before implementation.`

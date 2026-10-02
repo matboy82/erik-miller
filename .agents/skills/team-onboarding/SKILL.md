@@ -53,7 +53,7 @@ Checkpoint: the learner can find the current gate, next enabled phase, authorita
 
 Walk one completed cycle as a read-only tour:
 
-1. Follow the active workflow through its epic, stories, QA plan, developer spec, work packages, review, release plan, and required extension artifacts.
+1. Follow the active workflow through its epic, stories, QA plan, developer spec, work packages, any required release spec, review, release plan, and required extension artifacts.
 2. At each human gate, show the outcome, scope, decisions, material risks, verification, and approval question. Point out how repeated background and irrelevant sections were removed.
 3. Show that every open question was answered or explicitly moved out of scope before approval.
 4. Connect code-review and any required adversarial verdict to the evidence and review rule that governed it.

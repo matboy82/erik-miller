@@ -8,9 +8,15 @@
 
 ## Accepted booking amendment — 2026-10-02
 
-Matt confirms JobTread does not provide the required homeowner booking functions. Use Erik's Google Workspace and Calendly for those functions; skip further native-booking discovery. MR-04 records this owner-confirmed finding and the remaining external-integration prerequisites. Provider configuration and implementation belong to a later approved booking spec.
+Historical amendment: Matt confirmed JobTread does not provide the required homeowner booking functions and initially selected Google Workspace with Calendly. The provider choice has since been superseded; the owner-confirmed JobTread booking gap remains current.
 
 The original decision below remains for history; this amendment replaces its pending booking-service selection.
+
+## Accepted booking update — 2026-10-02
+
+Matt selected Google Calendar Appointment Schedules as Erik's booking page, with phone and in-person options and no web conferences. This supersedes the Calendly portion of the earlier amendment; retain the JobTread capability finding and skip native booking discovery. The current provider decision is recorded in [0007](0007-consultation-booking-integration-boundary.md) and [MR-08](../../specs/website-lead-qualification/mr-08.spec.md).
+
+Google calendar bookings must still be associated with the intended JobTread customer/job as required by the epic. MR-04 verifies the supported API boundary, not this future booking workflow. No custom calendar integration, account change, public booking page, or external booking test is authorized by this decision. Resolve association feasibility in MR-08; if unsupported, obtain an explicit product amendment rather than claiming the acceptance criterion passed.
 
 ## Decision
 

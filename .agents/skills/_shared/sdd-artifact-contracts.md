@@ -10,6 +10,7 @@ Use these minimum contracts for durable SDD artifacts. Keep them simple under th
 - QA plan: `docs/qa/test-plans/<epic-slug>.testplan.md`
 - Developer spec: `docs/specs/<epic-slug>/<work-item-key>.spec.md`
 - Work packages: `docs/specs/<epic-slug>/<work-item-key>.work-packages.md`
+- Release spec: `docs/specs/<epic-slug>/<work-item-key>.release-spec.md`
 - Review: `docs/specs/<epic-slug>/<work-item-key>.review.md`
 - Stakeholder review: `docs/specs/<epic-slug>/<work-item-key>.stakeholder-review.md`
 - Release plan: `docs/specs/<epic-slug>/<work-item-key>.release-plan.md`
@@ -29,6 +30,7 @@ Every approval-gated artifact includes a title, `**Status**: Draft | Approved`, 
 - **QA plan:** risks and scope, observable outcomes, proposed test seams, smallest sufficient scenario set, data/environment/CI needs, and compact acceptance-criterion traceability.
 - **Developer spec:** intended change and boundaries, affected contracts and consumers, relevant design/data/security/compatibility decisions, approved test seams, verification, rollout/rollback, ADR/documentation impact, and definition of done.
 - **Work package:** stable package ID, outcome, scope, dependencies, allowed and forbidden touch points, definition of done, verification, and named ADR/documentation work.
+- **Release spec:** development/test exit, release-only gates and evidence owners/prerequisites, acceptance-criterion disposition map, remaining blockers, and the later release-plan/authorization handoff.
 - **Review:** evaluated identity and artifact scope, verdict, blockers first, impact/compatibility assessment, acceptance-criterion and test evidence, ADR/documentation status, and quality-bar result when applicable.
 - **Release plan:** readiness, shipped outcome, prerequisites, configuration/data changes, owners, observability, post-deploy verification, rollback triggers/actions, communications, and blockers.
 

@@ -17,7 +17,7 @@ Read and apply [the shared human-reviewability rules](../_shared/sdd-human-revie
 
 Read and apply [the shared ADR workflow](../_shared/adr-workflow.md). Release readiness requires accepted decisions and completed ADR/documentation work.
 
-Read and apply [the shared artifact contracts](../_shared/sdd-artifact-contracts.md) and [provider-neutral artifact identity rules](../_shared/sdd-artifact-identity.md). Resolve the configured stable work-item key before writing and consume its review artifact when required by the review gate.
+Read and apply [the shared artifact contracts](../_shared/sdd-artifact-contracts.md), [provider-neutral artifact identity rules](../_shared/sdd-artifact-identity.md), and the [release-spec contract](../_shared/sdd-release-spec-contract.md). Resolve the configured stable work-item key before writing and consume its review artifact when required by the review gate.
 
 Inputs:
 
@@ -26,6 +26,7 @@ Inputs:
 - Governing ADRs and approved `ADR not required` rationale.
 - QA plan and test results.
 - Work-item-keyed SDD review artifact when required by the review gate.
+- Approved release spec when one exists.
 - Implementation diff or PR state.
 
 Output:
@@ -42,4 +43,4 @@ Procedure:
 6. Confirm every required ADR is accepted, the implementation and release plan conform to it, and amendments or supersessions preserve decision history.
 7. Resolve external release, CI, pull-request, knowledge, or communication capabilities only when needed, following [the shared tool-adapter contract](../_shared/sdd-tool-adapters.md). Do not perform external writes without explicit authorization.
 8. Include only release actions, conditions, owners, and evidence that apply; link to approved artifacts instead of repeating their requirements.
-9. Mark release readiness as Ready or Not Ready. Use `Not Ready` for any review-gate or ADR-workflow blocker.
+9. Mark release readiness as Ready or Not Ready. Use `Not Ready` for any incomplete release-spec gate, review-gate or ADR-workflow blocker. A deferred check may become Ready only after its specified evidence is recorded; this skill does not itself authorize deployment.

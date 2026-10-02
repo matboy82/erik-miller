@@ -1,7 +1,17 @@
 # MR-04 implementation evidence
 
+**Current booking direction amendment — 2026-10-02**: Matt selected Erik-managed Google Calendar Appointment Schedules for phone or in-person consultations, with no web conferences. The earlier Calendly capability matrix below is historical evidence and does not describe the current provider choice. Official Google documentation describes booking pages, appointment locations, availability, buffers and reminders, but Erik's Workspace entitlement/settings and the required appointment-to-JobTread association remain **Unverified**. No Google account was accessed or configured. See [Accepted ADR 0007](../architecture/decisions/0007-consultation-booking-integration-boundary.md).
+
 **Evaluation**: NOT READY — required live intake evidence is missing.
 **Selected scope**: MR-04-P1 through MR-04-P3; Matt selected “all” on 2026-10-02.
+
+## Local remediation — 2026-10-02
+
+`validPlan` now rejects malformed and impossible ISO calendar dates, including invalid month/day values and non-leap February 29, while accepting valid leap day and month-end boundaries. Focused tests prove invalid dates stop before credential access and transport dispatch. The current Cloudflare setup guide now reflects Matt's owner-confirmed Google Workspace/Calendly direction and names remaining account, entitlement, calendar, notification, association and write-back prerequisites; it does not authorize setup.
+
+Verification: `node --test scripts/test/jobtread-verification.test.mjs` — exit 0, 20 passed, 0 failed/skipped. `npm run check` — exit 0 on the filesystem-access retry, 29 skills validated, lint/typecheck passed, 45 tests passed, review build and Worker dry-run passed, and production isolation passed for A/B/C and mixed-copy/tagline fixtures. The initial restricted run failed at Wrangler's Worker dry-run with `Cannot read directory "../../../../..": Access is denied`; rerun with local filesystem access completed successfully. Node `v26.9.0`, npm `12.1.0`; npm emitted pre-existing unknown global config warnings for `msvs_version` and `python`.
+
+Live J1/J2 operations, private operation-plan approval, current-candidate remote proof, browser evidence, and fresh-session reviews remain outstanding. MR04-R1 and the MR-04 review verdict remain Block.
 **Contract**: Approved [spec](../specs/website-lead-qualification/mr-04.spec.md), [manifest](../specs/website-lead-qualification/mr-04.work-packages.md), Accepted [0005](../architecture/decisions/0005-jobtread-capability-verification-boundary.md).
 
 Local tooling, safeguards and the booking prerequisite assessment are implemented. Read-only JobTread authentication succeeded. Customer/job/field/photo creation and retrieval remain **Unverified** because the exact live-test boundary, side effects and cleanup plan have not been approved. No live records, uploads or appointments were created.

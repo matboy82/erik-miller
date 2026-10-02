@@ -50,6 +50,10 @@ Equivalent negative controls inject leaked controls, alternate/minified tokens, 
 
 Pin: branding kit 2026-10-01, candidate above, unchanged dependency lockfile, and unchanged `lighthouserc.cjs`. Node v26.9.0, npm 12.1.0, Chrome 154.0.8037.58, Lighthouse 12.6.1 on Windows. Three same-page mobile reports per direction use 412x823 screen emulation, DPR 1.75, simulated throttling, RTT 150ms, throughput 1638.4Kbps, and CPU slowdown 4. Individual report settings include Lighthouse's derived request latency/upload/download values.
 
+## Remediation status — 2026-10-02
+
+Implementation remains present. Required current-candidate browser comparison, storage/transition branches, keyboard/touch/contrast/focus and responsive/zoom evidence remain incomplete. The code-review verdict remains Block; retained measurements and the local aggregate check do not satisfy B1/B2 manual evidence.
+
 Aggregation remains optimistic: best score per required category and lowest LCP across three valid runs. Required thresholds are >=90 for performance/accessibility/best practices and LCP strictly <2500ms. SEO stays warning-only for the deliberately noindex preview. Browser reports retain every individual value, effective settings, source/file/config/lockfile hashes, assertion results, and page screenshots.
 
 **Mobile performance bar: Bar met.** Final reports and source/config snapshots are under `.lighthouseci/brand/1790916544331/{A,B,C}/`; each contains three reports, assertions, fixture metadata, and an extracted screenshot. Scores below are the approved optimistic aggregates, not claims that every individual score equals the best result.
