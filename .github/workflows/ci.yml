@@ -26,30 +26,3 @@ jobs:
           name: lighthouse-reports
           path: .lighthouseci
           include-hidden-files: true
-  test-deploy:
-    needs: verify
-    if: needs.verify.result == 'success' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
-    runs-on: ubuntu-latest
-    environment: test
-    concurrency:
-      group: test-deploy-${{ github.event_name == 'push' && 'main' || format('pr-{0}', github.event.pull_request.number) }}
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - name: Deploy verified test resources
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          GITHUB_TOKEN: ${{ github.token }}
-          VERIFY_RESULT: ${{ needs.verify.result }}
-          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
-        run: node scripts/test-deployment.mjs

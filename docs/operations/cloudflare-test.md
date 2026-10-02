@@ -1,63 +1,72 @@
-# Provision the test deployment
+# Deploy the test apps with Cloudflare Git integration
 
-Prepared for Matt/BIS; no remote account/repository/deployment was created during bootstrap.
+Cloudflare builds and deploys both apps from matboy82/erik-miller. GitHub Actions runs verification only. No GitHub Cloudflare token, account secret, project variable, test environment, or deployment flag is required by this workflow. Existing GitHub entries can remain unused.
 
-1. Confirm BIS GitHub org/repo and Cloudflare account. Keep DNS at Porkbun.
-2. Create a Direct Upload Pages project `erik-miller`, primary branch `main`. The Pages production-branch term refers only to this isolated test project. Do not attach the business domain or mix Git integration with the CI upload path.
-3. Create a GitHub `test` environment with secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Restrict token permissions to required Pages/Worker deployment in the BIS account.
-4. Set repository variable `CLOUDFLARE_PAGES_PROJECT=erik-miller`. No deployment enable flag is required. Passing `main` pushes and same-repository PRs deploy automatically once this workflow is pushed and the project and credentials are configured.
-5. Authorize push. CI verifies before uploading `apps/web/dist` and deploying the test Worker. Same-repository PRs get Pages previews; forks get checks without secrets.
-6. Capture returned URLs, 200 `/health`, draft A/B/C behavior, mobile layout, and PR preview evidence. Only then close infrastructure placeholders. Adding a test custom domain requires a separate DNS instruction.
+The [accepted 0002 amendment](../architecture/decisions/0002-test-deployment-isolation.md) records Matt's 2026-10-01 instruction to use Cloudflare's existing repository access. This guide replaces the GitHub Direct Upload setup. No remote settings or deployment were changed locally.
 
-The health scaffold requires no secrets. WS-2 will introduce approved intake secrets through Wrangler secret storage. Preview remains noindex through HTML, robots.txt, and headers. Private stakeholder content may require Cloudflare Access.
+## 1. Push the repository changes
 
-## MR-01 deployment contract
+Commit and push the reviewed changes to main when authorized. Cloudflare builds the pushed revision, so local changes alone do not affect it. The new build:web and build:worker scripts target each workspace. The root .node-version selects Node 24; set NODE_VERSION=24 in Cloudflare if an existing override selects an older version.
 
-The [accepted deployment ADR](../architecture/decisions/0002-test-deployment-isolation.md) governs this workflow. Confirm the BIS repository, Cloudflare account, and intended test project before the first automatic deployment. Use only public Draft material; noindex does not restrict access.
+## 2. Connect the website as a Pages project
 
-`verify` checks out the event revision with read-only permissions and runs installation, aggregate checks, and mobile Lighthouse without Cloudflare credentials. `test-deploy` requires successful verification and either a main push or a same-repository PR. It rebuilds the same revision without secrets. Only the final `scripts/test-deployment.mjs` step receives the Cloudflare credentials and a read-only GitHub token for current-main verification. The deployment script repeats event/configuration checks before publication and scans every shipped file for credential values without printing them.
+In Cloudflare, open Workers & Pages, select Create application, choose Pages, and Connect to Git. Select the existing GitHub connection and matboy82/erik-miller. If you already have a Git-integrated Pages project, edit its build settings instead.
 
-Main publishes the persistent Pages branch and `erik-miller`. Same-repository PRs publish to `pr-<number>` and never deploy the Worker. Fork PRs receive verification only. Treat same-repository contributors as trusted: configure required reviewers for the `test` environment if that trust is insufficient. Never enable privileged PR-target execution. Disable deployment while changing trust or permissions.
+A Worker project is a separate resource and cannot act as the Pages destination. If you already created a Direct Upload Pages project, create a new Git-integrated Pages project with an available name; Direct Upload projects cannot switch to Git integration. Keep existing resources until the replacement is verified.
 
-Persistent deployments share a concurrency group with cancellation of running publication disabled. The deployment script checks the current main SHA before Pages and again before Worker publication; stale or unreadable revisions fail closed. Each PR uses its own concurrency group. Do not assume a running deployment is cancelled when a newer revision appears.
+| Pages setting | Value |
+|---|---|
+| Project name | erik-miller if available; otherwise an available test-site name |
+| Production branch | main |
+| Framework preset | None (use the explicit command below) |
+| Root directory | Leave blank: repository root |
+| Build command | npm ci && npm run build:web |
+| Build output directory | apps/web/dist |
+| Build environment | NODE_VERSION=24 and SITE_BUILD=review, for persistent and preview builds |
 
-The script captures Wrangler output in memory and writes only sanitized revision, test URLs, and resource outcomes to the run summary. It checks the unique Pages URL and, for main, the persistent Pages URL for successful HTTPS responses, robots meta, disallow rules, and noindex headers. It independently checks the published Worker's scaffold payload and no-store health response. HTTP redirects, failed checks, and partial publication fail the job. A failed job may already have updated Pages; pause the Verify workflow in GitHub Actions and record the resource outcome before an explicitly authorized recovery deployment. URLs come from actual publication, never from an assumed successful run.
+Save and deploy. Pages handles publication; there is no Wrangler deploy command to enter here. Restrict preview deployments to trusted branches under branch deployment controls. Initially use main only if previews are not needed.
 
-## Evidence and authorization handoff
+The Pages production-branch label means the persistent branch of this isolated test project. The review site remains Draft/noindex; do not attach the business domain or change DNS.
 
-Before P3, Matt supplies the confirmed repository/project/account boundary and restricted secrets through GitHub settings, then explicitly authorizes required configuration, push, test publication, and deliberate failing-check runs. Do not paste secret values into chat or documents. Repository approval alone does not grant those actions.
+## 3. Configure the health Worker
 
-Capture every F2 branch: passing main; failing verification; passing same-repository PR; and fork PR verification with deployment skipped. For each, record event, tested/PR-head revision, run/job links and states, and actual test URLs where publication occurred. Inspect conditions and environment access without exposing secrets. Local guard tests and synthetic HTTP responses cannot replace this remote evidence.
+Open the existing erik-miller Worker, then Settings > Build. Connect the same GitHub repository if it is not already connected. Its name must match erik-miller in apps/worker/wrangler.jsonc.
 
-Retain full local command logs and individual Lighthouse reports with versions, OS, effective mobile settings, three-run aggregation, revision, and uncommitted patch. The strict LCP gate rejects equality at 2,500ms; SEO remains a warning on noindex previews. Record F1–F4 outcomes in [MR-01 verification](../project/mr-01-verification.md). Infrastructure closure also requires confirmed environment and branch-protection evidence under the placeholder register. Keep unrelated entries, including RELEASE-01, Open.
+| Workers Builds setting | Value |
+|---|---|
+| Repository | matboy82/erik-miller |
+| Production branch | main |
+| Root directory | Leave blank: repository root |
+| Build command | npm ci && npm run build:worker |
+| Deploy command | npx --no-install wrangler deploy --config apps/worker/wrangler.jsonc |
+| Build environment | NODE_VERSION=24 |
+| Non-production branch builds | Disabled |
 
-After implementation, hand the approved artifacts, repository instructions, changed files, raw diff, and verification output to a fresh review session without the implementation conversation. Record code-review and required adversarial verdicts in `docs/specs/website-lead-qualification/mr-01.review.md`; this runbook grants no review verdict or release approval.
+The explicit --config selects the Worker without running framework detection at the workspace root. Keeping installation at the repository root uses the shared pinned lockfile. The build command is a dry run; the deploy command publishes the Worker. Both commands are needed.
 
-## What Matt should configure
+Use the deployment token managed by Workers Builds; Cloudflare creates one by default or lets you select an existing token. This authentication stays in Cloudflare and does not require GitHub Cloudflare secrets. Inspect its intended account and permissions in Cloudflare. The current health scaffold needs no application/runtime secret or JobTread key. Confirm the account has a workers.dev subdomain configured so the health Worker has a test URL.
 
-Cloudflare and GitHub accounts exist, and Matt has the JobTread API key (confirmed 2026-10-01). These instructions do not require sending secret values in chat.
+Save the settings and retry the failed Worker build, or let the next main push trigger it. Leave build watch paths at their defaults initially so root lockfile/shared changes trigger both apps.
 
-| Name | Where | Value / purpose |
-|---|---|---|
-| `CLOUDFLARE_API_TOKEN` | GitHub repository → Settings → Environments → `test` → Environment secrets | Custom Cloudflare token scoped to the BIS account, with Cloudflare Pages Edit and Workers Scripts Edit for the current deployment workflow |
-| `CLOUDFLARE_ACCOUNT_ID` | Same GitHub `test` environment, as a secret to match existing CI | Account ID from the intended Cloudflare account; this is an identifier, not an API key |
-| `CLOUDFLARE_PAGES_PROJECT` | GitHub repository → Settings → Secrets and variables → Actions → Variables | `erik-miller`, matching the Direct Upload Pages project |
-| JobTread API key | Future intake Worker's runtime secret, never the static Pages build | Keep it with Matt until the WS-2 contract names its binding and the intended JobTread test data boundary is approved |
+## 4. Confirm both deployments
 
-Create the token in Cloudflare's API Tokens settings using a custom token and select only the intended account. The current health Worker uses `workers.dev`, so this workflow does not need DNS-edit or custom-domain route permissions. Grant additional access only if a later approved deployment requires it.
+After each main push, expect a Pages deployment, a separate Worker deployment, and a GitHub Verify run. Pages and Worker deploy independently. A failing GitHub check does not automatically prevent Cloudflare publication. A failed Cloudflare build prevents that app's new deployment.
 
-Create the GitHub `test` environment if absent, then use **Add secret** for the two entries above. Creating these entries does not trigger a run; subsequent eligible pushes and PR events deploy automatically after checks pass. The workflow already reads them; no JobTread key belongs in those static-site build steps.
+Use the actual URLs returned by Cloudflare. Open the Pages site and confirm the draft controls/content. Check the page's robots meta, robots.txt disallow, and X-Robots-Tag noindex response header. Open the Worker's returned URL with /health appended; expect HTTP 200, Cache-Control: no-store, and the existing scaffold JSON. Confirm Worker code did not change when testing a Pages preview.
+
+The old GitHub publication planner/uploader is removed. scripts/test-deployment.mjs contains read-only artifact/HTTP helpers for local tests; no automatic live check is wired to Cloudflare publication. Record real deployment revisions, build results, preview restrictions, URLs, and live responses in [MR-01 verification](../project/mr-01-verification.md). Local tests do not establish remote success. Keep infrastructure placeholders Open until their evidence requirements are met.
+
+If a deployment fails or needs pausing, use that project's Cloudflare build controls and inspect active deployments. Disabling GitHub Verify does not stop Cloudflare publication. Each resource needs its own recovery deployment and live checks.
+
+Sources: [Pages Git integration](https://developers.cloudflare.com/pages/get-started/git-integration/), [Pages monorepos](https://developers.cloudflare.com/pages/configuration/monorepos/), [Pages Node version](https://developers.cloudflare.com/pages/configuration/build-image/), [Workers Builds settings and managed token](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
+
+## Future intake credentials
 
 When approved intake work defines the secret binding, add it to the selected Worker through Cloudflare → Workers & Pages → Worker → Settings → Variables and Secrets, choosing a secret. Alternatively, from `apps/worker`, run `npx --no-install wrangler secret put <APPROVED_BINDING_NAME>` and enter the value at its prompt. Wrangler secret commands can update a live Worker; use them only at that authorized step. The current test Worker is `erik-miller` and its health endpoint does not use the key.
 
 For approved local intake work, Wrangler reads an untracked `apps/worker/.dev.vars` alongside its configuration. This repository ignores `.dev.vars` and `.env` files. Do not commit values, put them in `PUBLIC_...` variables, or use production customer data for development verification. Notification and scheduling credentials will be listed after their providers are selected.
 
-Sources: [GitHub environment secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets), [Pages API token permissions](https://developers.cloudflare.com/pages/configuration/api/), [Cloudflare API token permissions](https://developers.cloudflare.com/fundamentals/api/reference/permissions/), [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/).
 
 ## Scheduler investigation
 
 Start by checking JobTread's native capabilities with Matt/Erik before provisioning Calendly or another booking account. Its [scheduling feature page](https://www.jobtread.com/features/tasks-and-scheduling) documents project tasks, schedules, and external calendar sync. That evidence does not establish public availability-based consultation booking. Verify homeowner self-booking, timezone/buffer rules, conflict prevention, reminders, cancellation/rescheduling, and API-linked lead/job appointments against the intended account. Record capability gaps before selecting a provider.
-
-References: [Direct Upload CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/) and [Wrangler Pages commands](https://developers.cloudflare.com/workers/wrangler/commands/pages/).
-
-Concurrency mechanics: [GitHub job concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency), read 2026-10-01. Official documentation supports platform behavior; the remote matrix still needs actual execution.

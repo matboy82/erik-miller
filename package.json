@@ -10,6 +10,8 @@
     "dev": "npm run dev --workspace @miller/web",
     "dev:worker": "npm run dev --workspace @miller/worker",
     "build": "node scripts/build.mjs review",
+    "build:web": "npm run build --workspace @miller/web",
+    "build:worker": "npm run build --workspace @miller/worker",
     "build:production": "node scripts/build.mjs production",
     "check:production": "node scripts/check-production.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",

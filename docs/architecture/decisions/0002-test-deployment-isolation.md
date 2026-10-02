@@ -6,6 +6,16 @@
 **Work item**: MR-01
 **Governing artifacts**: [Story](../../product/stories/website-lead-qualification/mr-01.md), [developer spec](../../specs/website-lead-qualification/mr-01.spec.md), [accepted frontend stack](ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md)
 
+## Accepted amendment: Cloudflare Git integration (2026-10-01)
+
+Matt explicitly requested the repository change to use Cloudflare's existing GitHub connection for both monorepo apps. This supersedes the GitHub-upload decision and earlier flag-removal amendment below. GitHub Actions runs verification only. Cloudflare Pages builds and publishes the static review site; a separate Workers Builds project builds and publishes the health Worker from the same repository. Both track main. Pages may create branch previews; restrict previews to trusted branches and disable non-main Worker builds.
+
+Cloudflare owns deployment authentication. GitHub Cloudflare secrets, the test environment, and project/enable variables are no longer required by the workflow. GitHub checks run independently and do not gate Cloudflare publication. The old script's stale-main guards, numbered PR branches, credential scan at publication, sanitized run summary, and automatic live HTTP checks no longer run; actual deployment revisions, noindex, health, and credential boundaries need Cloudflare evidence. The existing noindex files, static output, health contract, and test-resource boundary remain.
+
+Use repository-root installs with the pinned lockfile. Select each application through a workspace build command and supply the Worker's explicit configuration path to avoid root-level framework detection. To stop publication, pause each project's automatic builds in Cloudflare and inspect active deployments. Recover each resource separately with a known-good revision. No deployment, account change, commit, push, production launch, DNS change, or final brand choice is authorized by this local change.
+
+The prior decisions below remain historical. Current story, spec, QA matrix, work-package amendment, and setup guide describe this decision.
+
 ## Accepted amendment: automatic deployment ? 2026-10-01
 
 Matt explicitly instructed: ?Take the deploy flag out?. This amendment replaces the opt-in flag and flag-based recovery guidance in the original decision below. Passing `main` pushes automatically publish Pages and the health Worker; passing same-repository PRs automatically publish Pages previews. `ENABLE_TEST_DEPLOYS` is no longer read. Keep successful verification, environment `test`, credential isolation, fork exclusion, stale-main checks, noindex, and live checks. Required environment approval settings still apply.

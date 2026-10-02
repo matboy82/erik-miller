@@ -5,6 +5,14 @@
 **Scope**: Complete approved [manifest](../specs/website-lead-qualification/mr-01.work-packages.md), sequential P1–P3
 **Result**: NOT READY — evidence incomplete. P1 and P2 local implementation/verification are complete; P3 remote execution is blocked.
 
+## Cloudflare Git integration amendment (2026-10-01)
+
+Matt requested removal of GitHub publication in favor of Cloudflare Git integration. GitHub now verifies only. Separate Cloudflare Pages and Workers Builds projects install at the repository root and target build:web and build:worker. The Worker deploy command supplies apps/worker/wrangler.jsonc explicitly. The old publication planner/uploader and their obsolete tests are removed; read-only noindex/HTTP helpers remain. The new workflow test first failed against the existing deploy job, then passed after its removal. The focused suite reported 4 tests, 4 pass, 0 fail.
+
+Local verification for this amendment: npm run check exited 0 (29 skills validated, lint and type checks passed, 11 tests passed with 0 failures, review build and Worker dry run succeeded, production isolation passed for A/B/C). npm run build:web and npm run build:worker each exited 0. The dashboard deploy command was verified locally with npx --no-install wrangler deploy --config apps/worker/wrangler.jsonc --dry-run; it exited 0 without root application detection or publication. Wrangler verification ran outside the sandbox to avoid the known parent-directory access restriction. git diff --check passed. No new browser Lighthouse measurement was run.
+
+Earlier GitHub upload and flag-related evidence below is historical, including its setup instructions and Next gate. Current setup is in docs/operations/cloudflare-test.md. No commit, push, remote settings change, Cloudflare deployment, or independent review was performed for this amendment. GitHub checks no longer gate Cloudflare publication; the former automatic live checks and stale-main guard are not claimed. Remote native builds, preview restrictions, deployment URLs/revisions, and live responses remain unverified.
+
 ## Deployment flag removal ? 2026-10-01
 
 Matt explicitly requested removal of the deploy flag. The local workflow and deployment planner now require successful verification and an eligible event, without `ENABLE_TEST_DEPLOYS`. The story, spec, QA matrix, setup guide, and dated amendment to accepted ADR 0002 reflect that instruction. Earlier flag-related observations and setup advice below are historical and superseded by this amendment. No commit, push, settings change, or deployment was performed for this change.
