@@ -1,0 +1,23 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import image from 'virtual:miller-project-image';
+import { project } from 'virtual:miller-project';
+
+const entry = await getEntry('projects', 'representative');
+if (!entry) throw new Error('Required representative project is missing');
+const { title, paragraphs } = entry.data;
+---
+<section class="project-preview" aria-labelledby="project-title" data-project="representative">
+  <h2 id="project-title">{title}</h2>
+  {project.stockLabel && <p class="project-notice">{project.stockLabel}</p>}
+  {project.draftLabel && <p class="project-notice">{project.draftLabel}</p>}
+  <figure>
+    <Image src={image} alt={project.image.alt} width={project.image.width} height={project.image.height}
+      widths={[320, 640, 960, 1280].filter((width) => width <= project.image.width)}
+      sizes="(max-width: 1120px) calc(100vw - 48px), 1072px" format="webp" quality={80}
+      loading="lazy" decoding="async" />
+    {project.credit && <figcaption>{project.credit}</figcaption>}
+  </figure>
+  <div class="project-writeup">{paragraphs.map((paragraph) => <p>{paragraph}</p>)}</div>
+</section>

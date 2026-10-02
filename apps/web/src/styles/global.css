@@ -19,5 +19,11 @@ h2 { font-size: clamp(28px, 4vw, 40px); }
 .process ol { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; list-style-position: inside; padding: 0; }
 .process li { min-height: 64px; }
 .draft { font-size: 14px; }
+.project-preview { margin: 24px 0 56px; min-width: 0; }
+.project-preview figure { margin: 24px 0; }
+.project-preview img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.project-preview figcaption { margin-top: 12px; font-size: 14px; overflow-wrap: anywhere; }
+.project-notice { border-left: 3px solid var(--color-accent); padding-left: 12px; font-size: 14px; }
+.project-writeup { max-width: 70ch; overflow-wrap: anywhere; }
 footer { font-size: 14px; border-top: 1px solid var(--color-decoration); }
 @media (max-width: 640px) { header { align-items: flex-start; flex-direction: column; } .hero { padding: 40px 0; } .process ol { grid-template-columns: 1fr; gap: 8px; } }

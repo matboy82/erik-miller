@@ -8,6 +8,8 @@ Every Open entry blocks production. Close entries only after the unblock conditi
 | INFRA-02 | GitHub repository/CI (account available, Matt confirms 2026-10-01) | Matt/BIS | Confirm BIS org/repo, authorize push, configure test environment and branch protection, capture CI run | Open |
 | BRAND-01 | Direction/tagline/logo | Erik/Matt | Record choice + ADR, complete final mark, create brand lock; see [review procedure](docs/operations/brand-review.md) and [MR-02 evidence](docs/project/mr-02-verification.md) | Open |
 | CONTENT-01 | Photos/writeups (Erik collecting; stock/Draft development substitutes approved 2026-10-01) | Erik/Matt | Supply approved Miller project assets and provenance; replace all development stock/Draft content, recording each substitute's source/license when added | Open |
+| CONTENT-SUB-01 | [Wide kitchen photo and Draft writeup](docs/content/substitutes/content-sub-01.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
+| CONTENT-SUB-02 | [Portrait kitchen photo and longer Draft writeup](docs/content/substitutes/content-sub-02.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
 | CRM-01 | JobTread Pave (API key available, Matt confirms 2026-10-01) | Matt/BIS | Approved WS-2 contract + official verification; configure server-side secret | Open |
 | SCHED-01 | Scheduler: evaluate native JobTread homeowner booking first | Matt/Erik | Verify native booking capabilities; select external booking only if needed, configure availability, and pass booking QA | Open |
 | DESIGN-01 | Design fee/package | Erik | Approve fee, package, and copy | Open |

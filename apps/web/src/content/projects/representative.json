@@ -1,0 +1,25 @@
+{
+  "id": "representative",
+  "title": "A kitchen story, ready for real project details.",
+  "paragraphs": [
+    "This illustrative kitchen writeup shows how a project story could explain design choices before construction. It is a Draft example, paired with a stock photo, and does not describe work completed by Miller Remodeling.",
+    "A useful kitchen plan starts with how the room is used: room to prepare meals, clear paths between appliances, and storage within reach. A future Miller project story will use approved photos and describe the actual scope and decisions."
+  ],
+  "image": {
+    "path": "apps/web/src/assets/projects/stock-kitchen-7166644.jpg",
+    "alt": "Stock example: light kitchen cabinets surrounding a glass dining table beneath a chandelier.",
+    "width": 1600,
+    "height": 1068,
+    "sha256": "adb102e3796160cb431385f4673292ced94efb58b909b6c105cea4afb80a65eb"
+  },
+  "origin": "stock",
+  "status": "draft",
+  "source": "https://www.pexels.com/photo/clean-look-kitchen-interior-7166644/",
+  "creator": "Max Vakhtbovych",
+  "permission": "Pexels license",
+  "permissionEvidence": "docs/content/pexels-permission.md",
+  "owner": "Erik/Matt",
+  "substituteId": "CONTENT-SUB-01",
+  "substituteEvidence": "docs/content/substitutes/content-sub-01.md",
+  "credit": "Development photo: Max Vakhtbovych / Pexels."
+}

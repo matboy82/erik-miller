@@ -3,12 +3,13 @@ import { createHash } from 'node:crypto';
 import { resolve, relative } from 'node:path';
 import { brandCss } from './brand-build.mjs';
 import { copy, taglines } from '../apps/web/src/content/brand.ts';
+import { verifyProjectArtifacts } from './project-artifact.mjs';
 
 const repository = resolve(import.meta.dirname, '..');
 const decode = (text) => text.replace(/\\u([\da-f]{4})/gi, (_, hex) => String.fromCharCode(Number.parseInt(hex, 16)))
   .replaceAll('&amp;', '&').replaceAll('&#39;', "'").replaceAll('&#x27;', "'").replaceAll('&apos;', "'").replaceAll('&quot;', '"').replaceAll('&gt;', '>').replaceAll('&lt;', '<');
 
-export function verifyProduction(directory, direction, { copyDirection = direction, taglineId = 'default' } = {}) {
+export function verifyProduction(directory, direction, { copyDirection = direction, taglineId = 'default', projectArtifacts } = {}) {
   if (!Object.hasOwn(copy, direction) || !Object.hasOwn(copy, copyDirection) || !(taglineId === 'default' || Object.hasOwn(taglines, taglineId))) throw Error('Invalid verification selection.');
   const files = [];
   function visit(path) {
@@ -23,12 +24,13 @@ export function verifyProduction(directory, direction, { copyDirection = directi
     }
   }
   visit(directory);
-  // Current approved page ships only text files. Fonts are selected inline WOFF2 payloads.
+  // Text keeps its strict boundary; binary project assets require source-derived ownership.
   for (const file of files) {
-    if (!/\.(html|css|js|json|map|txt|xml|webmanifest)$/.test(file.path) && !['_headers', '_redirects'].includes(file.path)) throw Error(`Unexpected shipped asset: ${file.path}`);
-    if (file.bytes.includes(0)) throw Error(`Unexpected binary payload: ${file.path}`);
+    const textual = /\.(html|css|js|json|map|txt|xml|webmanifest)$/.test(file.path) || ['_headers', '_redirects'].includes(file.path);
+    if (!textual && !projectArtifacts) throw Error(`Unexpected shipped asset: ${file.path}`);
+    if (textual && file.bytes.includes(0)) throw Error(`Unexpected binary payload: ${file.path}`);
   }
-  const output = decode(files.map((file) => file.bytes.toString('utf8')).join('\n'));
+  const output = decode(files.filter((file) => /\.(html|css|js|json|map|txt|xml|webmanifest)$/.test(file.path) || ['_headers', '_redirects'].includes(file.path)).map((file) => file.bytes.toString('utf8')).join('\n'));
   if (!output.includes('<html') || /data-design-review|review-toolbar|review-theme|review-copy|review-tagline|data-theme|miller-design-review|localStorage|sessionStorage/.test(output)) throw Error('Production includes review controls, theme switching, or no rendered page.');
   const css = brandCss(repository, { review: false, direction });
   const selectedTokens = [...css.matchAll(/(--brand-[\w-]+):\s*([^;]+);/g)];
@@ -56,5 +58,6 @@ export function verifyProduction(directory, direction, { copyDirection = directi
   const allowedFonts = [...css.matchAll(/data:font\/woff2;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
   const shippedFonts = [...output.matchAll(/data:font\/woff2;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
   if (shippedFonts.length !== allowedFonts.length || shippedFonts.sort().some((font, index) => font !== allowedFonts.sort()[index])) throw Error('Production includes incorrect font assets.');
+  if (projectArtifacts) verifyProjectArtifacts(files, output, projectArtifacts);
   return files.map(({ path, sha256, bytes }) => ({ path, sha256, size: bytes.length }));
 }

@@ -1,6 +1,8 @@
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { run } from './build.mjs';
+import { sha256, contentCopyHash } from './project-content.mjs';
 
 const repository = resolve(import.meta.dirname, '..');
 
@@ -10,7 +12,7 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
   mkdirSync(parent, { recursive: true });
   const root = mkdtempSync(resolve(parent, 'brand-fixture-'));
   try {
-    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs']) {
+    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
       const target = resolve(root, name);
       mkdirSync(resolve(target, '..'), { recursive: true });
       cpSync(resolve(repository, name), target, { recursive: true });
@@ -27,12 +29,42 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
       void ignored;
       writeFileSync(resolve(root, lock.adr), `# Synthetic verification choice\n**Status**: Accepted\n**Verification only**: true\n**Approval recorded**: Erik Miller, 2026-10-01 [synthetic evidence](../../brand/fixture-evidence.md)\n\n\`\`\`brand-choice\n${JSON.stringify({ ...choice, approvalEvidence: 'docs/brand/fixture-evidence.md' })}\n\`\`\`\n`);
       writeFileSync(resolve(root, 'docs/brand/fixture-evidence.md'), 'VERIFICATION ONLY. This synthetic example is not Erik approval and cannot authorize production.');
+      stageProjectApprovalFixture(root);
     } else {
       const catalog = resolve(root, 'apps/web/src/content/brand.ts');
       writeFileSync(catalog, readFileSync(catalog, 'utf8').replace("export const reviewInitialDirection = 'A';", `export const reviewInitialDirection = '${direction}';`));
     }
     return { root, direction, copyDirection, taglineId, production };
   } catch (error) { removeBrandFixture(root); throw error; }
+}
+
+function stageProjectApprovalFixture(root) {
+  const helper = resolve(root, 'scripts/project-content.mjs');
+  writeFileSync(helper, readFileSync(helper, 'utf8').replace('const verificationOnly = false;', 'const verificationOnly = true;'));
+  const image = 'apps/web/src/assets/projects/fixture-grid.png';
+  cpSync(resolve(repository, 'scripts/test/fixtures/project-grid.png'), resolve(root, image));
+  const record = {
+    id: 'representative', title: 'Synthetic geometric content verification',
+    paragraphs: ['A geometric test pattern exercises the content contract. This is synthetic verification evidence and makes no claim of completed Miller work.'],
+    image: { path: image, alt: 'Synthetic geometric pattern for artifact verification.', width: 1280, height: 960, sha256: sha256(readFileSync(resolve(root, image))) },
+    origin: 'miller', status: 'approved', source: 'https://example.invalid/synthetic-fixture', creator: 'Synthetic fixture', permission: 'Synthetic test permission',
+    permissionEvidence: 'docs/content/fixture-permission.md', owner: 'Erik/Matt', substituteId: 'CONTENT-SUB-01', substituteEvidence: 'docs/content/substitutes/content-sub-01.md',
+    approval: { approvedBy: 'Erik Miller', approvedOn: '2026-10-02', evidence: 'docs/content/approvals/fixture.md' },
+  };
+  mkdirSync(resolve(root, 'docs/content/approvals'), { recursive: true });
+  writeFileSync(resolve(root, record.permissionEvidence), 'VERIFICATION ONLY. Synthetic test permission. Not permission to publish Miller work.');
+  const approval = { recordId: record.id, imageSha256: record.image.sha256, copySha256: contentCopyHash(record), approvedBy: record.approval.approvedBy, approvedOn: record.approval.approvedOn, verificationOnly: true };
+  writeFileSync(resolve(root, record.approval.evidence), `# VERIFICATION ONLY\n\n\`\`\`content-approval\n${JSON.stringify(approval)}\n\`\`\`\n`);
+  const substitute = { id: record.substituteId, status: 'Closed', owner: record.owner, unblockCondition: 'Synthetic fixture verification only' };
+  writeFileSync(resolve(root, record.substituteEvidence), `# VERIFICATION ONLY\n\n${record.approval.evidence}\n${record.image.sha256}\n${contentCopyHash(record)}\n\n\`\`\`content-substitute\n${JSON.stringify(substitute)}\n\`\`\`\n`);
+  writeFileSync(resolve(root, 'apps/web/src/content/projects/representative.json'), JSON.stringify(record, null, 2));
+  writeFileSync(resolve(root, 'PLACEHOLDERS.md'), readFileSync(resolve(root, 'PLACEHOLDERS.md'), 'utf8').replace(/\| Open \|/g, '| Closed |'));
+}
+
+export async function fixtureProjectArtifacts(fixture) {
+  const { readProjectContent } = await import(pathToFileURL(resolve(fixture.root, 'scripts/project-content.mjs')).href);
+  const { prepareProjectArtifacts } = await import(pathToFileURL(resolve(fixture.root, 'scripts/project-artifact.mjs')).href);
+  return prepareProjectArtifacts(fixture.root, await readProjectContent(fixture.root, { SITE_BUILD: 'production' }));
 }
 
 export function buildBrandFixture(fixture) {

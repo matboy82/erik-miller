@@ -1,0 +1,27 @@
+{
+  "id": "representative",
+  "title": "Planning a kitchen around everyday life.",
+  "paragraphs": [
+    "This longer illustrative writeup rehearses replacing a wide photo with a portrait image through a content record. The picture is licensed stock, the text is a Draft example, and neither represents a completed Miller Remodeling project.",
+    "Planning a kitchen can start with the everyday movements through the room. Where groceries land, where meals are prepared, and how people pass through the space all help shape the layout. Storage, countertop space, lighting, and appliance clearances can then be considered together rather than as separate purchases.",
+    "An illustrative design review might compare cabinet arrangements, look at samples in the available light, and review how the island relates to neighboring rooms. These are possible topics for a future project story, not claims about the pictured home or a promised Miller result.",
+    "When approved Miller material is available, this record can describe the real project in plain language. The replacement must carry photo permission, accurate alt text, and Erik’s approval of the exact photo and writeup. Until then, the development labels and Open placeholder remain visible."
+  ],
+  "image": {
+    "path": "apps/web/src/assets/projects/stock-kitchen-10827396.jpg",
+    "alt": "Stock example: portrait crop of white kitchen cabinets, stone countertops, and a stainless gas range.",
+    "width": 960,
+    "height": 1280,
+    "sha256": "5f56dda31d15e4eab84289e5a003291e8941abf833d7dd88510ad138b28a0a05"
+  },
+  "origin": "stock",
+  "status": "draft",
+  "source": "https://www.pexels.com/photo/modern-kitchen-interior-design-10827396/",
+  "creator": "Curtis Adams",
+  "permission": "Pexels license",
+  "permissionEvidence": "docs/content/pexels-permission.md",
+  "owner": "Erik/Matt",
+  "substituteId": "CONTENT-SUB-02",
+  "substituteEvidence": "docs/content/substitutes/content-sub-02.md",
+  "credit": "Development photo: Curtis Adams / Pexels."
+}

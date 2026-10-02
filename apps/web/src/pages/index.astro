@@ -1,5 +1,6 @@
 ---
 import DesignReview from '../components/DesignReview.astro';
+import ProjectPreview from '../components/ProjectPreview.astro';
 import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
 
@@ -31,6 +32,7 @@ const { review, direction, content } = brand;
         <p class="draft">DRAFT · {review ? 'Erik’s final direction, tagline, and logo are pending. ' : ''}Factual claims need verification; project photography and final copy are pending.</p>
         <a class="button" href="tel:+12086084439">Call about your project · 208.608.4439</a>
       </section>
+      <ProjectPreview />
       <section class="process" aria-labelledby="process-title">
         <h2 id="process-title" data-copy="process">{content.process}</h2>
         <ol><li>Consult</li><li>Design</li><li>Selections</li><li>Build</li><li>Walkthrough</li></ol>
