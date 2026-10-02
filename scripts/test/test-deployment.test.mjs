@@ -8,9 +8,9 @@ import { planDeployment, verifyReviewArtifact, verifyLiveSite, verifyLiveWorker,
 
 const sha = 'a'.repeat(40);
 const base = { ENABLE_TEST_DEPLOYS: 'true', VERIFY_RESULT: 'success', GITHUB_EVENT_NAME: 'push',
-  GITHUB_REF: 'refs/heads/main', GITHUB_SHA: sha, GITHUB_REPOSITORY: 'bis/miller', PAGES_PROJECT: 'miller-remodeling-test' };
+  GITHUB_REF: 'refs/heads/main', GITHUB_SHA: sha, GITHUB_REPOSITORY: 'bis/miller', PAGES_PROJECT: 'erik-miller' };
 test('F2 main and same-repository PR have isolated deployment plans', () => {
-  assert.deepEqual(planDeployment(base, {}), { branch: 'main', worker: true, project: 'miller-remodeling-test', sha });
+  assert.deepEqual(planDeployment(base, {}), { branch: 'main', worker: true, project: 'erik-miller', sha });
   const pr = { number: 12, pull_request: { head: { repo: { full_name: 'bis/miller' } }, base: { repo: { full_name: 'bis/miller' } } } };
   assert.equal(planDeployment({ ...base, GITHUB_EVENT_NAME: 'pull_request', GITHUB_REF: 'refs/pull/12/merge' }, pr).branch, 'pr-12');
   assert.equal(planDeployment({ ...base, GITHUB_EVENT_NAME: 'pull_request', GITHUB_REF: 'refs/pull/12/merge' }, pr).worker, false);
@@ -56,16 +56,16 @@ const siteResponse = (url) => url.endsWith('/robots.txt')
   ? new Response('User-agent: *\nDisallow: /\n', { headers: { 'x-robots-tag': 'noindex, nofollow' } })
   : new Response('<html><meta name="robots" content="noindex, nofollow"></html>', { headers: { 'x-robots-tag': 'noindex, nofollow' } });
 test('F3 live site requires HTTPS test hostname, successful page/robots and all noindex boundaries', async () => {
-  await verifyLiveSite('https://abc.miller-remodeling-test.pages.dev', 'miller-remodeling-test', async (url) => siteResponse(url));
-  for (const url of ['https://miller.example.com', 'http://miller-remodeling-test.pages.dev', 'https://other.pages.dev']) {
-    await assert.rejects(verifyLiveSite(url, 'miller-remodeling-test', async () => siteResponse('page')));
+  await verifyLiveSite('https://abc.erik-miller.pages.dev', 'erik-miller', async (url) => siteResponse(url));
+  for (const url of ['https://miller.example.com', 'http://erik-miller.pages.dev', 'https://other.pages.dev']) {
+    await assert.rejects(verifyLiveSite(url, 'erik-miller', async () => siteResponse('page')));
   }
   for (const response of [
     new Response('unavailable', { status: 503 }),
     new Response('<meta name="robots" content="noindex">'),
     new Response('<html>indexable</html>', { headers: { 'x-robots-tag': 'noindex' } }),
-  ]) await assert.rejects(verifyLiveSite('https://miller-remodeling-test.pages.dev', 'miller-remodeling-test', async () => response.clone()));
-  await assert.rejects(verifyLiveSite('https://miller-remodeling-test.pages.dev', 'miller-remodeling-test', async (url) => url.endsWith('robots.txt') ? new Response('User-agent: *\nAllow: /') : siteResponse(url)));
+  ]) await assert.rejects(verifyLiveSite('https://erik-miller.pages.dev', 'erik-miller', async () => response.clone()));
+  await assert.rejects(verifyLiveSite('https://erik-miller.pages.dev', 'erik-miller', async (url) => url.endsWith('robots.txt') ? new Response('User-agent: *\nAllow: /') : siteResponse(url)));
 });
 test('F3 live health requires test Worker, scaffold payload, and no-store', async () => {
   const good = () => Response.json({ status: 'ok', service: 'miller-remodeling-intake', stage: 'scaffold' }, { headers: { 'cache-control': 'no-store' } });

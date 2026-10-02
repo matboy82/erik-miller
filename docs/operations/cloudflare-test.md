@@ -3,9 +3,9 @@
 Prepared for Matt/BIS; no remote account/repository/deployment was created during bootstrap.
 
 1. Confirm BIS GitHub org/repo and Cloudflare account. Keep DNS at Porkbun.
-2. Create a Direct Upload Pages project `miller-remodeling-test`, primary branch `main`. The Pages production-branch term refers only to this isolated test project. Do not attach the business domain or mix Git integration with the CI upload path.
+2. Create a Direct Upload Pages project `erik-miller`, primary branch `main`. The Pages production-branch term refers only to this isolated test project. Do not attach the business domain or mix Git integration with the CI upload path.
 3. Create a GitHub `test` environment with secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Restrict token permissions to required Pages/Worker deployment in the BIS account.
-4. Set repository variable `CLOUDFLARE_PAGES_PROJECT=miller-remodeling-test`. Set `ENABLE_TEST_DEPLOYS=true` only after authorization. Otherwise deployment remains off.
+4. Set repository variable `CLOUDFLARE_PAGES_PROJECT=erik-miller`. Set `ENABLE_TEST_DEPLOYS=true` only after authorization. Otherwise deployment remains off.
 5. Authorize push. CI verifies before uploading `apps/web/dist` and deploying the test Worker. Same-repository PRs get Pages previews; forks get checks without secrets.
 6. Capture returned URLs, 200 `/health`, draft A/B/C behavior, mobile layout, and PR preview evidence. Only then close infrastructure placeholders. Adding a test custom domain requires a separate DNS instruction.
 
@@ -41,7 +41,7 @@ Cloudflare and GitHub accounts exist, and Matt has the JobTread API key (confirm
 |---|---|---|
 | `CLOUDFLARE_API_TOKEN` | GitHub repository → Settings → Environments → `test` → Environment secrets | Custom Cloudflare token scoped to the BIS account, with Cloudflare Pages Edit and Workers Scripts Edit for the current deployment workflow |
 | `CLOUDFLARE_ACCOUNT_ID` | Same GitHub `test` environment, as a secret to match existing CI | Account ID from the intended Cloudflare account; this is an identifier, not an API key |
-| `CLOUDFLARE_PAGES_PROJECT` | GitHub repository → Settings → Secrets and variables → Actions → Variables | `miller-remodeling-test`, matching the Direct Upload Pages project |
+| `CLOUDFLARE_PAGES_PROJECT` | GitHub repository → Settings → Secrets and variables → Actions → Variables | `erik-miller`, matching the Direct Upload Pages project |
 | `ENABLE_TEST_DEPLOYS` | Same repository Variables | Keep `false` until test deployment is authorized; `true` enables the existing workflow |
 | JobTread API key | Future intake Worker's runtime secret, never the static Pages build | Keep it with Matt until the WS-2 contract names its binding and the intended JobTread test data boundary is approved |
 

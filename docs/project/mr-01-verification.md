@@ -68,6 +68,29 @@ P1's local DoD is proven by the strict command tests, restored equality sensitiv
 
 Implementation changes are `.github/workflows/ci.yml`, root Lighthouse npm wiring/config, new `scripts/check-lighthouse.mjs` and `scripts/test-deployment.mjs` with their Node tests, README, the setup guide, bootstrap current-state note, and this evidence file. Pre-existing planning/source changes remain separate. The web page, Worker source/config, dependency versions/lockfile, and placeholder statuses were not changed. Source inspection found the web's existing build-mode/direction inputs and review preference storage; no new client credential or lead-data path was added. No temporary mutations, focused/skipped tests, or debug bypasses remain.
 
+## Remote CI observation — 2026-10-01
+
+Matt committed/pushed candidate `e1fa1a63af126567301d97cdae53348995334d69`. The GitHub connector read [Verify run 3](https://github.com/matboy82/erik-miller/actions/runs/36941259759), its job results, verification logs, and the workflow at that exact revision. This supplements the preceding local baseline; it does not imply that the assistant committed or pushed.
+
+The event was `push`, branch `main`. Job `verify` (110633025301) completed successfully; job `test-deploy` (110633390682) was `skipped`, with no steps executed. Selected actual verification output:
+
+```text
+Validated 29 Codex skills and their Markdown references.
+ℹ tests 15
+ℹ pass 15
+ℹ fail 0
+Production isolation passed for direction A.
+Production isolation passed for direction B.
+Production isolation passed for direction C.
+Strict mobile gate passed: 3 reports, optimistic LCP 1062.4222 ms < 2500 ms.
+```
+
+The pinned workflow requires successful verification, `vars.ENABLE_TEST_DEPLOYS == 'true'`, and a main push or eligible same-repository PR. Successful verification and the main-push condition are established by the run. Therefore the enable-variable condition did not evaluate true. This is an inference from the complete job predicate; the connector cannot inspect the stored repository/environment variable values. An unset/disabled variable or one stored only at environment level fits the observation. GitHub's [variable reference](https://docs.github.com/en/actions/reference/workflows-and-actions/variables), read 2026-10-01, states that environment variables are available only after the job starts and cannot supply the earlier job condition.
+
+Check the repository's **Settings → Secrets and variables → Actions → Variables**: `ENABLE_TEST_DEPLOYS` belongs at repository scope with value `true` when test publication is authorized. Keep `CLOUDFLARE_PAGES_PROJECT` there too; Cloudflare secret values belong in environment `test`. After confirming the intended test project/account and credentials, Matt can rerun all jobs to evaluate the corrected flag. No remote settings were changed and no rerun was triggered during diagnosis. Missing deployment credentials would fail a running job; they do not explain this skipped job.
+
+Remote verification is now observed for the committed candidate. Publication, live URLs/health/noindex, enabled main/PR/fork/failure matrix branches, environment/protection configuration, and placeholder closure remain incomplete.
+
 ## Next gate
 
 Origin identifies `matboy82/erik-miller`; confirm that it is the intended repository under the approved BIS boundary. GitHub CLI is unavailable here, and no authenticated remote configuration read was performed. Confirm the Cloudflare account/test project, GitHub `test` environment, restricted secret/variable setup, and protection settings through the [setup guide](../operations/cloudflare-test.md). Secret values stay in the secret store. Explicit commit/push, configuration/deployment, and deliberate F2 failure/fork-test authorization are still needed before the respective actions; alternatively Matt can commit/push the reviewed snapshot himself.
