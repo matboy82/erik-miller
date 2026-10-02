@@ -23,3 +23,11 @@ See `docs/project/bootstrap-verification.md` for actual check results. Local che
 The [accepted source frontend ADR](../architecture/decisions/ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md) is now supplied. Matt approved the [MR-01 contract](../specs/website-lead-qualification/mr-01.spec.md), [0001 reconciliation](../architecture/decisions/0001-bootstrap-foundation.md), and [0002 test deployment decision](../architecture/decisions/0002-test-deployment-isolation.md). Earlier missing-source statements describe the original bootstrap baseline.
 
 The Lighthouse command keeps three mobile runs and explicit optimistic aggregation, with a strict report gate rejecting LCP equality at 2,500ms. Stack/dependency pins and the health contract remain unchanged. The test Worker does not select production intake hosting. See [MR-01 evidence](mr-01-verification.md) for local results and outstanding remote proof; this dated update does not mark WS-0 complete.
+
+## MR-02 current state - 2026-10-01
+
+Matt approved the [MR-02 spec](../specs/website-lead-qualification/mr-02.spec.md), [complete package manifest](../specs/website-lead-qualification/mr-02.work-packages.md), and [ADR 0003](../architecture/decisions/0003-brand-selection-and-build-isolation.md). Local comparison now separates visual direction, hero/process copy, and stable tagline choices. Controls remain Draft and preserve recognized preferences; the toolbar is in document flow.
+
+Production entry points validate a versioned lock against the exact choice and linked Erik sign-off in an Accepted brand-choice ADR, then verify the complete output tree. Disposable synthetic builds test A/B/C and independent copy/tagline selection without changing real approval. Fonts are selected inline self-hosted WOFF2 assets. No real brand lock, choice ADR, final logo, deployment, or placeholder closure is created.
+
+The [brand-review runbook](../operations/brand-review.md) documents controls, recording a later real choice, and the all-direction mobile command. [MR-02 evidence](mr-02-verification.md) separates measured local results from missing manual/remote/review evidence. Earlier inventory describes the original bootstrap; this update does not mark WS-0 or MR-02 complete.

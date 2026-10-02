@@ -1,6 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { resolveBuild } from './brand-build.mjs';
 
 export function run(command, args, options = {}) {
   const result = spawnSync(command, args, { stdio: 'inherit', ...options });
@@ -8,24 +9,23 @@ export function run(command, args, options = {}) {
   if (result.status !== 0) throw new Error(`${command} failed with status ${result.status}`);
 }
 
-export function buildWeb(mode, direction) {
-  run(process.execPath, [resolve('node_modules/astro/bin/astro.mjs'), 'build'], {
-    cwd: 'apps/web',
-    env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1', SITE_BUILD: mode, BRAND_DIRECTION: direction ?? 'A' },
-  });
+export function buildWeb(mode) {
+  const root = resolve(import.meta.dirname, '..');
+  const env = { ...process.env, ASTRO_TELEMETRY_DISABLED: '1', SITE_BUILD: mode };
+  try {
+    resolveBuild(root, env);
+    run(process.execPath, [resolve(import.meta.dirname, '../node_modules/astro/bin/astro.mjs'), 'build'], {
+      cwd: resolve(root, 'apps/web'), env,
+    });
+  } catch (error) {
+    rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true });
+    throw error;
+  }
 }
 
 if (process.argv[1]?.endsWith('build.mjs')) {
   const mode = process.argv[2] ?? 'review';
   if (!['review', 'production'].includes(mode)) throw new Error(`Unknown build mode: ${mode}`);
-  let direction;
-  if (mode === 'production') {
-    const lock = JSON.parse(readFileSync('docs/brand/brand-lock.json', 'utf8'));
-    if (!['A', 'B', 'C'].includes(lock.direction) || !lock.approvedBy || !lock.approvedOn || !lock.adr) {
-      throw new Error('Production requires an approved direction, approver, date, and ADR in docs/brand/brand-lock.json.');
-    }
-    direction = lock.direction;
-  }
-  buildWeb(mode, direction);
+  buildWeb(mode);
   run(process.execPath, ['../../node_modules/wrangler/bin/wrangler.js', 'deploy', '--dry-run', '--outdir', 'dist'], { cwd: 'apps/worker', env: { ...process.env, WRANGLER_SEND_METRICS: 'false', WRANGLER_LOG_PATH: resolve('.wrangler/logs') } });
 }

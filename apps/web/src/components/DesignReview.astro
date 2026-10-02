@@ -1,30 +1,34 @@
 ---
-import { copy, taglines } from '../content/brand';
+import { copy, taglines, reviewInitialDirection } from '../content/brand';
 import reviewScript from '../scripts/design-review.js?raw';
+const directions = { A: 'Heritage Craftsman', B: 'Modern Design-Build Studio', C: 'Quiet Luxury' };
 ---
 <aside class="review-toolbar" aria-label="Design review controls" data-design-review>
   <strong>DESIGN REVIEW · DRAFT</strong>
-  <label>Direction
-    <select id="review-theme">
-      <option value="A">A · Heritage Craftsman</option>
-      <option value="B">B · Modern Studio</option>
-      <option value="C">C · Quiet Luxury</option>
-    </select>
-  </label>
-  <label>Tagline
-    <select id="review-tagline">
-      <option value="default">Direction default</option>
-      {taglines.map((tagline) => <option value={tagline}>{tagline}</option>)}
-    </select>
-  </label>
-  <span role="status" id="review-status" class="draft">Direction A · Draft copy</span>
+  <p>Compare proposed words and styles. Erik’s final brand choice and factual claims are pending.</p>
+  <label for="review-theme">Visual direction</label>
+  <select id="review-theme">
+    {Object.entries(directions).map(([id, label]) => <option value={id} selected={id === reviewInitialDirection}>{id} · {label}</option>)}
+  </select>
+  <label for="review-copy-direction">Hero and process copy</label>
+  <select id="review-copy-direction">
+    {Object.entries(directions).map(([id, label]) => <option value={id} selected={id === reviewInitialDirection}>{id} · {label}</option>)}
+  </select>
+  <label for="review-tagline">Tagline</label>
+  <select id="review-tagline">
+    <option value="default">Copy direction default</option>
+    {Object.entries(taglines).map(([id, text]) => <option value={id}>{text}</option>)}
+  </select>
+  <span role="status" aria-live="polite" aria-atomic="true" id="review-status">Direction {reviewInitialDirection} · Copy {reviewInitialDirection} · Draft</span>
+  <noscript>JavaScript is required to switch these draft previews. The starting direction remains readable.</noscript>
 </aside>
-<script is:inline type="application/json" id="review-copy" set:html={JSON.stringify(copy)} />
+<script is:inline type="application/json" id="review-copy" set:html={JSON.stringify({ copy, taglines }).replaceAll('<', '\u003c')} />
 <script is:inline set:html={reviewScript} />
-
 <style is:inline>
-.review-toolbar { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 800px; margin: auto; padding: 16px 24px; background: #1B2420; color: #fff; border: 2px solid #fff; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; z-index: 10; box-shadow: 0 4px 24px #0003; }
-.review-toolbar select { padding: 8px; min-height: 44px; background: #fff; color: #1B2420; border-radius: 4px; }
-.review-toolbar label { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 180px; }
-.review-toolbar select { width: 100%; min-width: 0; max-width: 100%; }
+.review-toolbar { margin: 24px auto; max-width: 1072px; padding: 24px; background: #1B2420; color: #fff; border: 2px solid #fff; border-radius: 6px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.review-toolbar p { margin: 0 0 8px; }
+.review-toolbar select { width: 100%; min-width: 0; max-width: 100%; padding: 8px; min-height: 44px; background: #fff; color: #1B2420; border-radius: 4px; }
+.review-toolbar :focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.review-toolbar strong, .review-toolbar p, .review-toolbar [role="status"], .review-toolbar noscript { grid-column: 1 / -1; }
+@media (min-width: 800px) { .review-toolbar { grid-template-columns: 180px minmax(0, 1fr); } }
 </style>

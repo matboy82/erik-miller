@@ -6,7 +6,7 @@ The [accepted 0002 amendment](../architecture/decisions/0002-test-deployment-iso
 
 ## 1. Push the repository changes
 
-Commit and push the reviewed changes to main when authorized. Cloudflare builds the pushed revision, so local changes alone do not affect it. The new build:web and build:worker scripts target each workspace. The root .node-version selects Node 24; set NODE_VERSION=24 in Cloudflare if an existing override selects an older version.
+Commit and push the reviewed changes to main when authorized. Cloudflare builds the pushed revision, so local changes alone do not affect it. The new build:web and build:worker scripts target each workspace. The root .node-version selects Node 24.15.0 (the minimum Node 24 release supported by pinned npm 12.1.0); set NODE_VERSION=24.15.0 in Cloudflare if an existing override selects an older version.
 
 ## 2. Connect the website as a Pages project
 
@@ -22,7 +22,7 @@ A Worker project is a separate resource and cannot act as the Pages destination.
 | Root directory | Leave blank: repository root |
 | Build command | npm ci && npm run build:web |
 | Build output directory | apps/web/dist |
-| Build environment | NODE_VERSION=24 and SITE_BUILD=review, for persistent and preview builds |
+| Build environment | NODE_VERSION=24.15.0 and SITE_BUILD=review, for persistent and preview builds |
 
 Save and deploy. Pages handles publication; there is no Wrangler deploy command to enter here. Restrict preview deployments to trusted branches under branch deployment controls. Initially use main only if previews are not needed.
 
@@ -39,7 +39,7 @@ Open the existing erik-miller Worker, then Settings > Build. Connect the same Gi
 | Root directory | Leave blank: repository root |
 | Build command | npm ci && npm run build:worker |
 | Deploy command | npx --no-install wrangler deploy --config apps/worker/wrangler.jsonc |
-| Build environment | NODE_VERSION=24 |
+| Build environment | NODE_VERSION=24.15.0 |
 | Non-production branch builds | Disabled |
 
 The explicit --config selects the Worker without running framework detection at the workspace root. Keeping installation at the repository root uses the shared pinned lockfile. The build command is a dry run; the deploy command publishes the Worker. Both commands are needed.

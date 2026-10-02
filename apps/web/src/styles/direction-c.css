@@ -6,7 +6,12 @@
   --brand-cream: #EAE3D5;
   --color-text: var(--brand-espresso);
   --color-paper: var(--brand-linen);
-  --color-accent: var(--brand-bronze);
+  --color-accent: var(--brand-espresso);
   --color-surface: var(--brand-cream);
   --font-display: 'Newsreader', Georgia, serif;
+  --color-rule: var(--brand-bronze);
+  --color-decoration: var(--brand-fog);
+  --heading-tracking: -.015em;
+  --kicker-transform: uppercase;
+  --kicker-tracking: .14em;
 }

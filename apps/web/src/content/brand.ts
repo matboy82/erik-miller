@@ -19,8 +19,13 @@ export const copy = {
   },
 } as const;
 
-export const taglines = [
-  'Designed first. Built right.', 'See it before we build it.',
-  '25 years. One process. Zero surprises.', 'Kitchens and baths, designed around your life.',
-  'The remodel starts on paper — not in your kitchen.', 'A calmer way to remodel.',
-];
+export const taglines = {
+  'designed-first': 'Designed first. Built right.',
+  'see-it': 'See it before we build it.',
+  'one-process': '25 years. One process. Zero surprises.',
+  'your-life': 'Kitchens and baths, designed around your life.',
+  'paper-first': 'The remodel starts on paper — not in your kitchen.',
+  calmer: 'A calmer way to remodel.',
+} as const;
+
+export const reviewInitialDirection = 'A';

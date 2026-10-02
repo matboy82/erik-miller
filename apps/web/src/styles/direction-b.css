@@ -6,7 +6,12 @@
   --brand-line: #E4DFD4;
   --color-text: var(--brand-graphite);
   --color-paper: var(--brand-paper);
-  --color-accent: var(--brand-steel);
+  --color-accent: var(--brand-graphite);
   --color-surface: var(--brand-line);
   --font-display: 'Archivo', Arial, sans-serif;
+  --color-rule: var(--brand-amber);
+  --color-decoration: var(--brand-steel);
+  --heading-tracking: -.035em;
+  --kicker-transform: uppercase;
+  --kicker-tracking: .08em;
 }

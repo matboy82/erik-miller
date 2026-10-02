@@ -18,7 +18,7 @@ npm run check
 npm run lighthouse
 ```
 
-`check` validates skills, lints, typechecks, tests, builds both workspaces, and verifies review-control/token isolation for all three production directions. Lighthouse requires Chrome.
+`check` validates skills, lints, typechecks, tests, builds both workspaces, and verifies complete production brand isolation for A/B/C and a mixed copy/tagline selection. Lighthouse requires Chrome. The review toolbar lets you select visual direction, hero/process copy, and tagline independently. See [brand review and approval](docs/operations/brand-review.md).
 
 `lighthouse` measures the review home page three times with mobile settings, retains individual reports under `.lighthouseci`, and enforces scores ≥90 and optimistic LCP strictly below 2,500ms. Equality fails. See the [accepted frontend ADR](docs/architecture/decisions/ADR-2026-10-01-Miller-Remodeling-Frontend-Stack.md), [bootstrap reconciliation](docs/architecture/decisions/0001-bootstrap-foundation.md), and [test deployment decision](docs/architecture/decisions/0002-test-deployment-isolation.md). Cloudflare Git integration publishes the web and Worker apps separately; GitHub Actions runs verification only. See the [Cloudflare setup steps](docs/operations/cloudflare-test.md). The health Worker proves test infrastructure; production intake hosting remains a WS-2 decision.
 
@@ -39,4 +39,4 @@ Read [AGENTS.md](AGENTS.md) and [the workflow guide](docs/how-to/codex-workflow.
 
 ## Production
 
-`npm run build` produces the draft review build. `npm run build:production` requires `docs/brand/brand-lock.json` containing `direction` (`A`, `B`, or `C`), `approvedBy`, `approvedOn`, and `adr`, recorded after Erik's approval. Bootstrap creates no brand lock. A build is not release authorization: resolve placeholders and finish SDD/stakeholder/release gates first. Even verification builds remain noindex.
+`npm run build` produces the draft review build. `npm run build:production` requires a version-1 `docs/brand/brand-lock.json` with visual/copy directions, tagline ID, Erik's approval identity/date, and a matching Accepted brand-choice ADR with linked sign-off evidence. No real lock is created by bootstrap or MR-02. See the [schema and commands](docs/operations/brand-review.md). `node scripts/check-brand-lighthouse.mjs` measures each review direction using disposable source fixtures and retains separate reports. A build is not release authorization: resolve placeholders and finish SDD/stakeholder/release gates first. Even verification builds remain noindex.

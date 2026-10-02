@@ -1,37 +1,20 @@
 ---
 import DesignReview from '../components/DesignReview.astro';
-import { copy } from '../content/brand';
-import tokensA from '../styles/tokens.css?inline';
-import tokensB from '../styles/direction-b.css?inline';
-import tokensC from '../styles/direction-c.css?inline';
-import inter from '@fontsource/inter/latin-400.css?inline';
-import fraunces from '@fontsource/fraunces/latin-400.css?inline';
-import archivo from '@fontsource/archivo/latin-400.css?inline';
-import newsreader from '@fontsource/newsreader/latin-400.css?inline';
+import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
 
-const mode = process.env.SITE_BUILD ?? 'review';
-const review = mode === 'review';
-const selected = process.env.BRAND_DIRECTION ?? 'A';
-if (!['A', 'B', 'C'].includes(selected)) throw new Error('Unknown brand direction.');
-const direction = selected as keyof typeof copy;
-const content = copy[direction];
-const tokens = { A: tokensA, B: tokensB, C: tokensC };
-const fonts = { A: fraunces, B: archivo, C: newsreader };
-const css = review
-  ? tokensA + tokensB.replace(':root', ':root[data-theme="B"]') + tokensC.replace(':root', ':root[data-theme="C"]')
-  : tokens[direction];
-const fontCss = inter + (review ? fraunces + archivo + newsreader : fonts[direction]);
+const { review, direction, content } = brand;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={review ? direction : undefined}>
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" href="data:," />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="Draft design review for Miller Remodeling in the Treasure Valley." />
-    <title>Miller Remodeling · Design review</title>
-    <style is:inline set:html={css + fontCss} />
+    <meta name="description" content={review ? 'Draft design review for Miller Remodeling in the Treasure Valley.' : 'Draft Miller Remodeling content in the Treasure Valley.'} />
+    <title>Miller Remodeling · {review ? 'Design review' : 'Draft content'}</title>
+    <style is:inline set:html={css} />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
@@ -39,12 +22,13 @@ const fontCss = inter + (review ? fraunces + archivo + newsreader : fonts[direct
       <a href="/" class="wordmark">Miller Remodeling</a>
       <span class="draft">DRAFT · Treasure Valley, Idaho</span>
     </header>
+    {review && <DesignReview />}
     <main id="main">
       <section class="hero" aria-labelledby="hero-title">
         <p class="eyebrow" data-copy="tagline">{content.tagline}</p>
         <h1 id="hero-title" data-copy="headline">{content.headline}</h1>
         <p data-copy="description">{content.description}</p>
-        <p class="draft">Draft direction for Erik’s review. Project photography and final copy are pending.</p>
+        <p class="draft">DRAFT · {review ? 'Erik’s final direction, tagline, and logo are pending. ' : ''}Factual claims need verification; project photography and final copy are pending.</p>
         <a class="button" href="tel:+12086084439">Call about your project · 208.608.4439</a>
       </section>
       <section class="process" aria-labelledby="process-title">
@@ -58,6 +42,5 @@ const fontCss = inter + (review ? fraunces + archivo + newsreader : fonts[direct
       </section>
     </main>
     <footer>Miller Remodeling LLC · Draft project preview · Photography, portfolio, and lead intake will follow their approved work packages.</footer>
-    {review && <DesignReview />}
   </body>
 </html>
