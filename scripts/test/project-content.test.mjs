@@ -72,6 +72,13 @@ test('C3 complete built artifacts reject unused stock, altered media, hidden cop
     const selection = { projectArtifacts: await fixtureProjectArtifacts(fixture) };
     const inventory = verifyProduction(output, 'A', selection);
     assert.equal(inventory.filter((entry) => entry.path.endsWith('.webp')).length, 4);
+    const sitemapFile = resolve(output, 'sitemap.xml');
+    const sitemap = readFileSync(sitemapFile, 'utf8');
+    assert.match(sitemap, /https:\/\/miller-fixture\.invalid\/portfolio\//);
+    assert.match(readFileSync(resolve(output, 'llms.txt'), 'utf8'), /https:\/\/miller-fixture\.invalid\//);
+    writeFileSync(sitemapFile, sitemap.replace('</urlset>', '<!-- Development stock photo -->\n</urlset>'));
+    assert.throws(() => verifyProduction(output, 'A', selection), /development/i);
+    writeFileSync(sitemapFile, sitemap);
     const htmlFile = resolve(output, 'index.html');
     const html = readFileSync(htmlFile, 'utf8');
     const draftParagraph = JSON.parse(readFileSync('docs/content/rehearsal.json', 'utf8')).paragraphs[1];
@@ -92,6 +99,10 @@ test('C3 complete built artifacts reject unused stock, altered media, hidden cop
     writeFileSync(unexpected, '{"unrelated":"payload"}');
     assert.throws(() => verifyProduction(output, 'A', selection), /Unexpected/);
     rmSync(unexpected);
+    const unexpectedXml = resolve(output, 'unused.xml');
+    writeFileSync(unexpectedXml, '<unrelated>payload</unrelated>');
+    assert.throws(() => verifyProduction(output, 'A', selection), /Unexpected/);
+    rmSync(unexpectedXml);
     const media = resolve(output, inventory.find((entry) => entry.path.endsWith('.webp')).path);
     const original = readFileSync(media);
     writeFileSync(media, Buffer.concat([original, Buffer.from('unauthorized')]));

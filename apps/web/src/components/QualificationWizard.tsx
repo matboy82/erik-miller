@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import { emailError, phoneError, formatPhone } from '../lib/contact-input';
 
 type SelectionKey = 'projectType' | 'location' | 'timeline' | 'budget' | 'experience' | 'referralSource';
 type SelectionValues = Record<SelectionKey, string>;
@@ -54,12 +55,27 @@ export default function QualificationWizard() {
   const [step, setStep] = useState(0);
   const [ready, setReady] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [contactTouched, setContactTouched] = useState({ name: false, email: false, phone: false });
   const [outcome, setOutcome] = useState<'qualified-example' | 'alternate-example' | ''>('');
   const [bookingLoaded, setBookingLoaded] = useState(false);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const progress = useMemo(() => `${Math.round(((step + 1) / steps.length) * 100)}%`, [step]);
   const formRef = useRef<HTMLFormElement>(null);
   const previousStep = useRef(step);
+  const contactErrors = {
+    name: values.name.trim() ? '' : 'Enter your name.',
+    email: emailError(values.email),
+    phone: phoneError(values.phone),
+  };
+  const contactChoiceError = Boolean(values.email.trim()) === Boolean(values.phone.trim())
+    ? 'Enter either an email address or a phone number.' : '';
+  const showContactChoiceError = contactTouched.email && contactTouched.phone && Boolean(contactChoiceError);
+
+  function touchContact(key: 'name' | 'email' | 'phone') {
+    setContactTouched((current) => ({ ...current, [key]: true }));
+    if (key === 'email') update('email', values.email.trim());
+    if (key === 'phone') update('phone', formatPhone(values.phone));
+  }
 
   useEffect(() => {
     if (previousStep.current !== step) {
@@ -112,9 +128,10 @@ export default function QualificationWizard() {
     }
     if (step === 4) {
       const issues: string[] = [];
-      if (!values.name.trim()) issues.push('Add a sample name to continue.');
-      if (Boolean(values.email.trim()) === Boolean(values.phone.trim())) issues.push('Enter exactly one sample email address or phone number.');
-      if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) issues.push('Enter a valid sample email address.');
+      if (contactErrors.name) issues.push(contactErrors.name);
+      if (contactChoiceError) issues.push(contactChoiceError);
+      if (contactErrors.email) issues.push(contactErrors.email);
+      if (contactErrors.phone) issues.push(contactErrors.phone);
       return issues;
     }
     return [];
@@ -122,6 +139,7 @@ export default function QualificationWizard() {
 
   function advance(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (step === 4) setContactTouched({ name: true, email: true, phone: true });
     const issues = validateCurrentStep();
     if (issues.length) {
       setErrors(issues);
@@ -141,6 +159,7 @@ export default function QualificationWizard() {
     setOutcome('');
     setBookingLoaded(false);
     setPhotoInputKey((current) => current + 1);
+    setContactTouched({ name: false, email: false, phone: false });
   }
 
   function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
@@ -216,12 +235,25 @@ export default function QualificationWizard() {
           {selection('referralSource', 'How did you hear about Miller Remodeling?', referralOptions)}
         </fieldset>}
 
-        {step === 4 && <fieldset>
+        {step === 4 && <fieldset className="wizard-contact-fields">
           <legend tabIndex={-1}>How can we reach you?</legend>
-          <label className="wizard-field" htmlFor="qualification-name"><span>Name <span className="wizard-pending">Use a sample</span></span><input id="qualification-name" autoComplete="off" value={values.name} onChange={(event) => update('name', event.currentTarget.value)} /></label>
-          <label className="wizard-field" htmlFor="qualification-email"><span>Email</span><input id="qualification-email" type="email" autoComplete="off" value={values.email} onChange={(event) => update('email', event.currentTarget.value)} /></label>
-          <p className="wizard-or">Or</p>
-          <label className="wizard-field" htmlFor="qualification-phone"><span>Phone</span><input id="qualification-phone" type="tel" autoComplete="off" value={values.phone} onChange={(event) => update('phone', event.currentTarget.value)} /></label>
+          <p id="qualification-contact-hint" className="wizard-contact-hint">Choose one way to reach you: email or phone.</p>
+          <div className="wizard-field">
+            <label htmlFor="qualification-name">Name <span className="wizard-pending">Use a sample</span></label>
+            <input id="qualification-name" autoComplete="off" value={values.name} onChange={(event) => update('name', event.currentTarget.value)} onBlur={() => touchContact('name')} aria-invalid={contactTouched.name && Boolean(contactErrors.name)} aria-describedby={contactTouched.name && contactErrors.name ? 'qualification-name-error' : undefined} />
+            {contactTouched.name && contactErrors.name && <span id="qualification-name-error" className="wizard-field-error" aria-live="polite">{contactErrors.name}</span>}
+          </div>
+          <div className="wizard-field">
+            <label htmlFor="qualification-email">Email</label>
+            <input id="qualification-email" type="email" inputMode="email" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="name@example.com" value={values.email} onChange={(event) => update('email', event.currentTarget.value)} onBlur={() => touchContact('email')} aria-invalid={(contactTouched.email && Boolean(contactErrors.email)) || showContactChoiceError} aria-describedby={`qualification-contact-hint${contactTouched.email && contactErrors.email ? ' qualification-email-error' : ''}${showContactChoiceError ? ' qualification-contact-error' : ''}`} />
+            {contactTouched.email && contactErrors.email && <span id="qualification-email-error" className="wizard-field-error" aria-live="polite">{contactErrors.email}</span>}
+          </div>
+          <div className="wizard-field">
+            <label htmlFor="qualification-phone">Phone</label>
+            <input id="qualification-phone" type="tel" inputMode="tel" autoComplete="off" placeholder="(208) 555-0123" value={values.phone} onChange={(event) => update('phone', formatPhone(event.currentTarget.value))} onBlur={() => touchContact('phone')} aria-invalid={(contactTouched.phone && Boolean(contactErrors.phone)) || showContactChoiceError} aria-describedby={`qualification-contact-hint${contactTouched.phone && contactErrors.phone ? ' qualification-phone-error' : ''}${showContactChoiceError ? ' qualification-contact-error' : ''}`} />
+            {contactTouched.phone && contactErrors.phone && <span id="qualification-phone-error" className="wizard-field-error" aria-live="polite">{contactErrors.phone}</span>}
+          </div>
+          {showContactChoiceError && <p id="qualification-contact-error" className="wizard-field-error" aria-live="polite">{contactChoiceError}</p>}
 
         </fieldset>}
 

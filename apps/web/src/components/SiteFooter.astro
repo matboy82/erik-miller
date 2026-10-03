@@ -1,8 +1,9 @@
 ---
+import BrandLogo from './BrandLogo.astro';
 const areas = ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton', 'Kuna'];
 ---
 <footer class="site-footer"><div class="section-wrap">
-  <div class="footer-top"><div class="footer-brand"><a class="wordmark" href="/"><span>Miller Remodeling</span><small>Treasure Valley, Idaho</small></a><p>Designed first. Built right.</p><p>License [ID #]<br />[Business hours]</p></div>
+  <div class="footer-top"><div class="footer-brand"><BrandLogo /><p>Designed first. Built right.</p><p>License [ID #]<br />[Business hours]</p></div>
   <div><h2>Let’s talk</h2><a href="tel:+12086084439">(208) 608-4439</a><p>[Business email]<br />[Business address]</p><a class="text-link" href="/contact/">Tell us about your project <span aria-hidden="true">↗</span></a></div>
   <div><h2>Explore</h2><ul><li><a href="/#services">Services</a></li><li><a href="/about-process/">Our process</a></li><li><a href="/portfolio/">Project stories</a></li><li><a href="/#reviews">Reviews</a></li><li><a href="/qualify/">Start your project</a></li></ul></div>
   <div><h2>Service areas</h2><ul>{areas.map((area) => <li><a href={`/service-areas/${area.toLowerCase()}/`}>{area}</a></li>)}</ul><p class="footer-small">[Service coverage]</p></div></div>

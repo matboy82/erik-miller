@@ -1,0 +1,8 @@
+---
+import { getCollection } from 'astro:content';
+import ProductionFixture from '../layouts/ProductionFixture.astro';
+const pages = await getCollection('pages');
+const home = pages.find((entry) => entry.id === 'home');
+if (!home) throw Error('Missing synthetic home page');
+---
+<ProductionFixture page={home.data} />

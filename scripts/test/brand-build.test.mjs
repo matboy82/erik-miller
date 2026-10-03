@@ -5,6 +5,7 @@ import test from 'node:test';
 import { resolveBuild } from '../brand-build.mjs';
 
 function fixture() {
+  mkdirSync(resolve('.tmp'), { recursive: true });
   const root = mkdtempSync(resolve('.tmp/brand-lock-test-'));
   mkdirSync(join(root, 'docs/brand'), { recursive: true });
   mkdirSync(join(root, 'docs/architecture/decisions'), { recursive: true });

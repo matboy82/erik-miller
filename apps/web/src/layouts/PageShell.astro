@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import SiteNavigation from '../components/SiteNavigation.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import BrandLogo from '../components/BrandLogo.astro';
 import { images, services } from '../content/design';
 import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
@@ -23,6 +24,8 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="description" content={qualification ? intro : page.description} />
@@ -32,8 +35,7 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <header class="site-header">
-      <!-- A future approved logo mark can replace this typographic lockup. -->
-      <a href="/" class="wordmark"><span>Miller Remodeling</span><small>Treasure Valley, Idaho</small></a>
+      <BrandLogo />
       <SiteNavigation />
       <a class="button header-cta" href="/qualify/" aria-label="Start Your Project"><span class="cta-full">Start Your Project</span><span class="cta-short" aria-hidden="true">Start</span><span class="cta-arrow" aria-hidden="true">↗</span></a>
     </header>

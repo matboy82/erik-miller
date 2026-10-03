@@ -1,0 +1,30 @@
+---
+// Synthetic renderer for guard tests only. Never copied into the real application.
+import { brand, css } from 'virtual:miller-brand';
+import ProjectPreview from '../components/ProjectPreview.astro';
+import type { CollectionEntry } from 'astro:content';
+interface Props { page: CollectionEntry<'pages'>['data'] }
+const { page } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={page.description} />
+    <title>{page.title}</title>
+    <style is:inline set:html={css} />
+  </head>
+  <body>
+    <main>
+      {page.id === 'home' ? <>
+        <p data-copy="tagline">{brand.content.tagline}</p>
+        <h1 data-copy="headline">{brand.content.headline}</h1>
+        <p data-copy="description">{brand.content.description}</p>
+        <h2 data-copy="process">{brand.content.process}</h2>
+      </> : <><h1>{page.heading}</h1><p>{page.intro}</p></>}
+      {page.sections.map((section) => <section><h2>{section.heading}</h2>{section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}</section>)}
+      {['home', 'portfolio'].includes(page.id) && <ProjectPreview />}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import { staticPagePath } from '../../../../scripts/page-content.mjs';
+import ProductionFixture from '../layouts/ProductionFixture.astro';
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.filter((entry) => entry.id !== 'home').map((entry) => staticPagePath(entry.data));
+}
+const { page } = Astro.props;
+---
+<ProductionFixture page={page} />

@@ -33,12 +33,29 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
       writeFileSync(resolve(root, lock.adr), `# Synthetic verification choice\n**Status**: Accepted\n**Verification only**: true\n**Approval recorded**: Erik Miller, 2026-10-01 [synthetic evidence](../../brand/fixture-evidence.md)\n\n\`\`\`brand-choice\n${JSON.stringify({ ...choice, approvalEvidence: 'docs/brand/fixture-evidence.md' })}\n\`\`\`\n`);
       writeFileSync(resolve(root, 'docs/brand/fixture-evidence.md'), 'VERIFICATION ONLY. This synthetic example is not Erik approval and cannot authorize production.');
       stageProjectApprovalFixture(root);
+      stageProductionRendererFixture(root);
     } else {
       const catalog = resolve(root, 'apps/web/src/content/brand.ts');
       writeFileSync(catalog, readFileSync(catalog, 'utf8').replace("export const reviewInitialDirection = 'A';", `export const reviewInitialDirection = '${direction}';`));
     }
     return { root, direction, copyDirection, taglineId, production };
   } catch (error) { removeBrandFixture(root); throw error; }
+}
+
+function stageProductionRendererFixture(root) {
+  // Guard fixtures have synthetic approvals and content, not a publishable website.
+  // Keep their renderer independent of review-only stock stories and React previews.
+  for (const [source, target] of [
+    ['production-shell.astro', 'layouts/ProductionFixture.astro'],
+    ['production-index.astro', 'pages/index.astro'],
+    ['production-route.astro', 'pages/[...slug].astro'],
+  ]) {
+    cpSync(resolve(repository, 'scripts/test/fixtures', source), resolve(root, 'apps/web/src', target));
+  }
+  // The synthetic guard renderer does not use the site's branding assets.
+  for (const asset of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png']) {
+    rmSync(resolve(root, 'apps/web/public', asset), { force: true });
+  }
 }
 
 function stageProjectApprovalFixture(root) {
@@ -100,7 +117,7 @@ export async function fixtureProjectArtifacts(fixture) {
 export function buildBrandFixture(fixture) {
   run(process.execPath, [resolve(repository, 'node_modules/astro/bin/astro.mjs'), 'build'], {
     cwd: resolve(fixture.root, 'apps/web'),
-    env: { ...process.env, SITE_BUILD: fixture.production ? 'production' : 'review', ASTRO_TELEMETRY_DISABLED: '1' },
+    env: { ...process.env, PUBLIC_SITE_URL: 'https://miller-fixture.invalid', SITE_BUILD: fixture.production ? 'production' : 'review', ASTRO_TELEMETRY_DISABLED: '1' },
   });
   return resolve(fixture.root, 'apps/web/dist');
 }

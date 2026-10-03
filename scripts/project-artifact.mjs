@@ -39,7 +39,7 @@ export function verifyProjectArtifacts(files, output, project) {
   if (shippedPages.length !== requiredHtmlPages.length || shippedPages.some((path, index) => path !== requiredHtmlPages[index])) throw Error('Production route inventory does not match the approved site map');
   for (const file of files) {
     const path = file.path.replaceAll('\\', '/');
-    if (!requiredHtmlPages.includes(path) && !['robots.txt', '_headers', '_redirects'].includes(path) && !path.startsWith('_astro/')) throw Error(`Unexpected shipped file: ${path}`);
+    if (!requiredHtmlPages.includes(path) && !['robots.txt', 'sitemap.xml', 'llms.txt', '_headers', '_redirects'].includes(path) && !path.startsWith('_astro/')) throw Error(`Unexpected shipped file: ${path}`);
     if (path.startsWith('_astro/') && !/\.(?:webp|css)$/.test(path)) throw Error(`Unexpected shipped file: ${path}`);
   }
   // Embedded images evade file inventories and are not permitted project media.

@@ -11,6 +11,29 @@ MR-05 uses D1 as a short-lived delivery ledger and Queues for asynchronous JobTr
 
 ## Before enabling live intake
 
+### Cloudflare Workers Builds setup
+
+The connected Worker is `erik-miller-worker`. Run these commands from the repository root while authenticated to the same Cloudflare account used by Workers Builds:
+
+```powershell
+npx --no-install wrangler login
+npx --no-install wrangler queues list --config apps/worker/wrangler.jsonc
+npx --no-install wrangler queues create miller-intake-dead-letter --config apps/worker/wrangler.jsonc
+npx --no-install wrangler d1 list --config apps/worker/wrangler.jsonc
+```
+
+Create `miller-intake-dead-letter` only if it is missing. Also create `miller-intake-delivery` if it is absent. Both queues must exist before deployment; the dead-letter consumer records exhausted delivery attempts as failed. Keep that consumer and the delivery queue's `dead_letter_queue` setting.
+
+Replace the all-zero `database_id` in `apps/worker/wrangler.jsonc` with the ID of the existing `miller-remodeling-intake` database returned by `d1 list`. If that database is absent, create it with `wrangler d1 create miller-remodeling-intake --config apps/worker/wrangler.jsonc` and use the returned ID. Apply its schema before enabling intake:
+
+```powershell
+npx --no-install wrangler d1 migrations apply INTAKE_DB --remote --config apps/worker/wrangler.jsonc
+```
+
+Workers Builds uses build command `npm run build:worker` and deploy command `npx --no-install wrangler deploy --config apps/worker/wrangler.jsonc`. A successful dry-run build validates the bundle, but does not verify that these remote resources exist. After provisioning the queues and setting the database ID, rerun the connected build.
+
+### Live prerequisites
+
 1. Create the named D1 database and delivery/dead-letter queues in the approved Cloudflare account, apply migrations, and verify backup retention/deletion behavior.
 2. Configure Cloudflare Access for the operator endpoints. Restrict the application to Erik and Matt; set `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`, and an email allowlist containing only those two individual identities. The empty/missing configuration fails closed.
 3. Configure JobTread API credentials as Worker secrets, plus the approved organization ID and existing Contact custom-field IDs for email and phone. The two fields must be appropriate text/email/phone fields. Do not invent or create JobTread fields in this workflow.
