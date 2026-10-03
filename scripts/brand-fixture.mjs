@@ -1,4 +1,5 @@
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { run } from './build.mjs';
@@ -12,7 +13,7 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
   mkdirSync(parent, { recursive: true });
   const root = mkdtempSync(resolve(parent, 'brand-fixture-'));
   try {
-    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
+    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'scripts/page-content.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
       const target = resolve(root, name);
       mkdirSync(resolve(target, '..'), { recursive: true });
       cpSync(resolve(repository, name), target, { recursive: true });
@@ -21,6 +22,8 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
     if (production) {
       const helper = resolve(root, 'scripts/brand-build.mjs');
       writeFileSync(helper, readFileSync(helper, 'utf8').replace('const verificationOnly = false;', 'const verificationOnly = true;'));
+      const pageHelper = resolve(root, 'scripts/page-content.mjs');
+      writeFileSync(pageHelper, readFileSync(pageHelper, 'utf8').replace('const verificationOnly = false;', 'const verificationOnly = true;'));
       mkdirSync(resolve(root, 'docs/brand'), { recursive: true });
       mkdirSync(resolve(root, 'docs/architecture/decisions'), { recursive: true });
       const lock = { version: 1, direction, copyDirection, taglineId, approvedBy: 'Erik Miller', approvedOn: '2026-10-01', adr: 'docs/architecture/decisions/fixture-choice.md' };
@@ -59,6 +62,33 @@ function stageProjectApprovalFixture(root) {
   writeFileSync(resolve(root, record.substituteEvidence), `# VERIFICATION ONLY\n\n${record.approval.evidence}\n${record.image.sha256}\n${contentCopyHash(record)}\n\n\`\`\`content-substitute\n${JSON.stringify(substitute)}\n\`\`\`\n`);
   writeFileSync(resolve(root, 'apps/web/src/content/projects/representative.json'), JSON.stringify(record, null, 2));
   writeFileSync(resolve(root, 'PLACEHOLDERS.md'), readFileSync(resolve(root, 'PLACEHOLDERS.md'), 'utf8').replace(/\| Open \|/g, '| Closed |'));
+  stagePageApprovalFixture(root);
+}
+
+function stagePageApprovalFixture(root) {
+  const records = resolve(root, 'apps/web/src/content/pages');
+  const evidenceDirectory = resolve(root, 'docs/content/approvals/pages');
+  mkdirSync(evidenceDirectory, { recursive: true });
+  for (const name of readdirSync(records).filter((entry) => entry.endsWith('.json'))) {
+    const file = resolve(records, name);
+    const page = JSON.parse(readFileSync(file, 'utf8'));
+    page.title = `Synthetic ${page.id} verification`;
+    page.description = 'Synthetic route metadata for isolated production guard verification.';
+    page.heading = `Synthetic ${page.id} page`;
+    page.intro = 'Synthetic verification content. This fixture is not customer copy.';
+    page.sections = [{ heading: 'Fixture content', paragraphs: ['Synthetic production isolation verification only.'] }];
+    if (page.processSteps) page.processSteps = ['Plan', 'Test', 'Build', 'Check', 'Finish'];
+    page.status = 'approved';
+    delete page.draftReason;
+    const evidence = `docs/content/approvals/pages/${page.id}.md`;
+    const approval = { approvedBy: 'Erik Miller', approvedOn: '2026-10-02', evidence, contentSha256: '' };
+    const { status, draftReason, previousApproval, ...content } = page;
+    void status; void draftReason; void previousApproval;
+    approval.contentSha256 = createHash('sha256').update(JSON.stringify(content)).digest('hex');
+    page.approval = approval;
+    writeFileSync(file, JSON.stringify(page, null, 2));
+    writeFileSync(resolve(root, evidence), `# VERIFICATION ONLY\n\n\`\`\`page-approval\n${JSON.stringify({ pageId: page.id, contentSha256: approval.contentSha256, approvedBy: approval.approvedBy, approvedOn: approval.approvedOn, verificationOnly: true })}\n\`\`\`\n`);
+  }
 }
 
 export async function fixtureProjectArtifacts(fixture) {

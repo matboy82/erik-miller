@@ -1,0 +1,47 @@
+{
+  "id": "process",
+  "kind": "information",
+  "path": "/about-process/",
+  "title": "About and process | Miller Remodeling · Draft",
+  "description": "Draft about and process page for Erik's review. Details and claims are pending approval.",
+  "heading": "A five-step process, from consult to walkthrough.",
+  "intro": "Draft process copy for Erik to review. Confirm each step describes the current customer experience before publishing.",
+  "sections": [
+    {
+      "heading": "The design phase is paid",
+      "paragraphs": [
+        "The approved story requires the site to explain a paid design phase. The exact fee and package are pending Erik approval."
+      ]
+    },
+    {
+      "heading": "Five steps",
+      "paragraphs": [
+        "This preview follows the proposed sequence: consult, design, selections, build, and walkthrough. Erik will confirm or revise the steps."
+      ]
+    },
+    {
+      "heading": "About Miller Remodeling",
+      "paragraphs": [
+        "Company history, credentials, customer results, and other factual claims are omitted until Erik approves their exact wording and evidence."
+      ]
+    }
+  ],
+  "processSteps": [
+    "Consult",
+    "Design",
+    "Selections",
+    "Build",
+    "Walkthrough"
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

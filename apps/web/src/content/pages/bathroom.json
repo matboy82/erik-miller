@@ -1,0 +1,34 @@
+{
+  "id": "bathroom",
+  "kind": "service",
+  "path": "/bathroom-remodeling/",
+  "title": "Bathroom remodeling | Miller Remodeling · Draft",
+  "description": "Draft bathroom remodeling page for Erik's review. Details and claims are pending approval.",
+  "heading": "Bathroom remodeling, planned around your home.",
+  "intro": "Draft bathroom page for Erik to review. Confirm the service details and examples before publishing.",
+  "sections": [
+    {
+      "heading": "Design before building",
+      "paragraphs": [
+        "This preview shows where approved information about the paid design phase can help homeowners understand the next step. The exact scope and fee are pending Erik approval."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "Approved Miller project proof is not available for this draft page. No stock image or unverified result is presented as Miller work."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

@@ -1,50 +1,14 @@
 ---
-import DesignReview from '../components/DesignReview.astro';
+import PageShell from '../layouts/PageShell.astro';
 import ProjectPreview from '../components/ProjectPreview.astro';
 import ContactPreview from '../components/ContactPreview.astro';
-import { brand, css } from 'virtual:miller-brand';
-import '../styles/global.css';
+import { getCollection } from 'astro:content';
 
-const { review, direction, content } = brand;
+const pages = await getCollection('pages');
+const home = pages.find((entry) => entry.id === 'home');
+if (!home) throw new Error('Required home page content is missing');
 ---
-<!doctype html>
-<html lang="en" data-theme={review ? direction : undefined}>
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="data:," />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content={review ? 'Draft design review for Miller Remodeling in the Treasure Valley.' : 'Draft Miller Remodeling content in the Treasure Valley.'} />
-    <title>Miller Remodeling · {review ? 'Design review' : 'Draft content'}</title>
-    <style is:inline set:html={css} />
-  </head>
-  <body>
-    <a href="#main" class="skip-link">Skip to content</a>
-    <header>
-      <a href="/" class="wordmark">Miller Remodeling</a>
-      <span class="draft">DRAFT · Treasure Valley, Idaho</span>
-    </header>
-    {review && <DesignReview />}
-    <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
-        <p class="eyebrow" data-copy="tagline">{content.tagline}</p>
-        <h1 id="hero-title" data-copy="headline">{content.headline}</h1>
-        <p data-copy="description">{content.description}</p>
-        <p class="draft">DRAFT · {review ? 'Erik’s final direction, tagline, and logo are pending. ' : ''}Factual claims need verification; project photography and final copy are pending.</p>
-        <a class="button" href="tel:+12086084439">Call about your project · 208.608.4439</a>
-      </section>
-      <ProjectPreview />
-      <section class="process" aria-labelledby="process-title">
-        <h2 id="process-title" data-copy="process">{content.process}</h2>
-        <ol><li>Consult</li><li>Design</li><li>Selections</li><li>Build</li><li>Walkthrough</li></ol>
-      </section>
-      <section aria-labelledby="booking-title">
-        <h2 id="booking-title">Start with a design conversation.</h2>
-        <p>We design the remodel before the build begins.</p>
-        <p class="draft">DRAFT · Online booking is coming soon. Call or text 208.608.4439.</p>
-      </section>
-      {review && <ContactPreview />}
-    </main>
-    <footer>Miller Remodeling LLC · Draft project preview · Photography and portfolio content remain under review. The contact experience above is a local test-copy preview.</footer>
-  </body>
-</html>
+<PageShell page={home.data} pages={pages}>
+  <ProjectPreview slot="proof" />
+  <ContactPreview slot="contact" />
+</PageShell>

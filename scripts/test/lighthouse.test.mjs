@@ -6,12 +6,12 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
 const command = resolve('scripts/check-lighthouse.mjs');
-function run(values, change = () => {}) {
+function run(values, change = () => {}, path = '/') {
   const directory = mkdtempSync(join(tmpdir(), 'miller-lighthouse-'));
   try {
     values.forEach((value, index) => {
       const report = {
-        requestedUrl: 'http://localhost:4321/', finalDisplayedUrl: 'http://localhost:4321/',
+        requestedUrl: `http://localhost:4321${path}`, finalDisplayedUrl: `http://localhost:4321${path}`,
         configSettings: { formFactor: 'mobile' },
         categories: Object.fromEntries(['performance', 'accessibility', 'best-practices'].map((name) => [name, { score: 0.95 }])),
         audits: { 'largest-contentful-paint': { numericValue: value } },
@@ -19,7 +19,7 @@ function run(values, change = () => {}) {
       change(report, index);
       writeFileSync(join(directory, `lhr-${index}.json`), JSON.stringify(report));
     });
-    return spawnSync(process.execPath, [command, directory], { encoding: 'utf8' });
+    return spawnSync(process.execPath, [command, directory, path], { encoding: 'utf8' });
   } finally { rmSync(directory, { recursive: true, force: true }); }
 }
 
@@ -27,6 +27,10 @@ test('F1 strict mobile command preserves optimistic three-run aggregation', () =
   const result = run([2499.99, 2800, 3000]);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /2499.99/);
+});
+test('MR-06 route Lighthouse checks can validate a representative page path', () => {
+  assert.equal(run([2400, 2450, 2600], () => {}, '/portfolio/').status, 0);
+  assert.equal(run([2400, 2450, 2600], (report) => { report.finalDisplayedUrl = 'http://localhost:4321/'; }, '/portfolio/').status, 1);
 });
 test('F1 LCP equality and above threshold fail', () => {
   for (const values of [[2500, 2600, 2700], [2501, 2600, 2700]]) {

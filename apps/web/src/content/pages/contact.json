@@ -1,0 +1,28 @@
+{
+  "id": "contact",
+  "kind": "contact",
+  "path": "/contact/",
+  "title": "Contact | Miller Remodeling · Draft",
+  "description": "Draft contact page for Erik's review. Details and claims are pending approval.",
+  "heading": "Talk with Miller Remodeling.",
+  "intro": "Draft contact page for Erik to review. The local form below uses fixed sample values and sends or saves nothing.",
+  "sections": [
+    {
+      "heading": "General inquiry preview",
+      "paragraphs": [
+        "Use the sample controls to preview the local confirmation and validation states. Do not enter real contact details; this page does not accept visitor submissions."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Call Miller Remodeling",
+    "href": "tel:+12086084439"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

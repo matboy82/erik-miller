@@ -1,0 +1,34 @@
+{
+  "id": "kitchen",
+  "kind": "service",
+  "path": "/kitchen-remodeling/",
+  "title": "Kitchen remodeling | Miller Remodeling · Draft",
+  "description": "Draft kitchen remodeling page for Erik's review. Details and claims are pending approval.",
+  "heading": "Kitchen remodeling, designed first.",
+  "intro": "Draft kitchen page for Erik to review. Scope, process details, and any past-project examples need his approval.",
+  "sections": [
+    {
+      "heading": "Plan the room",
+      "paragraphs": [
+        "This test copy uses the design phase to show how the page could explain the work before construction. Exact scope and fee details are pending Erik approval."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "Approved Miller project proof is not available in this preview. The stock example on the portfolio page is clearly labeled and is not Miller work."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

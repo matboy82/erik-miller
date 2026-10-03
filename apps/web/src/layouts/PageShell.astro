@@ -1,0 +1,76 @@
+---
+import DesignReview from '../components/DesignReview.astro';
+import SiteNavigation from '../components/SiteNavigation.astro';
+import { brand, css } from 'virtual:miller-brand';
+import '../styles/global.css';
+
+type PageRecord = {
+  id: string; kind: string; path: string; title: string; description: string; heading: string; intro: string;
+  sections: { heading: string; paragraphs: string[] }[]; processSteps?: string[];
+  primaryAction: { label: string; href: string }; secondaryAction?: { label: string; href: string };
+};
+interface Props { page: PageRecord; pages: { data: PageRecord }[] }
+const { page, pages } = Astro.props as Props;
+const currentPage = page;
+const services = pages.map((entry) => entry.data);
+const review = brand.review;
+const proofRelevant = ['home', 'service', 'portfolio'].includes(currentPage.kind);
+---
+<!doctype html>
+<html lang="en" data-theme={review ? brand.direction : undefined}>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:," />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content={currentPage.description} />
+    <title>{currentPage.title}</title>
+    <style is:inline set:html={css} />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <header class="site-header">
+      <a href="/" class="wordmark">Miller Remodeling</a>
+      {review && <span class="draft">DRAFT · Test pages for Erik’s review</span>}
+      <SiteNavigation pages={services} />
+    </header>
+    {review && <DesignReview />}
+    <main id="main" class="page-main">
+      {review && <div class="draft-notice" role="note">
+        <strong>DRAFT · Test copy for Erik’s review.</strong>
+        <span>Not approved for customer use or production. Confirm all facts, coverage, copy, and proof with Erik.</span>
+      </div>}
+      <section class="page-hero" aria-labelledby="page-title">
+        <p class="eyebrow" data-copy={currentPage.kind === 'home' ? 'tagline' : undefined}>{currentPage.kind === 'home' ? brand.content.tagline : currentPage.kind === 'area' ? 'Service-area preview' : currentPage.kind === 'service' ? 'Service preview' : currentPage.kind === 'portfolio' ? 'Portfolio preview' : currentPage.kind === 'contact' ? 'General inquiries' : 'Miller Remodeling'}</p>
+        <h1 id="page-title" data-copy={currentPage.kind === 'home' ? 'headline' : undefined}>{currentPage.kind === 'home' ? brand.content.headline : currentPage.heading}</h1>
+        <p data-copy={currentPage.kind === 'home' ? 'description' : undefined}>{currentPage.kind === 'home' ? brand.content.description : currentPage.intro}</p>
+      </section>
+      <slot name="proof" />
+      {review && proofRelevant && <aside class="proof-pending" aria-label="Project proof status">
+        <strong>DRAFT · Verified Miller project or review proof pending.</strong>
+        <p>No substitute photo, unverified result, or sample review is presented as Miller proof.</p>
+      </aside>}
+      <div class="page-actions">
+        <a class="button" href={currentPage.primaryAction.href}>{currentPage.primaryAction.label}</a>
+        {currentPage.secondaryAction && <a class="button button-secondary" href={currentPage.secondaryAction.href}>{currentPage.secondaryAction.label}</a>}
+      </div>
+      {currentPage.processSteps && <section class="process" aria-labelledby="process-title">
+        <h2 id="process-title" data-copy={currentPage.kind === 'home' ? 'process' : undefined}>{currentPage.kind === 'home' ? brand.content.process : 'The proposed five-step process'}</h2>
+        <ol>{currentPage.processSteps.map((step) => <li>{step}</li>)}</ol>
+      </section>}
+      <div class="page-sections">
+        {currentPage.sections.map((section) => <section aria-labelledby={`section-${section.heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+          <h2 id={`section-${section.heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{section.heading}</h2>
+          {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </section>)}
+      </div>
+      {review && <slot name="contact" />}
+      {currentPage.kind !== 'contact' && <section class="page-next-step" aria-labelledby="next-step-title">
+        <h2 id="next-step-title">Want to discuss a project?</h2>
+        <p>Use the contact page to review the local inquiry preview.</p>
+        <a class="button" href="/contact/">Go to contact</a>
+      </section>}
+    </main>
+    <footer>{review ? 'Miller Remodeling LLC · Draft review pages · Copy and factual details await Erik’s approval.' : 'Miller Remodeling LLC'}</footer>
+  </body>
+</html>

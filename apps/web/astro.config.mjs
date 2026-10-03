@@ -7,6 +7,7 @@ import { brandCss, resolveBuild } from '../../scripts/brand-build.mjs';
 import { verifyProduction } from '../../scripts/production-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
 import { prepareProjectArtifacts } from '../../scripts/project-artifact.mjs';
+import { readPageContent } from '../../scripts/page-content.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 let brand;
@@ -14,6 +15,7 @@ let project;
 let projectArtifacts;
 try {
   brand = resolveBuild(root);
+  await readPageContent(root, { mode: brand.review ? 'review' : 'production' });
   project = await readProjectContent(root);
   if (!brand.review) projectArtifacts = await prepareProjectArtifacts(root, project);
 } catch (error) {

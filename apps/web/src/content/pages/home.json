@@ -1,0 +1,51 @@
+{
+  "id": "home",
+  "kind": "home",
+  "path": "/",
+  "title": "Home | Miller Remodeling · Draft",
+  "description": "Draft home page for Erik's review. Details and claims are pending approval.",
+  "heading": "A remodel starts with a design.",
+  "intro": "Draft homepage copy for Erik to review. The direction, words, business facts, and proof are not approved for customer use.",
+  "sections": [
+    {
+      "heading": "Designed first",
+      "paragraphs": [
+        "This preview shows how a design-first message and a clear next step could work together. Erik will approve or replace the final wording."
+      ]
+    },
+    {
+      "heading": "Draft service overview",
+      "paragraphs": [
+        "The approved MR-06 site map includes kitchens, bathrooms, whole-home remodeling, additions, ADUs, and home repair. Confirm scope and availability with Erik before publishing."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "A licensed stock photo and illustrative writeup appear below only to review layout. They do not show Miller Remodeling work."
+      ]
+    }
+  ],
+  "processSteps": [
+    "Consult",
+    "Design",
+    "Selections",
+    "Build",
+    "Walkthrough"
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "secondaryAction": {
+    "label": "View the portfolio preview",
+    "href": "/portfolio/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

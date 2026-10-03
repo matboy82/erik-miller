@@ -56,7 +56,7 @@ export function placeholderStatuses(root) {
     if (cells.length !== 5 || !/^[A-Z]+(?:-[A-Z]+)*-\d{2}$/.test(cells[0]) || !['Open', 'Closed'].includes(cells[4]) || statuses.has(cells[0])) throw Error('Malformed placeholder register row');
     statuses.set(cells[0], cells[4]);
   }
-  for (const id of ['INFRA-01', 'INFRA-02', 'BRAND-01', 'CONTENT-01', 'CRM-01', 'SCHED-01', 'DESIGN-01', 'ANALYTICS-01', 'NOTIFY-01', 'RELEASE-01']) {
+  for (const id of ['INFRA-01', 'INFRA-02', 'BRAND-01', 'CONTENT-01', 'CONTENT-PAGES-01', 'CRM-01', 'SCHED-01', 'DESIGN-01', 'ANALYTICS-01', 'NOTIFY-01', 'RELEASE-01']) {
     if (!statuses.has(id)) throw Error(`Missing root placeholder ${id}`);
   }
   return { register, statuses };

@@ -56,8 +56,12 @@ export function verifyProduction(directory, direction, { copyDirection = directi
   }
   // Compare actual embedded font bytes, not only font-family labels.
   const allowedFonts = [...css.matchAll(/data:font\/woff2;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
-  const shippedFonts = [...output.matchAll(/data:font\/woff2;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]);
-  if (shippedFonts.length !== allowedFonts.length || shippedFonts.sort().some((font, index) => font !== allowedFonts.sort()[index])) throw Error('Production includes incorrect font assets.');
+  const htmlFiles = files.filter((file) => file.path.endsWith('.html'));
+  const expectedFonts = [...allowedFonts].sort();
+  for (const file of htmlFiles) {
+    const pageFonts = [...file.bytes.toString('utf8').matchAll(/data:font\/woff2;base64,([A-Za-z0-9+/=]+)/g)].map((match) => match[1]).sort();
+    if (pageFonts.length !== expectedFonts.length || pageFonts.some((font, index) => font !== expectedFonts[index])) throw Error('Production includes incorrect font assets.');
+  }
   if (projectArtifacts) verifyProjectArtifacts(files, output, projectArtifacts);
   return files.map(({ path, sha256, bytes }) => ({ path, sha256, size: bytes.length }));
 }

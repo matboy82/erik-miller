@@ -2,8 +2,10 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import sharpService from 'astro/assets/services/sharp';
 import { contentFile, contentCopyHash, sha256 } from './project-content.mjs';
+import { requiredPages } from './page-content.mjs';
 
 export const projectWidths = (width) => [...new Set([320, 640, 960, 1280, width].filter((size) => size <= width))];
+const requiredHtmlPages = Object.values(requiredPages).map(({ path }) => path === '/' ? 'index.html' : `${path.replace(/^\//, '')}index.html`).sort();
 
 // Expected bytes come from the selected validated source, never from an output manifest.
 export async function prepareProjectArtifacts(root, project) {
@@ -33,10 +35,12 @@ export function verifyProjectArtifacts(files, output, project) {
   if (!section) throw Error('Selected representative project does not render');
   if (/Development stock photo|Draft example writeup|stock-kitchen-|pexels|content-substitute|content-approval|permissionEvidence|substituteEvidence/i.test(output)) throw Error('Production includes development content or provenance');
   if (project.forbiddenCopy.some((paragraph) => output.includes(paragraph))) throw Error('Production includes archived development writeup');
+  const shippedPages = files.filter((file) => file.path.endsWith('.html')).map((file) => file.path.replaceAll('\\', '/')).sort();
+  if (shippedPages.length !== requiredHtmlPages.length || shippedPages.some((path, index) => path !== requiredHtmlPages[index])) throw Error('Production route inventory does not match the approved site map');
   for (const file of files) {
     const path = file.path.replaceAll('\\', '/');
-    if (!['index.html', 'robots.txt', '_headers', '_redirects'].includes(path) && !path.startsWith('_astro/')) throw Error(`Unexpected shipped file: ${path}`);
-    if (path.startsWith('_astro/') && !path.endsWith('.webp')) throw Error(`Unexpected shipped file: ${path}`);
+    if (!requiredHtmlPages.includes(path) && !['robots.txt', '_headers', '_redirects'].includes(path) && !path.startsWith('_astro/')) throw Error(`Unexpected shipped file: ${path}`);
+    if (path.startsWith('_astro/') && !/\.(?:webp|css)$/.test(path)) throw Error(`Unexpected shipped file: ${path}`);
   }
   // Embedded images evade file inventories and are not permitted project media.
   if (/data:image\//i.test(output)) throw Error('Production includes embedded media');

@@ -37,6 +37,8 @@ Local JobTread verification tooling and the exact live-test approval plan are in
 
 The representative project section uses a local Content Layer record with labeled licensed stock photography and Draft prose. See [project content replacement](docs/operations/project-content.md) for editing, source/license records, exact-content approval and placeholder closure. `node scripts/check-brand-lighthouse.mjs --project-content` measures A/B/C with both the normal record and portrait/long-copy replacement. Every production web entry also requires approved Miller content and a root register without Open entries.
 
+The site map uses typed, one-record-per-route content for service, process, contact, portfolio, and area pages. See [page copy review](docs/operations/site-pages.md) for Draft test copy, Erik's exact approval evidence, and production eligibility.
+
 ## Codex
 
 Read [AGENTS.md](AGENTS.md) and [the workflow guide](docs/how-to/codex-workflow.md). Invoke `$atlas-sdd` to find the current gate or `$sdd-epic` to plan from the brief. Role skills do not automatically launch subagents.

@@ -1,0 +1,34 @@
+{
+  "id": "home-repair",
+  "kind": "service",
+  "path": "/home-repair/",
+  "title": "Home repair | Miller Remodeling · Draft",
+  "description": "Draft home repair page for Erik's review. Details and claims are pending approval.",
+  "heading": "Home repair project information.",
+  "intro": "Draft home repair page for Erik to review. Confirm whether this work is offered and how it fits before publishing.",
+  "sections": [
+    {
+      "heading": "Confirm fit",
+      "paragraphs": [
+        "The MR-06 site map includes a home-repair page. This preview does not promise that Miller Remodeling accepts a specific repair project."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "Approved Miller project proof is not available for this draft page."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

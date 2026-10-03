@@ -1,0 +1,28 @@
+{
+  "id": "portfolio",
+  "kind": "portfolio",
+  "path": "/portfolio/",
+  "title": "Project portfolio | Miller Remodeling · Draft",
+  "description": "Draft project portfolio page for Erik's review. Details and claims are pending approval.",
+  "heading": "Project stories, with proof that can be checked.",
+  "intro": "Draft portfolio index for Erik to review. Real Miller project photos, writeups, and usage approval are not available yet.",
+  "sections": [
+    {
+      "heading": "Development example",
+      "paragraphs": [
+        "The example below uses a licensed stock photo and illustrative prose. It is labeled as a substitute and does not describe a Miller project."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

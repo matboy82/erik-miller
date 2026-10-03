@@ -1,0 +1,29 @@
+---
+type NavigationPage = { id: string; kind: string; path: string; title: string };
+interface Props { pages: NavigationPage[] }
+const { pages } = Astro.props as Props;
+const services = pages.filter((page) => page.kind === 'service');
+const areas = pages.filter((page) => page.kind === 'area');
+const hrefFor = (page: NavigationPage) => page.path;
+const labelFor = (page: NavigationPage) => page.id === 'process' ? 'About & process' : page.id === 'portfolio' ? 'Portfolio' : page.id === 'contact' ? 'Contact' : page.title.split(' | ')[0];
+---
+<nav class="site-nav" aria-label="Main navigation">
+  <ul class="site-nav-list">
+    <li><a href="/">Home</a></li>
+    <li>
+      <details>
+        <summary>Services</summary>
+        <ul>{services.map((page) => <li><a href={hrefFor(page)}>{labelFor(page)}</a></li>)}</ul>
+      </details>
+    </li>
+    <li>
+      <details>
+        <summary>Service areas</summary>
+        <ul>{areas.map((page) => <li><a href={hrefFor(page)}>{page.id.charAt(0).toUpperCase() + page.id.slice(1)}</a></li>)}</ul>
+      </details>
+    </li>
+    <li><a href="/about-process/">About &amp; process</a></li>
+    <li><a href="/portfolio/">Portfolio</a></li>
+    <li><a href="/contact/">Contact</a></li>
+  </ul>
+</nav>

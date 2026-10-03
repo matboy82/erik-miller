@@ -1,0 +1,34 @@
+{
+  "id": "boise",
+  "kind": "area",
+  "path": "/service-areas/boise/",
+  "title": "Boise service-area preview | Miller Remodeling · Draft",
+  "description": "Draft boise service-area preview page for Erik's review. Details and claims are pending approval.",
+  "heading": "Remodeling in Boise: service coverage pending.",
+  "intro": "Draft Boise area page for Erik to review. Boise appears in the approved MR-06 site map; whether Miller Remodeling currently serves this area awaits Erik's confirmation.",
+  "sections": [
+    {
+      "heading": "Service details",
+      "paragraphs": [
+        "No service coverage, project history, results, or customer testimonial for Boise is claimed on this draft page. Erik will approve the exact service-area wording."
+      ]
+    },
+    {
+      "heading": "Next step",
+      "paragraphs": [
+        "Contact us to discuss a project. This link opens the local test-copy contact preview."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

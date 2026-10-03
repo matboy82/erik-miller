@@ -41,3 +41,11 @@ Implementation delivers the project-content runbook, README and dated bootstrap 
 **Open decisions**: None for this policy. Actual content approval and production release remain separate prerequisites.
 
 **Approval gate**: Complete. Acceptance of the policy is not approval of any photo, writeup, placeholder closure, or deployment.
+
+## MR-06 local review copy amendment — 2026-10-02
+
+Matt directs that Erik must be able to review complete service and area pages before approving their final customer-facing copy. Following the local-preview precedent in approved [MR-05-P2](../../specs/website-lead-qualification/mr-05.work-packages.md), MR-06 may use clearly labeled Draft test copy in the noindex review build while approved page facts and final copy are being collected.
+
+Draft page copy may demonstrate layout, navigation, process explanation, and calls to action. It must stay within facts in approved source artifacts or explicitly identify unverified details as pending review. It must not state unverified prices, credentials, results, review counts, completed work, or actual service coverage as fact. Service-area previews must say that coverage is pending Erik's confirmation. Draft/test copy is never eligible for production and does not approve the brand, real project/review proof, or any factual claim. Production continues to require Erik's approval of the exact published content and the eligibility checks in this ADR.
+
+This dated amendment applies to MR-06 local review only; it does not change MR-03 project-record provenance requirements, the production artifact gate, or other work-item contracts. See the amended [MR-06 spec](../../specs/website-lead-qualification/mr-06.spec.md) and [work-package manifest](../../specs/website-lead-qualification/mr-06.work-packages.md).

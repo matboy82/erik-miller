@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import ContactPreview from '../components/ContactPreview.astro';
+import ProjectPreview from '../components/ProjectPreview.astro';
+import PageShell from '../layouts/PageShell.astro';
+import { staticPagePath } from '../../../../scripts/page-content.mjs';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.filter((entry) => entry.id !== 'home').map((entry) => staticPagePath(entry.data));
+}
+
+const pages = await getCollection('pages');
+const { page } = Astro.props;
+---
+<PageShell page={page} pages={pages}>
+  {page.id === 'portfolio' && <ProjectPreview slot="proof" />}
+  {page.id === 'contact' && <ContactPreview slot="contact" />}
+</PageShell>

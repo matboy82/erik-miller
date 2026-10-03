@@ -1,0 +1,34 @@
+{
+  "id": "whole-home",
+  "kind": "service",
+  "path": "/whole-home-remodeling/",
+  "title": "Whole-home remodeling | Miller Remodeling · Draft",
+  "description": "Draft whole-home remodeling page for Erik's review. Details and claims are pending approval.",
+  "heading": "Whole-home remodeling, planned in stages.",
+  "intro": "Draft whole-home page for Erik to review. Confirm the work types, project fit, and examples before publishing.",
+  "sections": [
+    {
+      "heading": "A clear plan",
+      "paragraphs": [
+        "This test page demonstrates a place for Erik-approved information about planning, selections, construction, and final walkthrough. Details remain pending."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "Approved Miller project proof is not available for this draft page."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}

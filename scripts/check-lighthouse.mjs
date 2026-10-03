@@ -3,13 +3,15 @@ import { join } from 'node:path';
 
 try {
   const directory = process.argv[2] ?? '.lighthouseci';
+  const expectedPath = process.argv[3] ?? '/';
+  if (!/^\/(?:[a-z0-9-]+\/)*$/.test(expectedPath)) throw new Error('Invalid expected route.');
   const files = readdirSync(directory).filter((name) => /^lhr-\d+\.json$/.test(name));
   if (files.length !== 3) throw new Error('Expected exactly three Lighthouse reports.');
   const reports = files.map((name) => JSON.parse(readFileSync(join(directory, name), 'utf8')));
   const validPage = (value) => {
     const url = new URL(value);
     return url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)
-      && url.pathname === '/' && !url.search && !url.hash && !url.username && !url.password;
+      && url.pathname === expectedPath && !url.search && !url.hash && !url.username && !url.password;
   };
   for (const report of reports) {
     if (!validPage(report.requestedUrl) || !validPage(report.finalDisplayedUrl ?? report.finalUrl)

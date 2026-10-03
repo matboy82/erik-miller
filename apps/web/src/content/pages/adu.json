@@ -1,0 +1,34 @@
+{
+  "id": "adu",
+  "kind": "service",
+  "path": "/adu-mother-in-law/",
+  "title": "ADU and mother-in-law suites | Miller Remodeling · Draft",
+  "description": "Draft adu and mother-in-law suites page for Erik's review. Details and claims are pending approval.",
+  "heading": "ADU and mother-in-law suite planning.",
+  "intro": "Draft ADU page for Erik to review. Confirm service scope, availability, and examples before publishing.",
+  "sections": [
+    {
+      "heading": "Start with the plan",
+      "paragraphs": [
+        "This test copy reserves space to explain the approved design process. It makes no claim about permits, timelines, pricing, or completed ADU work."
+      ]
+    },
+    {
+      "heading": "Project proof",
+      "paragraphs": [
+        "Approved Miller project proof is not available for this draft page."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact Miller Remodeling",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-story",
+    "mr06-spec",
+    "branding-kit"
+  ],
+  "status": "draft",
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+}
