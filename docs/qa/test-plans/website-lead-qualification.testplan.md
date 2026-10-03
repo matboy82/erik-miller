@@ -6,7 +6,7 @@
 **Created**: 2026-10-01
 **Scope**: MR-01 through MR-04 foundation (approved 2026-10-01); MR-05 through MR-13 remaining epic scope (approved 2026-10-02)
 **Inputs**: Approved [epic](../../product/epics/website-lead-qualification.md) and stories MR-01–MR-13; foundation MR-01–MR-04 contracts and the approved MR-01–MR-04 fix spec; see links in the foundation and remaining-story amendments below.
-**Next gate**: `$sdd-tech-spec` drafts MR-05–MR-13 developer specs, work packages, and Proposed ADRs for separate human approval.
+**Next gate**: Implement the approved MR-07–MR-13 specs and work packages sequentially. Accepted ADR 0009 permits labeled Draft review copy/examples; it does not approve owner-specific facts, external actions, or production content.
 
 **MR-01 deployment amendment (2026-10-01)**: Matt requested Cloudflare Git integration. GitHub verifies only; Cloudflare publishes independently. The updated F2 scenario below replaces the prior GitHub-gated upload matrix.
 
@@ -143,6 +143,8 @@ No browser automation framework, analytics provider, database, CMS provider, not
 - Quality protocols inherited from the foundation plan apply to site and wizard states. Re-run affected states when content, fonts, images, CSS, JS, or rendered markup changes. No additional threshold or coverage percentage is introduced.
 - An acceptance criterion with missing owner inputs is blocked until those inputs are supplied. Do not weaken the scenario, replace unknown business values with invented ones, or call simulated evidence live.
 
-**Remaining-story gate**: Complete. The user directly requested the technical specs after stories and assigned the sequential keys. Proceed to technical planning for MR-05–MR-13. Specs, packages and any Proposed ADRs remain Draft for separate human approval.
+**Remaining-story gate**: Complete. Matt approved the MR-07–MR-13 specs, work packages, release specs, and Accepted ADR 0009 for sequential implementation with labeled generated Draft copy/examples. External account changes, live provider actions, publication, and deployment remain separately gated.
 
 **MR-09 QA amendment (2026-10-02)**: Matt directs owner-only self-approval and no PR process for portfolio content. P1 now requires an access-restricted rendered preview and Erik's authenticated Publish action, with revision/hash equality, direct content-only main commit, and automatic Cloudflare build/deployment evidence. Engineering code changes and their ordinary CI/review path are unchanged. This does not authorize repository/Cloudflare configuration, first production launch, or DNS changes.
+
+**MR-07–MR-13 implementation amendment (2026-10-02)**: Matt approved the amended specs, work-package manifests, release specs, and Accepted ADR 0009 for sequential implementation with generated, labeled Draft copy/examples in review builds. This approval authorizes local code and documentation changes only, not external account changes, live JobTread/booking/review actions, publication, or deployment.

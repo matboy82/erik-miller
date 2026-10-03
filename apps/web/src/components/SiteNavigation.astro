@@ -1,4 +1,5 @@
 ---
+import { brand } from 'virtual:miller-brand';
 type NavigationPage = { id: string; kind: string; path: string; title: string };
 interface Props { pages: NavigationPage[] }
 const { pages } = Astro.props as Props;
@@ -23,7 +24,10 @@ const labelFor = (page: NavigationPage) => page.id === 'process' ? 'About & proc
       </details>
     </li>
     <li><a href="/about-process/">About &amp; process</a></li>
+    {brand.review && <li><a href="/about-process/#review-flow-demo">Review-flow demo</a></li>}
     <li><a href="/portfolio/">Portfolio</a></li>
+    {brand.review && <li><a href="/qualify/">Qualification preview</a></li>}
+    {brand.review && <li><a href="/portfolio/#author-demo">Portfolio editor demo</a></li>}
     <li><a href="/contact/">Contact</a></li>
   </ul>
 </nav>

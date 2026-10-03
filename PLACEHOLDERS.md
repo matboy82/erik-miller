@@ -11,6 +11,7 @@ Every Open entry blocks production. Close entries only after the unblock conditi
 | CONTENT-SUB-01 | [Wide kitchen photo and Draft writeup](docs/content/substitutes/content-sub-01.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
 | CONTENT-SUB-02 | [Portrait kitchen photo and longer Draft writeup](docs/content/substitutes/content-sub-02.md) | Erik/Matt | Approved Miller replacement, matching provenance/sign-off, and rendered verification | Open |
 | CONTENT-PAGES-01 | Erik-approved copy and verified facts for service, process, portfolio, contact, and area pages | Erik | Approve the exact page copy, confirm factual claims and service coverage, and record matching page-approval evidence | Open |
+| SEO-REDIRECTS-01 | Approved old WordPress URL map and profile destinations | Matt / Erik | Confirm each source URL and destination, then record the 301 map and verified profile links | Open |
 | CRM-01 | JobTread Pave (API key available, Matt confirms 2026-10-01) | Matt/BIS | Approved WS-2 contract + official verification; configure server-side secret | Open |
 | SCHED-01 | Erik's Google Calendar Appointment Schedule (phone/in-person, no web conference) | Matt/Erik | Confirm Workspace entitlement/settings and approved booking-page details; verify appointment association to the intended JobTread record; pass booking QA | Open |
 | DESIGN-01 | Design fee/package | Erik | Approve fee, package, and copy | Open |

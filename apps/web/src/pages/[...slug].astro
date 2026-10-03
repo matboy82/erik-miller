@@ -4,16 +4,32 @@ import ContactPreview from '../components/ContactPreview.astro';
 import ProjectPreview from '../components/ProjectPreview.astro';
 import PageShell from '../layouts/PageShell.astro';
 import { staticPagePath } from '../../../../scripts/page-content.mjs';
+import { brand } from 'virtual:miller-brand';
+import QualificationWizard from '../components/QualificationWizard';
+import PortfolioAuthorPreview from '../components/PortfolioAuthorPreview';
+import ReviewFlowPreview from '../components/ReviewFlowPreview';
 
 export async function getStaticPaths() {
   const pages = await getCollection('pages');
-  return pages.filter((entry) => entry.id !== 'home').map((entry) => staticPagePath(entry.data));
+  const paths = pages.filter((entry) => entry.id !== 'home').map((entry) => {
+    const path = staticPagePath(entry.data);
+    return { ...path, props: { ...path.props, qualification: false } };
+  });
+  if (brand.review) {
+    const home = pages.find((entry) => entry.id === 'home');
+    if (!home) throw new Error('Required home page content is missing');
+    paths.push({ params: { slug: 'qualify' }, props: { page: home.data, qualification: true } });
+  }
+  return paths;
 }
 
 const pages = await getCollection('pages');
-const { page } = Astro.props;
+const { page, qualification = false } = Astro.props;
 ---
-<PageShell page={page} pages={pages}>
-  {page.id === 'portfolio' && <ProjectPreview slot="proof" />}
-  {page.id === 'contact' && <ContactPreview slot="contact" />}
+<PageShell page={page} pages={pages} qualification={qualification}>
+  {qualification && <QualificationWizard slot="main" client:load />}
+  {!qualification && page.id === 'portfolio' && <ProjectPreview slot="proof" />}
+  {!qualification && brand.review && page.id === 'portfolio' && <PortfolioAuthorPreview slot="author" client:visible />}
+  {!qualification && brand.review && page.id === 'process' && <ReviewFlowPreview slot="workflow" client:visible />}
+  {!qualification && page.id === 'contact' && <ContactPreview slot="contact" />}
 </PageShell>

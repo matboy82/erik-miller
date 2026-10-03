@@ -37,7 +37,7 @@ Local JobTread verification tooling and the exact live-test approval plan are in
 
 The representative project section uses a local Content Layer record with labeled licensed stock photography and Draft prose. See [project content replacement](docs/operations/project-content.md) for editing, source/license records, exact-content approval and placeholder closure. `node scripts/check-brand-lighthouse.mjs --project-content` measures A/B/C with both the normal record and portrait/long-copy replacement. Every production web entry also requires approved Miller content and a root register without Open entries.
 
-The site map uses typed, one-record-per-route content for service, process, contact, portfolio, and area pages. See [page copy review](docs/operations/site-pages.md) for Draft test copy, Erik's exact approval evidence, and production eligibility.
+The site map uses typed, one-record-per-route content for service, process, contact, portfolio, and area pages. The noindex review build also includes a generated Draft qualification flow at `/qualify/`, a local portfolio-editor preview on `/portfolio/`, and a review-workflow preview on `/about-process/`. Those previews use no live intake or publishing; the Google booking schedule loads only after a visitor asks to view it. See [page copy review](docs/operations/site-pages.md) for Draft copy, Erik's exact approval evidence, and production eligibility.
 
 ## Codex
 

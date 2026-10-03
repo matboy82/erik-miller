@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import { rmSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brandCss, resolveBuild } from '../../scripts/brand-build.mjs';
@@ -13,9 +13,20 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 let brand;
 let project;
 let projectArtifacts;
+let pageContent;
+let publicSiteUrl;
 try {
   brand = resolveBuild(root);
-  await readPageContent(root, { mode: brand.review ? 'review' : 'production' });
+  pageContent = await readPageContent(root, { mode: brand.review ? 'review' : 'production' });
+  if (!brand.review) {
+    const configuredUrl = process.env.PUBLIC_SITE_URL;
+    if (!configuredUrl) throw new Error('Production SEO output requires PUBLIC_SITE_URL after the production domain is approved.');
+    const parsedUrl = new URL(configuredUrl);
+    if (parsedUrl.protocol !== 'https:' || parsedUrl.username || parsedUrl.password || parsedUrl.pathname !== '/' || parsedUrl.search || parsedUrl.hash) {
+      throw new Error('PUBLIC_SITE_URL must be an HTTPS origin with no credentials, path, query, or fragment.');
+    }
+    publicSiteUrl = parsedUrl.origin;
+  }
   project = await readProjectContent(root);
   if (!brand.review) projectArtifacts = await prepareProjectArtifacts(root, project);
 } catch (error) {
@@ -26,11 +37,49 @@ try {
 
 export default defineConfig({
   output: 'static',
+  site: publicSiteUrl,
   integrations: [...(brand.review ? [react()] : []), {
     name: 'miller-production-gate',
     hooks: { 'astro:build:done': ({ dir }) => {
+      const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
+      writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), brand.review
+        ? 'User-agent: *\nDisallow: /\n'
+        : `User-agent: *\nAllow: /\nSitemap: ${publicSiteUrl}/sitemap.xml\n`);
       if (!brand.review) {
-        try { verifyProduction(fileURLToPath(dir), brand.direction, { ...brand, projectArtifacts }); } catch (error) {
+        try {
+          const approvedPages = pageContent.filter((page) => page.status === 'approved');
+          const urlEntries = approvedPages.map((page) => `  <url><loc>${escapeXml(`${publicSiteUrl}${page.path}`)}</loc></url>`).join('\n');
+          const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`;
+          writeFileSync(resolve(fileURLToPath(dir), 'sitemap.xml'), sitemap);
+          const assistantText = [
+            '# Miller Remodeling LLC',
+            '',
+            '> Source-backed site information. Use only facts present on the linked pages.',
+            '',
+            ...approvedPages.flatMap((page) => [
+              `## ${page.title}`,
+              '',
+              `${publicSiteUrl}${page.path}`,
+              '',
+              page.description,
+              '',
+              page.intro,
+              '',
+              ...page.sections.flatMap((section) => [`### ${section.heading}`, '', ...section.paragraphs, '']),
+              ...(page.processSteps ? ['### Process', '', ...page.processSteps, ''] : []),
+            ]),
+            ...(project.status === 'approved' ? [
+              '## Approved portfolio story',
+              '',
+              project.title,
+              '',
+              ...project.paragraphs,
+              '',
+            ] : []),
+          ].join('\n');
+          writeFileSync(resolve(fileURLToPath(dir), 'llms.txt'), assistantText);
+          verifyProduction(fileURLToPath(dir), brand.direction, { ...brand, projectArtifacts });
+        } catch (error) {
           rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true });
           throw error;
         }
