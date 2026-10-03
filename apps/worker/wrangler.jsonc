@@ -9,7 +9,7 @@
     {
       "binding": "INTAKE_DB",
       "database_name": "miller-remodeling-intake",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "e76c0a06-6327-49ce-bc16-314a2239f58a",
       "migrations_dir": "migrations"
     }
   ],
