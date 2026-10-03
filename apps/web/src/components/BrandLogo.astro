@@ -1,6 +1,10 @@
 ---
 import { Image } from 'astro:assets';
-import logo from '../assets/brand/miller-remodeling-logo.png';
+import logoColor from '../assets/brand/miller-remodeling-logo.png';
+import logoWhite from '../assets/brand/miller-remodeling-logo-white.png';
+interface Props { tone?: 'color' | 'white' }
+const { tone = 'color' } = Astro.props as Props;
+const logo = tone === 'white' ? logoWhite : logoColor;
 ---
 <a href="/" class="wordmark">
   <Image class="brand-logo" src={logo} alt="Miller Remodeling" widths={[400, 800]} sizes="(max-width: 360px) 185px, (max-width: 600px) 210px, 360px" width={1200} height={355} quality={85} loading="eager" />
