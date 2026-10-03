@@ -2,26 +2,26 @@
   "id": "adu",
   "kind": "service",
   "path": "/adu-mother-in-law/",
-  "title": "ADU and mother-in-law suites | Miller Remodeling · Draft",
-  "description": "Draft adu and mother-in-law suites page for Erik's review. Details and claims are pending approval.",
-  "heading": "ADU and mother-in-law suite planning.",
-  "intro": "Draft ADU page for Erik to review. Confirm service scope, availability, and examples before publishing.",
+  "title": "ADU and mother-in-law suites | Miller Remodeling",
+  "description": "Thoughtfully planned ADUs and mother-in-law spaces for a more flexible way to live.",
+  "heading": "Close to home. A space of their own.",
+  "intro": "Thoughtfully planned ADUs and mother-in-law spaces for a more flexible way to live.",
   "sections": [
     {
-      "heading": "Start with the plan",
+      "heading": "Independent space. Connected lives.",
       "paragraphs": [
-        "This test copy reserves space to explain the approved design process. It makes no claim about permits, timelines, pricing, or completed ADU work."
+        "A compact home still needs to live well. We consider privacy, natural light, storage, and daily routines from the beginning."
       ]
     },
     {
-      "heading": "Project proof",
+      "heading": "Start with the possibilities.",
       "paragraphs": [
-        "Approved Miller project proof is not available for this draft page."
+        "Tell us about your property and the people the space will serve. We explore the design and discuss the local requirements that shape the project."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

@@ -1,0 +1,10 @@
+---
+import { process } from '../content/design';
+---
+<section class="process-band" aria-labelledby="process-title">
+  <div class="section-wrap">
+    <div class="process-heading reveal"><p class="eyebrow">The plan is the foundation</p><h2 id="process-title">You approve the design<br />before demo day.</h2><p>Design is a paid phase with real deliverables: floorplans, selections, and a 3D walkthrough. You invest in a plan you can see and understand, before you invest in construction.</p></div>
+    <ol class="process-timeline">{process.map((step, index) => <li class="reveal"><span class="step-number">0{index + 1}</span><h3>{step.title}</h3><p>{step.text}</p></li>)}</ol>
+    <a class="text-link light-link" href="/qualify/">Let’s start with your project <span aria-hidden="true">↗</span></a>
+  </div>
+</section>

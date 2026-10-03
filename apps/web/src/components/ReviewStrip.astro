@@ -1,0 +1,8 @@
+---
+// Draft slots. Never substitute invented testimonials for owner-supplied Google reviews.
+const reviews = [1, 2, 3];
+---
+<section id="reviews" class="reviews-section" aria-labelledby="reviews-title">
+  <div class="section-heading reveal"><div><p class="eyebrow">In our homeowners’ words</p><h2 id="reviews-title">A home is personal.<br />So is our work.</h2></div><p>[X] five-star Google reviews</p></div>
+  <div class="review-grid">{reviews.map((number) => <figure class="review-card reveal"><div class="stars" aria-label="[Review rating] out of 5 stars">★★★★★</div><blockquote>[Google review {number}: homeowner’s exact words]</blockquote><figcaption>[Reviewer {number} name]<span>Google review · [Review {number} date]</span></figcaption></figure>)}</div>
+</section>

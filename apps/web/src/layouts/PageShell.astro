@@ -1,94 +1,68 @@
 ---
-import DesignReview from '../components/DesignReview.astro';
+import { Image } from 'astro:assets';
 import SiteNavigation from '../components/SiteNavigation.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { images, services } from '../content/design';
 import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
-
 type PageRecord = {
   id: string; kind: string; path: string; title: string; description: string; heading: string; intro: string;
   sections: { heading: string; paragraphs: string[] }[]; processSteps?: string[];
   primaryAction: { label: string; href: string }; secondaryAction?: { label: string; href: string };
 };
 interface Props { page: PageRecord; pages: { data: PageRecord }[]; qualification?: boolean }
-const { page, pages, qualification = false } = Astro.props as Props;
-const currentPage = page;
-const services = pages.map((entry) => entry.data);
-const review = brand.review;
-const proofRelevant = ['home', 'service', 'portfolio'].includes(currentPage.kind);
-const title = qualification ? 'Project-fit preview | Miller Remodeling · Draft' : currentPage.title;
-const description = qualification ? 'A local Draft demonstration of a project-fit conversation. Nothing is submitted or saved.' : currentPage.description;
-const publicSiteUrl = import.meta.env.PUBLIC_SITE_URL;
-const canonicalUrl = !review && publicSiteUrl ? new URL(currentPage.path, publicSiteUrl).toString() : undefined;
-const structuredData = !review && canonicalUrl ? {
-  '@context': 'https://schema.org',
-  '@type': currentPage.kind === 'service' ? 'Service' : 'WebPage',
-  name: currentPage.heading,
-  description: currentPage.description,
-  url: canonicalUrl,
-  ...(currentPage.kind === 'service' ? { provider: { '@type': 'GeneralContractor', name: 'Miller Remodeling LLC' } } : {}),
-} : undefined;
+const { page, qualification = false } = Astro.props as Props;
+const home = page.id === 'home' && !qualification;
+const image = services.find((service) => service.id === page.id)?.image ?? (page.id === 'process' || qualification ? images.designer : images.kitchen);
+const heading = qualification ? 'Let’s find your project fit.' : page.heading;
+const intro = qualification ? 'A few thoughtful questions. A clearer place to start.' : page.intro;
+const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure Valley Remodeling & Design' : page.id === 'portfolio' ? 'Project Stories' : page.id === 'process' ? 'Design before demo' : page.kind === 'area' ? 'Close to home' : page.kind === 'contact' ? 'Let’s make a plan' : 'Designed for the way you live';
 ---
 <!doctype html>
-<html lang="en" data-theme={review ? brand.direction : undefined}>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:," />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
-    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-    {structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData).replaceAll('<', '\\u003c')} />}
+    <meta name="description" content={qualification ? intro : page.description} />
+    <title>{qualification ? 'Your project | Miller Remodeling' : page.title}</title>
     <style is:inline set:html={css} />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>
     <header class="site-header">
-      <a href="/" class="wordmark">Miller Remodeling</a>
-      {review && <span class="draft">DRAFT · Test pages for Erik’s review</span>}
-      <SiteNavigation pages={services} />
+      <!-- A future approved logo mark can replace this typographic lockup. -->
+      <a href="/" class="wordmark"><span>Miller Remodeling</span><small>Treasure Valley, Idaho</small></a>
+      <SiteNavigation />
+      <a class="button header-cta" href="/qualify/" aria-label="Start Your Project"><span class="cta-full">Start Your Project</span><span class="cta-short" aria-hidden="true">Start</span><span class="cta-arrow" aria-hidden="true">↗</span></a>
     </header>
-    {review && <DesignReview />}
     <main id="main" class="page-main">
-      {review && <div class="draft-notice" role="note">
-        <strong>DRAFT · Test copy for Erik’s review.</strong>
-        <span>Not approved for customer use or production. Confirm all facts, coverage, copy, and proof with Erik.</span>
-      </div>}
-      <section class="page-hero" aria-labelledby="page-title">
-        <p class="eyebrow" data-copy={!qualification && currentPage.kind === 'home' ? 'tagline' : undefined}>{qualification ? 'Qualification preview' : currentPage.kind === 'home' ? brand.content.tagline : currentPage.kind === 'area' ? 'Service-area preview' : currentPage.kind === 'service' ? 'Service preview' : currentPage.kind === 'portfolio' ? 'Portfolio preview' : currentPage.kind === 'contact' ? 'General inquiries' : 'Miller Remodeling'}</p>
-        <h1 id="page-title" data-copy={!qualification && currentPage.kind === 'home' ? 'headline' : undefined}>{qualification ? 'Explore a project, one step at a time.' : currentPage.kind === 'home' ? brand.content.headline : currentPage.heading}</h1>
-        <p data-copy={!qualification && currentPage.kind === 'home' ? 'description' : undefined}>{qualification ? 'This Draft demonstration shows an example qualification flow. Owner-approved questions, project-fit rules, and next steps are pending.' : currentPage.kind === 'home' ? brand.content.description : currentPage.intro}</p>
+      <section class:list={['page-hero', { 'home-hero': home }]} aria-labelledby="page-title">
+        <Image class="hero-image" src={image} alt="" quality={65} widths={[640, 1000, 1600]} sizes="100vw" width={1600} height={1068} loading="eager" fetchpriority="high" />
+        <div class="hero-shade"></div>
+        <div class="hero-content section-wrap">
+          <p class="eyebrow">{eyebrow}</p>
+          <h1 id="page-title">{heading}</h1>
+          <p class="hero-intro">{intro}</p>
+          {home && <><div class="hero-actions"><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/about-process/">See How We Work</a></div><p class="trust-line">[25] years <span>·</span> Licensed &amp; insured [ID #] <span>·</span> [X] five-star Google reviews</p></>}
+        </div>
+        {home && <span class="hero-footnote" aria-hidden="true">Thoughtful design. Lasting craftsmanship.</span>}
       </section>
-      <slot name="main" />
-      {!qualification && <slot name="proof" />}
-      {!qualification && <slot name="author" />}
-      {!qualification && <slot name="workflow" />}
-      {!qualification && review && proofRelevant && <aside class="proof-pending" aria-label="Project proof status">
-        <strong>DRAFT · Verified Miller project or review proof pending.</strong>
-        <p>No substitute photo, unverified result, or sample review is presented as Miller proof.</p>
-      </aside>}
-      {!qualification && <div class="page-actions">
-        <a class="button" href={currentPage.primaryAction.href}>{currentPage.primaryAction.label}</a>
-        {currentPage.secondaryAction && <a class="button button-secondary" href={currentPage.secondaryAction.href}>{currentPage.secondaryAction.label}</a>}
-      </div>}
-      {!qualification && currentPage.processSteps && <section class="process" aria-labelledby="process-title">
-        <h2 id="process-title" data-copy={currentPage.kind === 'home' ? 'process' : undefined}>{currentPage.kind === 'home' ? brand.content.process : 'The proposed five-step process'}</h2>
-        <ol>{currentPage.processSteps.map((step) => <li>{step}</li>)}</ol>
-      </section>}
-      {!qualification && <div class="page-sections">
-        {currentPage.sections.map((section) => <section aria-labelledby={`section-${section.heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-          <h2 id={`section-${section.heading.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{section.heading}</h2>
-          {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
-        </section>)}
-      </div>}
-      {!qualification && review && <slot name="contact" />}
-      {!qualification && currentPage.kind !== 'contact' && <section class="page-next-step" aria-labelledby="next-step-title">
-        <h2 id="next-step-title">Want to discuss a project?</h2>
-        <p>Use the contact page to review the local inquiry preview.</p>
-        <a class="button" href="/contact/">Go to contact</a>
-        {review && <a class="button button-secondary" href="/qualify/">Try the Draft qualification preview</a>}
-      </section>}
+      <slot />
     </main>
-    <footer>{review ? 'Miller Remodeling LLC · Draft review pages · Copy and factual details await Erik’s approval.' : 'Miller Remodeling LLC'}</footer>
+    <SiteFooter />
+    {brand.review && <span class="review-badge">REVIEW BUILD</span>}
+    <script>
+      const elements = document.querySelectorAll('.reveal');
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+          });
+        }, { threshold: 0.08 });
+        elements.forEach((element) => { element.classList.add('will-reveal'); observer.observe(element); });
+      }
+    </script>
   </body>
 </html>

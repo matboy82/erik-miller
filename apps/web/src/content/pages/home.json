@@ -2,27 +2,15 @@
   "id": "home",
   "kind": "home",
   "path": "/",
-  "title": "Home | Miller Remodeling · Draft",
-  "description": "Draft home page for Erik's review. Details and claims are pending approval.",
-  "heading": "A remodel starts with a design.",
-  "intro": "Draft homepage copy for Erik to review. The direction, words, business facts, and proof are not approved for customer use.",
+  "title": "Home | Miller Remodeling",
+  "description": "Kitchens, baths, and additions — planned with an in-house designer and 3D walkthroughs before a single wall comes down.",
+  "heading": "Designed first. Built right.",
+  "intro": "Kitchens, baths, and additions — planned with an in-house designer and 3D walkthroughs before a single wall comes down.",
   "sections": [
     {
-      "heading": "Designed first",
+      "heading": "Your home. A better way to live in it.",
       "paragraphs": [
-        "This preview shows how a design-first message and a clear next step could work together. Erik will approve or replace the final wording."
-      ]
-    },
-    {
-      "heading": "Draft service overview",
-      "paragraphs": [
-        "The approved MR-06 site map includes kitchens, bathrooms, whole-home remodeling, additions, ADUs, and home repair. Confirm scope and availability with Erik before publishing."
-      ]
-    },
-    {
-      "heading": "Project proof",
-      "paragraphs": [
-        "A licensed stock photo and illustrative writeup appear below only to review layout. They do not show Miller Remodeling work."
+        "Thoughtful remodeling starts with a plan. Explore kitchens, bathrooms, whole-home remodeling, additions, ADUs, and home repair."
       ]
     }
   ],
@@ -34,7 +22,7 @@
     "Walkthrough"
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "secondaryAction": {

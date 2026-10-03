@@ -1,14 +1,9 @@
 ---
 import PageShell from '../layouts/PageShell.astro';
-import ProjectPreview from '../components/ProjectPreview.astro';
-import ContactPreview from '../components/ContactPreview.astro';
+import HomeContent from '../components/HomeContent.astro';
 import { getCollection } from 'astro:content';
-
 const pages = await getCollection('pages');
 const home = pages.find((entry) => entry.id === 'home');
 if (!home) throw new Error('Required home page content is missing');
 ---
-<PageShell page={home.data} pages={pages}>
-  <ProjectPreview slot="proof" />
-  <ContactPreview slot="contact" />
-</PageShell>
+<PageShell page={home.data} pages={pages}><HomeContent /></PageShell>

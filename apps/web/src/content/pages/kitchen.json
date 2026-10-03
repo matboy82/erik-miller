@@ -2,26 +2,26 @@
   "id": "kitchen",
   "kind": "service",
   "path": "/kitchen-remodeling/",
-  "title": "Kitchen remodeling | Miller Remodeling · Draft",
-  "description": "Draft kitchen remodeling page for Erik's review. Details and claims are pending approval.",
+  "title": "Kitchen remodeling | Miller Remodeling",
+  "description": "A kitchen should work for your mornings, your meals, and the people who always end up there.",
   "heading": "Kitchen remodeling, designed first.",
-  "intro": "Draft kitchen page for Erik to review. Scope, process details, and any past-project examples need his approval.",
+  "intro": "A kitchen should work for your mornings, your meals, and the people who always end up there.",
   "sections": [
     {
-      "heading": "Plan the room",
+      "heading": "A place for everything. Room for everyone.",
       "paragraphs": [
-        "This test copy uses the design phase to show how the page could explain the work before construction. Exact scope and fee details are pending Erik approval."
+        "We start with how you use the room: where you prep, what you store, and how people move through it. Then we plan the layout, cabinetry, lighting, and finishes around your life."
       ]
     },
     {
-      "heading": "Project proof",
+      "heading": "See the kitchen before we build it.",
       "paragraphs": [
-        "Approved Miller project proof is not available in this preview. The stock example on the portfolio page is clearly labeled and is not Miller work."
+        "Our in-house designer brings the plan into focus with floorplans, selections, and a 3D walkthrough. The paid design phase gives you real decisions and clear direction before construction."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

@@ -2,26 +2,26 @@
   "id": "home-repair",
   "kind": "service",
   "path": "/home-repair/",
-  "title": "Home repair | Miller Remodeling · Draft",
-  "description": "Draft home repair page for Erik's review. Details and claims are pending approval.",
-  "heading": "Home repair project information.",
-  "intro": "Draft home repair page for Erik to review. Confirm whether this work is offered and how it fits before publishing.",
+  "title": "Home repair | Miller Remodeling",
+  "description": "Thoughtful home repairs, with the same care we bring to a larger remodel.",
+  "heading": "Take care of the home you have.",
+  "intro": "Thoughtful home repairs, with the same care we bring to a larger remodel.",
   "sections": [
     {
-      "heading": "Confirm fit",
+      "heading": "Fix the detail. Understand the cause.",
       "paragraphs": [
-        "The MR-06 site map includes a home-repair page. This preview does not promise that Miller Remodeling accepts a specific repair project."
+        "Tell us what needs attention and how it affects your home. We discuss the repair, the surrounding work, and the right next step."
       ]
     },
     {
-      "heading": "Project proof",
+      "heading": "A clear scope comes first.",
       "paragraphs": [
-        "Approved Miller project proof is not available for this draft page."
+        "Good repairs start with understanding the problem. Share your project so we can talk through the work and whether it is a fit."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

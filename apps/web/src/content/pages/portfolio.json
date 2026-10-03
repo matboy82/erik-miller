@@ -2,20 +2,20 @@
   "id": "portfolio",
   "kind": "portfolio",
   "path": "/portfolio/",
-  "title": "Project portfolio | Miller Remodeling · Draft",
-  "description": "Draft project portfolio page for Erik's review. Details and claims are pending approval.",
-  "heading": "Project stories, with proof that can be checked.",
-  "intro": "Draft portfolio index for Erik to review. Real Miller project photos, writeups, and usage approval are not available yet.",
+  "title": "Project portfolio | Miller Remodeling",
+  "description": "Every project, documented — the plan, the decisions, the finished space.",
+  "heading": "Proof, not promises.",
+  "intro": "Every project, documented — the plan, the decisions, the finished space.",
   "sections": [
     {
-      "heading": "Development example",
+      "heading": "Project stories",
       "paragraphs": [
-        "The example below uses a licensed stock photo and illustrative prose. It is labeled as a substitute and does not describe a Miller project."
+        "Explore the decisions behind the finished spaces."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

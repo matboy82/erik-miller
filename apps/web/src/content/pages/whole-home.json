@@ -2,26 +2,26 @@
   "id": "whole-home",
   "kind": "service",
   "path": "/whole-home-remodeling/",
-  "title": "Whole-home remodeling | Miller Remodeling · Draft",
-  "description": "Draft whole-home remodeling page for Erik's review. Details and claims are pending approval.",
-  "heading": "Whole-home remodeling, planned in stages.",
-  "intro": "Draft whole-home page for Erik to review. Confirm the work types, project fit, and examples before publishing.",
+  "title": "Whole-home remodeling | Miller Remodeling",
+  "description": "A considered plan for the rooms you live in, and the way they connect.",
+  "heading": "Make the whole home feel like yours.",
+  "intro": "A considered plan for the rooms you live in, and the way they connect.",
   "sections": [
     {
-      "heading": "A clear plan",
+      "heading": "One home. One clear direction.",
       "paragraphs": [
-        "This test page demonstrates a place for Erik-approved information about planning, selections, construction, and final walkthrough. Details remain pending."
+        "We look beyond individual rooms to understand how your home works as a whole. Layout, circulation, storage, and finishes belong in the same plan."
       ]
     },
     {
-      "heading": "Project proof",
+      "heading": "Plan the change before living through it.",
       "paragraphs": [
-        "Approved Miller project proof is not available for this draft page."
+        "Work through the design and selections before construction. We discuss the sequence together so you can understand what the work means for everyday life."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

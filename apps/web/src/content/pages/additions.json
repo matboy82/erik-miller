@@ -2,26 +2,26 @@
   "id": "additions",
   "kind": "service",
   "path": "/additions/",
-  "title": "Home additions | Miller Remodeling · Draft",
-  "description": "Draft home additions page for Erik's review. Details and claims are pending approval.",
-  "heading": "Home additions, designed around the existing home.",
-  "intro": "Draft additions page for Erik to review. Confirm project scope and service details before publishing.",
+  "title": "Home additions | Miller Remodeling",
+  "description": "An addition should feel like it belongs — to your home, your neighborhood, and the life you want to live.",
+  "heading": "Room for what comes next.",
+  "intro": "An addition should feel like it belongs — to your home, your neighborhood, and the life you want to live.",
   "sections": [
     {
-      "heading": "Design phase",
+      "heading": "More space, with purpose.",
       "paragraphs": [
-        "This preview shows where approved details about design and planning can answer homeowner questions. Fee and package details remain pending Erik approval."
+        "Start with what your home is missing. A gathering room, a quieter workspace, or room for a growing family. We plan the connection between old and new as carefully as the addition itself."
       ]
     },
     {
-      "heading": "Project proof",
+      "heading": "Know the plan before you build.",
       "paragraphs": [
-        "Approved Miller project proof is not available for this draft page."
+        "A paid design phase helps you explore the layout, scale, and finishes. We work through the decisions together before the first wall goes up."
       ]
     }
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

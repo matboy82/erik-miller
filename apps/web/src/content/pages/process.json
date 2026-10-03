@@ -2,27 +2,22 @@
   "id": "process",
   "kind": "information",
   "path": "/about-process/",
-  "title": "About and process | Miller Remodeling · Draft",
-  "description": "Draft about and process page for Erik's review. Details and claims are pending approval.",
-  "heading": "A five-step process, from consult to walkthrough.",
-  "intro": "Draft process copy for Erik to review. Confirm each step describes the current customer experience before publishing.",
+  "title": "About and process | Miller Remodeling",
+  "description": "One team. A considered plan. An in-house designer to help you see the space before we build it.",
+  "heading": "A good remodel starts on paper.",
+  "intro": "One team. A considered plan. An in-house designer to help you see the space before we build it.",
   "sections": [
     {
-      "heading": "The design phase is paid",
+      "heading": "Design is real work.",
       "paragraphs": [
-        "The approved story requires the site to explain a paid design phase. The exact fee and package are pending Erik approval."
+        "The paid design phase gives you floorplans, selections, and a 3D walkthrough. We work through the layout and details together, so construction begins with decisions made.",
+        "Design investment: [Design fee and package]."
       ]
     },
     {
-      "heading": "Five steps",
+      "heading": "Experience, with a personal approach.",
       "paragraphs": [
-        "This preview follows the proposed sequence: consult, design, selections, build, and walkthrough. Erik will confirm or revise the steps."
-      ]
-    },
-    {
-      "heading": "About Miller Remodeling",
-      "paragraphs": [
-        "Company history, credentials, customer results, and other factual claims are omitted until Erik approves their exact wording and evidence."
+        "Erik brings [25] years of experience to remodeling. A home is personal. We take the time to understand yours, and keep the conversation clear from the first consult to the final walkthrough."
       ]
     }
   ],
@@ -34,7 +29,7 @@
     "Walkthrough"
   ],
   "primaryAction": {
-    "label": "Contact Miller Remodeling",
+    "label": "Start Your Project",
     "href": "/contact/"
   },
   "sources": [

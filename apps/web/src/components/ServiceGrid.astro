@@ -1,0 +1,13 @@
+---
+import { Image } from 'astro:assets';
+import { services } from '../content/design';
+---
+<section class="section-wrap services-section" id="services" aria-labelledby="services-title">
+  <div class="section-heading reveal"><div><p class="eyebrow">Make room for what matters</p><h2 id="services-title">Your home.<br />A better way to live in it.</h2></div><p>From the room you use most to the space you’ve been missing. Good remodeling starts with a thoughtful plan.</p></div>
+  <div class="service-grid">
+    {services.map((service, index) => <a class="service-card reveal" href={service.href}>
+      <div class="image-frame"><Image src={service.image} alt={service.alt} quality={65} widths={[400, 700, 1000]} sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 800px) 45vw, 30vw" width={700} height={525} loading="lazy" /></div>
+      <div class="card-copy"><span class="card-number">0{index + 1}</span><h3>{service.title}</h3><p>{service.description}</p><span class="text-link">Explore {service.title.toLowerCase()} <span aria-hidden="true">↗</span></span></div>
+    </a>)}
+  </div>
+</section>

@@ -2,15 +2,15 @@
   "id": "contact",
   "kind": "contact",
   "path": "/contact/",
-  "title": "Contact | Miller Remodeling · Draft",
-  "description": "Draft contact page for Erik's review. Details and claims are pending approval.",
-  "heading": "Talk with Miller Remodeling.",
-  "intro": "Draft contact page for Erik to review. The local form below uses fixed sample values and sends or saves nothing.",
+  "title": "Contact | Miller Remodeling",
+  "description": "A kitchen that works better. A bathroom with breathing room. An addition for what comes next. Let’s start with your home.",
+  "heading": "Tell us what you have in mind.",
+  "intro": "A kitchen that works better. A bathroom with breathing room. An addition for what comes next. Let’s start with your home.",
   "sections": [
     {
-      "heading": "General inquiry preview",
+      "heading": "Start with a conversation",
       "paragraphs": [
-        "Use the sample controls to preview the local confirmation and validation states. Do not enter real contact details; this page does not accept visitor submissions."
+        "Tell us about your project and the way you want to live."
       ]
     }
   ],

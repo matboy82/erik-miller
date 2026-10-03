@@ -1,0 +1,24 @@
+---
+import { Image } from 'astro:assets';
+import { images } from '../content/design';
+const upcoming = [
+  { title: 'A Bath Made for Slow Mornings', image: images.bathroom, scope: 'Bathroom remodel' },
+  { title: 'Room for the Whole Family', image: images.dining, scope: 'Whole-home remodeling' },
+  { title: 'A Little More Breathing Room', image: images.room, scope: 'Addition' },
+  { title: 'Close to Home, All Their Own', image: images.dining, scope: 'ADU' },
+  { title: 'The Heart of a Home, Reconsidered', image: images.kitchen, scope: 'Kitchen remodel' },
+  { title: 'New Life in Familiar Rooms', image: images.renovation, scope: 'Whole-home remodeling' },
+];
+---
+<!-- Draft sample narrative and unrelated stock media demonstrate the story format. -->
+<article id="morning-light" class="section-wrap project-story" aria-labelledby="story-title">
+  <header class="story-heading reveal"><p class="eyebrow">01 / Kitchen remodeling</p><h2 id="story-title">A Kitchen Planned<br />Around Morning Light</h2><p class="project-meta">Kitchen remodel · [Project location] · [Timeline] · [Budget range]</p></header>
+  <div class="story-layout">
+    <div class="story-text reveal"><section><h3>The challenge</h3><p>The kitchen was where everyone ended up, but it wasn’t built for gathering. Prep space was limited. Storage was awkward. The homeowners wanted an easier morning routine and a room that felt connected to the rest of the house.</p></section><section><h3>The design</h3><p>We planned the room around light and movement. A generous island put prep space within reach and gave guests a place to sit without crossing the cook’s path. Warm wood cabinetry, dark countertops, and simple finishes kept the room calm.</p><p>The homeowners explored the floorplan in a 3D walkthrough before making selections. Seeing the island, storage, and sightlines together made the decisions easier.</p></section><section><h3>The result</h3><p>A kitchen with space for the everyday: coffee at the island, dinner in progress, and family close by. The layout does the hard work. The details make it feel like home.</p></section></div>
+    <figure class="story-finished reveal"><Image src={images.kitchen} alt="Finished kitchen with a central island and warm wood cabinetry" widths={[500, 900, 1300]} sizes="(max-width: 800px) 100vw, 55vw" width={900} height={1100} /><figcaption>The finished space</figcaption></figure>
+  </div>
+  <div class="before-after reveal"><figure><Image src={images.renovation} alt="Home interior with open walls and exposed framing" widths={[500, 900]} sizes="(max-width: 650px) 100vw, 50vw" width={900} height={650} /><figcaption>Before <span>[Before-project photo]</span></figcaption></figure><figure><Image src={images.kitchen} alt="Warm wood kitchen with an island and dark countertops" widths={[500, 900]} sizes="(max-width: 650px) 100vw, 50vw" width={900} height={650} /><figcaption>After <span>[After-project photo]</span></figcaption></figure></div>
+  <div class="story-extras reveal"><div class="video-slot"><span class="video-symbol" aria-hidden="true">▷</span><div><p class="eyebrow">Walk through the finished space</p><h3>[Project film]</h3><p>[Finished-project video URL]</p></div></div><figure class="homeowner-quote"><blockquote>“[Homeowner’s exact words about the project]”</blockquote><figcaption>[Homeowner name] · [Project location]</figcaption></figure></div>
+</article>
+<section class="section-wrap story-index" aria-labelledby="stories-title"><div class="section-heading reveal"><div><p class="eyebrow">More spaces. More stories.</p><h2 id="stories-title">Homes, considered.</h2></div><p>The decisions behind the finished spaces.</p></div><div class="story-grid">{upcoming.map((project) => <article class="upcoming-card reveal"><div class="image-frame"><Image src={project.image} alt={`${project.scope} story imagery`} widths={[400, 700]} sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw" width={700} height={525} /></div><div class="card-copy"><p class="eyebrow">Coming soon · {project.scope}</p><h3>[{project.title}]</h3></div></article>)}</div></section>
+<section class="cta-band"><div class="section-wrap reveal"><p class="eyebrow">Let’s make a plan</p><h2>Your project could be next.</h2><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a></div></section>

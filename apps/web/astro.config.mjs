@@ -37,6 +37,7 @@ try {
 
 export default defineConfig({
   output: 'static',
+  build: { inlineStylesheets: 'always' },
   site: publicSiteUrl,
   integrations: [...(brand.review ? [react()] : []), {
     name: 'miller-production-gate',
@@ -91,7 +92,8 @@ export default defineConfig({
     name: 'miller-brand',
     resolveId(id) { if (['virtual:miller-brand', 'virtual:miller-project', 'virtual:miller-project-image'].includes(id)) return '\0' + id; },
     load(id) {
-      if (id === '\0virtual:miller-brand') return `export const brand = ${JSON.stringify(brand)}; export const css = ${JSON.stringify(brandCss(root, brand))};`;
+      // This design pass has one visual direction; omit unused theme tokens and fonts.
+      if (id === '\0virtual:miller-brand') return `export const brand = ${JSON.stringify(brand)}; export const css = ${JSON.stringify(brandCss(root, { ...brand, review: false }))};`;
       if (id === '\0virtual:miller-project') return `export const project = ${JSON.stringify({ image: project.image, credit: project.credit, stockLabel: project.stockLabel, draftLabel: project.draftLabel })};`;
       if (id === '\0virtual:miller-project-image') return `export { default } from ${JSON.stringify(contentFile(root, project.image.path, 'apps/web/src/assets/projects').replaceAll('\\', '/'))};`;
     },

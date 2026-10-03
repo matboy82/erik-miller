@@ -1,33 +1,25 @@
 ---
-import { brand } from 'virtual:miller-brand';
-type NavigationPage = { id: string; kind: string; path: string; title: string };
-interface Props { pages: NavigationPage[] }
-const { pages } = Astro.props as Props;
-const services = pages.filter((page) => page.kind === 'service');
-const areas = pages.filter((page) => page.kind === 'area');
-const hrefFor = (page: NavigationPage) => page.path;
-const labelFor = (page: NavigationPage) => page.id === 'process' ? 'About & process' : page.id === 'portfolio' ? 'Portfolio' : page.id === 'contact' ? 'Contact' : page.title.split(' | ')[0];
+const links = [
+  { label: 'Services', href: '/#services' }, { label: 'Process', href: '/about-process/' },
+  { label: 'Portfolio', href: '/portfolio/' }, { label: 'Reviews', href: '/#reviews' },
+  { label: 'Contact', href: '/contact/' },
+];
+const current = Astro.url.pathname;
 ---
 <nav class="site-nav" aria-label="Main navigation">
-  <ul class="site-nav-list">
-    <li><a href="/">Home</a></li>
-    <li>
-      <details>
-        <summary>Services</summary>
-        <ul>{services.map((page) => <li><a href={hrefFor(page)}>{labelFor(page)}</a></li>)}</ul>
-      </details>
-    </li>
-    <li>
-      <details>
-        <summary>Service areas</summary>
-        <ul>{areas.map((page) => <li><a href={hrefFor(page)}>{page.id.charAt(0).toUpperCase() + page.id.slice(1)}</a></li>)}</ul>
-      </details>
-    </li>
-    <li><a href="/about-process/">About &amp; process</a></li>
-    {brand.review && <li><a href="/about-process/#review-flow-demo">Review-flow demo</a></li>}
-    <li><a href="/portfolio/">Portfolio</a></li>
-    {brand.review && <li><a href="/qualify/">Qualification preview</a></li>}
-    {brand.review && <li><a href="/portfolio/#author-demo">Portfolio editor demo</a></li>}
-    <li><a href="/contact/">Contact</a></li>
-  </ul>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation-links"><span class="menu-icon" aria-hidden="true"><span></span><span></span></span><span class="menu-label">Menu</span></button>
+  <ul class="site-nav-list" id="navigation-links">{links.map((link) => <li><a href={link.href} aria-current={current === link.href ? 'page' : undefined}>{link.label}</a></li>)}</ul>
 </nav>
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const links = document.querySelector<HTMLElement>('.site-nav-list');
+  const close = () => { toggle?.setAttribute('aria-expanded', 'false'); links?.classList.remove('is-open'); };
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open)); links?.classList.toggle('is-open', open);
+  });
+  links?.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') { close(); toggle.focus(); } });
+  document.addEventListener('click', (event) => { if (event.target instanceof Node && !document.querySelector('.site-header')?.contains(event.target)) close(); });
+  window.matchMedia('(min-width: 1061px)').addEventListener('change', close);
+</script>
