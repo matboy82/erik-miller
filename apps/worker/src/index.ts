@@ -622,6 +622,10 @@ async function consumeQueue(batch: MessageBatch<string>, env: IntakeEnvironment)
       await deliverOne(message.body, env);
       message.ack();
     } catch (error) {
+      // Only constant diagnostic codes are logged; never raw vendor responses,
+      // payloads, signed transfer URLs, or exception text containing user data.
+      const category = error instanceof Error && /^[a-z_]{1,80}(?:_\d{3})?$/.test(error.message) ? error.message : 'delivery_failed';
+      console.error(JSON.stringify({ event: 'intake_delivery_retry', category }));
       if (error instanceof Error && error.message === 'delivery_claimed') {
         message.ack();
         continue;

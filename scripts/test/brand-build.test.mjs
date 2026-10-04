@@ -20,6 +20,16 @@ function fixture() {
   return { root, lock, record, save, close() { rmSync(root, { recursive: true, force: true }); } };
 }
 
+test('live hosting needs no invented approval and stays unindexed until explicitly enabled', () => {
+  const root = resolve('.');
+  const live = resolveBuild(root, { SITE_BUILD: 'live' });
+  assert.equal(live.live, true);
+  assert.equal(live.review, false);
+  assert.equal(live.indexed, false);
+  assert.equal(resolveBuild(root, { SITE_BUILD: 'live', PUBLIC_INDEXING_ENABLED: 'true' }).indexed, true);
+  assert.equal(resolveBuild(root, { SITE_BUILD: 'review', PUBLIC_INDEXING_ENABLED: 'true' }).indexed, false);
+});
+
 test('B3 production selects the recorded visual/copy/tagline choice', () => {
   const f = fixture();
   try {

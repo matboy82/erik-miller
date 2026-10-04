@@ -47,12 +47,16 @@ export function readBrandLock(root) {
 
 export function resolveBuild(root, env = process.env) {
   const mode = env.SITE_BUILD ?? 'review';
-  if (!['review', 'production'].includes(mode)) throw Error('Unknown site build mode.');
+  if (!['review', 'live', 'production'].includes(mode)) throw Error('Unknown site build mode.');
   if (env.BRAND_DIRECTION !== undefined || env.BRAND_LOCK_PATH !== undefined || env.BRAND_LOCK !== undefined) throw Error('Brand environment overrides are forbidden.');
   const review = mode === 'review';
-  const choice = review ? { direction: reviewInitialDirection, copyDirection: reviewInitialDirection, taglineId: 'default' } : readBrandLock(root);
+  // Live hosting uses the current design while Erik's content review continues.
+  // It does not manufacture an approval in the historical brand-lock workflow.
+  const live = mode === 'live';
+  const indexed = mode === 'production' || (live && env.PUBLIC_INDEXING_ENABLED === 'true');
+  const choice = review || live ? { direction: reviewInitialDirection, copyDirection: reviewInitialDirection, taglineId: 'default' } : readBrandLock(root);
   const content = { ...copy[choice.copyDirection], tagline: choice.taglineId === 'default' ? copy[choice.copyDirection].tagline : taglines[choice.taglineId] };
-  return { review, direction: choice.direction, copyDirection: choice.copyDirection, taglineId: choice.taglineId, content };
+  return { review, live, indexed, direction: choice.direction, copyDirection: choice.copyDirection, taglineId: choice.taglineId, content };
 }
 
 export function brandCss(root, build) {

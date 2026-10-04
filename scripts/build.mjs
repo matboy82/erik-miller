@@ -27,7 +27,7 @@ export async function buildWeb(mode) {
 
 if (process.argv[1]?.endsWith('build.mjs')) {
   const mode = process.argv[2] ?? 'review';
-  if (!['review', 'production'].includes(mode)) throw new Error(`Unknown build mode: ${mode}`);
+  if (!['review', 'live', 'production'].includes(mode)) throw new Error(`Unknown build mode: ${mode}`);
   await buildWeb(mode);
   run(process.execPath, ['../../node_modules/wrangler/bin/wrangler.js', 'deploy', '--dry-run', '--outdir', 'dist'], { cwd: 'apps/worker', env: { ...process.env, WRANGLER_SEND_METRICS: 'false', WRANGLER_LOG_PATH: resolve('.wrangler/logs') } });
 }

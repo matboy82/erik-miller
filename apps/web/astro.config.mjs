@@ -1,10 +1,11 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
-import { rmSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brandCss, resolveBuild } from '../../scripts/brand-build.mjs';
 import { verifyProduction } from '../../scripts/production-artifact.mjs';
+import { verifyLive } from '../../scripts/live-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
 import { prepareProjectArtifacts } from '../../scripts/project-artifact.mjs';
 import { readPageContent } from '../../scripts/page-content.mjs';
@@ -17,8 +18,8 @@ let pageContent;
 let publicSiteUrl;
 try {
   brand = resolveBuild(root);
-  pageContent = await readPageContent(root, { mode: brand.review ? 'review' : 'production' });
-  if (!brand.review) {
+  pageContent = await readPageContent(root, { mode: brand.review || brand.live ? 'review' : 'production' });
+  if (brand.indexed) {
     const configuredUrl = process.env.PUBLIC_SITE_URL;
     if (!configuredUrl) throw new Error('Production SEO output requires PUBLIC_SITE_URL after the production domain is approved.');
     const parsedUrl = new URL(configuredUrl);
@@ -28,7 +29,7 @@ try {
     publicSiteUrl = parsedUrl.origin;
   }
   project = await readProjectContent(root);
-  if (!brand.review) projectArtifacts = await prepareProjectArtifacts(root, project);
+  if (!brand.review && !brand.live) projectArtifacts = await prepareProjectArtifacts(root, project);
 } catch (error) {
   // The output target is fixed inside this web workspace; never retain stale candidates.
   rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true });
@@ -43,12 +44,16 @@ export default defineConfig({
     name: 'miller-production-gate',
     hooks: { 'astro:build:done': ({ dir }) => {
       const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
-      writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), brand.review
+      if (brand.indexed) {
+        const headers = readFileSync(resolve(root, 'apps/web/public/_headers'), 'utf8').replace(/^\s+X-Robots-Tag:.*\r?\n/gm, '');
+        writeFileSync(resolve(fileURLToPath(dir), '_headers'), headers + '\n/qualify/*\n  X-Robots-Tag: noindex, nofollow\n');
+      }
+      writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), !brand.indexed
         ? 'User-agent: *\nDisallow: /\n'
         : `User-agent: *\nAllow: /\nSitemap: ${publicSiteUrl}/sitemap.xml\n`);
-      if (!brand.review) {
+      if (brand.indexed) {
         try {
-          const approvedPages = pageContent.filter((page) => page.status === 'approved');
+          const approvedPages = brand.live ? pageContent : pageContent.filter((page) => page.status === 'approved');
           const urlEntries = approvedPages.map((page) => `  <url><loc>${escapeXml(`${publicSiteUrl}${page.path}`)}</loc></url>`).join('\n');
           const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`;
           writeFileSync(resolve(fileURLToPath(dir), 'sitemap.xml'), sitemap);
@@ -79,11 +84,15 @@ export default defineConfig({
             ] : []),
           ].join('\n');
           writeFileSync(resolve(fileURLToPath(dir), 'llms.txt'), assistantText);
-          verifyProduction(fileURLToPath(dir), brand.direction, { ...brand, projectArtifacts });
+          if (!brand.live) verifyProduction(fileURLToPath(dir), brand.direction, { ...brand, projectArtifacts });
         } catch (error) {
           rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true });
           throw error;
         }
+      }
+      if (brand.live) {
+        try { verifyLive(fileURLToPath(dir), brand); }
+        catch (error) { rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true }); throw error; }
       }
     } },
   }],

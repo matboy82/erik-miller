@@ -5,6 +5,16 @@
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "keep_vars": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://erik-miller-web.pages.dev",
+    "JOBTREAD_TRANSFER_ORIGINS": "https://storage.googleapis.com,https://cdn.jobtread.com",
+    "ACCESS_TEAM_DOMAIN": "weathered-wind-af3d.cloudflareaccess.com",
+    "ACCESS_AUD": "aeb668870da185ca457600b8c0a45d072088cc6c648a376888016d62fe6911df",
+    "OPERATOR_EMAILS": "matt.boyer@boyerimpactsystems.com,millerremodelingidaho@gmail.com",
+    "GOOGLE_CLIENT_ID": "642130699967-5b5ho8d3m4usvs73v3q9b1nebul48spu.apps.googleusercontent.com",
+    "GOOGLE_BOOKING_CALENDAR_ID": "millerremodelingidaho@gmail.com",
+    "GOOGLE_OAUTH_REDIRECT_URI": "https://erik-miller-worker.matt-boyer.workers.dev/operator/google/callback"
+  },
   "observability": { "enabled": true },
   "r2_buckets": [{ "binding": "INTAKE_PHOTOS", "bucket_name": "miller-intake-photos" }],
   "d1_databases": [

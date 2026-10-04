@@ -6,7 +6,7 @@ const result = spawnSync(process.execPath, [resolve(import.meta.dirname, '../nod
   stdio: 'inherit',
   env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
 });
-if ((result.error || result.status !== 0) && process.argv[2] === 'build' && process.env.SITE_BUILD === 'production') {
+if ((result.error || result.status !== 0) && process.argv[2] === 'build' && ['production', 'live'].includes(process.env.SITE_BUILD)) {
   rmSync(resolve(import.meta.dirname, '../apps/web/dist'), { recursive: true, force: true });
 }
 if (result.error) throw result.error;

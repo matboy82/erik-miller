@@ -59,7 +59,7 @@ export async function deliverPhotos(receiptId: string, jobId: string, photos: Ph
       if (upload?.method !== 'PUT' || !upload.headers || upload.url?.includes(env.JOBTREAD_API_KEY)
         || Object.entries(upload.headers).some(([key, value]) => /authorization|cookie/i.test(key) || typeof value !== 'string' || value.includes(env.JOBTREAD_API_KEY))) throw new Error('photo_transfer_invalid');
       const response = await fetch(transferUrl(upload.url, origins), { method: 'PUT', headers: upload.headers, body: bytes, redirect: 'error', signal: AbortSignal.timeout(30_000) });
-      if (!response.ok) throw new Error('photo_upload_failed');
+      if (!response.ok) throw new Error(`photo_upload_failed_${response.status}`);
       await claim('file_writing');
       const fileResult = await call({ createFile: { $: { name: `Project photo ${index + 1}`, targetId: jobId, targetType: 'job', uploadRequestId: row.upload_id }, createdFile: { id: {} } } });
       const id = (fileResult.createFile as { createdFile?: { id?: string } })?.createdFile?.id;

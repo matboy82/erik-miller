@@ -13,6 +13,7 @@
     "build:web": "npm run build --workspace @miller/web",
     "build:worker": "npm run build --workspace @miller/worker",
     "build:production": "node scripts/build.mjs production",
+    "build:live": "node scripts/build.mjs live",
     "check:production": "node scripts/check-production.mjs",
     "check:design": "node scripts/check-design.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",

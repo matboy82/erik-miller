@@ -13,7 +13,7 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
   mkdirSync(parent, { recursive: true });
   const root = mkdtempSync(resolve(parent, 'brand-fixture-'));
   try {
-    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'scripts/page-content.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
+    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/live-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'scripts/page-content.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
       const target = resolve(root, name);
       mkdirSync(resolve(target, '..'), { recursive: true });
       cpSync(resolve(repository, name), target, { recursive: true });

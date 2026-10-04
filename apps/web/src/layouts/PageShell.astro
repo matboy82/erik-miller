@@ -29,7 +29,8 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#1B2420" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
+    <meta name="robots" content={brand.indexed && !qualification ? 'index, follow' : 'noindex, nofollow'} />
+    {brand.indexed && !qualification && <link rel="canonical" href={new URL(page.path, Astro.site)} />}
     <meta name="description" content={qualification ? intro : page.description} />
     <title>{qualification ? 'Your project | Miller Remodeling' : page.title}</title>
     <style is:inline set:html={css} />

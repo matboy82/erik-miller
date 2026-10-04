@@ -64,7 +64,7 @@ export function placeholderStatuses(root) {
 
 export async function readProjectContent(root, env = process.env) {
   const mode = env.SITE_BUILD ?? 'review';
-  if (!['review', 'production'].includes(mode) || ['PROJECT_CONTENT_PATH', 'PLACEHOLDER_PATH', 'CONTENT_APPROVAL', 'CONTENT_FIXTURE'].some((key) => env[key] !== undefined)) throw Error('Content mode/path overrides are forbidden');
+  if (!['review', 'live', 'production'].includes(mode) || ['PROJECT_CONTENT_PATH', 'PLACEHOLDER_PATH', 'CONTENT_APPROVAL', 'CONTENT_FIXTURE'].some((key) => env[key] !== undefined)) throw Error('Content mode/path overrides are forbidden');
   const records = readdirSync(resolve(root, 'apps/web/src/content/projects'));
   if (records.length !== 1 || records[0] !== 'representative.json') throw Error('Expected only the required representative project record');
   let record;

@@ -1,6 +1,8 @@
 declare module 'virtual:miller-brand' {
   export const brand: {
     review: boolean;
+    live: boolean;
+    indexed: boolean;
     direction: 'A' | 'B' | 'C';
     copyDirection: 'A' | 'B' | 'C';
     taglineId: string;
