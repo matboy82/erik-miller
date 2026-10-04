@@ -4,7 +4,11 @@
 
 Review builds stay `noindex, nofollow` and `robots.txt` disallows crawling. They do not publish canonicals, a sitemap, assistant-readable production files, or structured data based on Draft page copy.
 
-## Production build inputs
+## Published live build
+
+The published site uses `SITE_BUILD=live` and `PUBLIC_INDEXING_ENABLED=false`, serving current content without the review badge while retaining noindex controls. The canonical origin is `https://millerremodelingidaho.com`. Once content and the actual domain are ready, enable `PUBLIC_INDEXING_ENABLED=true` and rebuild to publish canonicals, sitemap and assistant-readable output. Qualification stays noindex. See [DNS cutover](dns-cutover.md).
+
+## Legacy strict production build inputs
 
 After production domain approval, set `PUBLIC_SITE_URL` to the HTTPS origin only, for example `https://example.com/`. The build rejects a missing or malformed value. Production output derives canonicals and `sitemap.xml` from page records that pass the existing brand, page-content, project-content, and placeholder guards. `llms.txt` uses the same eligible page records; it is not a separate source of facts.
 

@@ -58,7 +58,16 @@ export async function deliverPhotos(receiptId: string, jobId: string, photos: Ph
       const upload = result.uploadRequest as { url?: string; method?: string; headers?: Record<string, string> };
       if (upload?.method !== 'PUT' || !upload.headers || upload.url?.includes(env.JOBTREAD_API_KEY)
         || Object.entries(upload.headers).some(([key, value]) => /authorization|cookie/i.test(key) || typeof value !== 'string' || value.includes(env.JOBTREAD_API_KEY))) throw new Error('photo_transfer_invalid');
-      const response = await fetch(transferUrl(upload.url, origins), { method: 'PUT', headers: upload.headers, body: bytes, redirect: 'error', signal: AbortSignal.timeout(30_000) });
+      let response: Response;
+      try {
+        response = await fetch(transferUrl(upload.url, origins), { method: 'PUT', headers: upload.headers, body: bytes, redirect: 'manual', signal: AbortSignal.timeout(30_000) });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '';
+        console.error(JSON.stringify({ event: 'photo_upload_transport', typeError: error instanceof TypeError,
+          redirectError: /redirect/i.test(message), lengthError: /length/i.test(message), headerError: /header/i.test(message),
+          networkError: /network|connection|fetch failed/i.test(message), abortError: /abort|timeout/i.test(message) }));
+        throw new Error('photo_upload_transport_failed', { cause: error });
+      }
       if (!response.ok) throw new Error(`photo_upload_failed_${response.status}`);
       await claim('file_writing');
       const fileResult = await call({ createFile: { $: { name: `Project photo ${index + 1}`, targetId: jobId, targetType: 'job', uploadRequestId: row.upload_id }, createdFile: { id: {} } } });
@@ -71,7 +80,7 @@ export async function deliverPhotos(receiptId: string, jobId: string, photos: Ph
     const file = readback.file as { id?: string; job?: { id?: string }; url?: string };
     if (file?.id !== row.file_id || file.job?.id !== jobId) throw new Error('photo_readback_failed');
     if (file.url?.includes(env.JOBTREAD_API_KEY)) throw new Error('photo_transfer_invalid');
-    const download = await fetch(transferUrl(file.url, origins), { redirect: 'error', signal: AbortSignal.timeout(30_000) });
+    const download = await fetch(transferUrl(file.url, origins), { redirect: 'manual', signal: AbortSignal.timeout(30_000) });
     if (!download.ok || Number(download.headers.get('Content-Length')) > photo.size) throw new Error('photo_readback_failed');
     const reader = download.body?.getReader();
     if (!reader) throw new Error('photo_readback_failed');

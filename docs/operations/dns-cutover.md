@@ -1,15 +1,15 @@
 # Production DNS cutover
 
-**Status**: Draft. Matt/BIS must review; no cutover is authorized.
+The site is published at https://erik-miller-web.pages.dev. The future business hostname is **millerremodelingidaho.com**. Business DNS is unchanged.
 
-Before release: finish approved scope, QA, code/adversarial and stakeholder gates; retrieve source stack ADR; record Erik's direction/tagline/mark; resolve every placeholder. Verify production contains one token set and no toolbar/switching scripts. Approve canonicals, sitemap, analytics, security headers, and removal of draft noindex controls. Bootstrap is not release-ready.
+Pages production uses `SITE_BUILD=live`, `PUBLIC_INDEXING_ENABLED=false` and `PUBLIC_SITE_URL=https://millerremodelingidaho.com`. Update content through this repository and the existing Pages Git build. Indexing stays disabled until the content and domain are ready.
 
-Record observed Porkbun records/TTLs, current and proposed hosting targets, TLS readiness, responsible people, window, monitoring, rollback triggers, and known-good deployment. Lower TTL ahead of the authorized window if appropriate. Obtain explicit release and DNS-change authorization.
+1. Finish content/images, confirm contact details and the existing URL redirect map, and complete the remaining calendar checks in [account status](account-connection-status.md).
+2. Open Cloudflare **Workers & Pages > erik-miller-web > Custom domains > Set up a custom domain**. Add the business hostname and follow that dashboard's actual DNS instructions. Record existing web records and TTLs first. Preserve mail/MX/TXT and unrelated records.
+3. Set up the desired www hostname and canonical redirect. Both hostnames are already permitted by the Worker and Turnstile. Verify domain HTTPS before enabling indexing.
+4. In **erik-miller-web > Settings > Variables and Secrets > Production**, change `PUBLIC_INDEXING_ENABLED` to `true`. Keep `SITE_BUILD=live` and the canonical origin above. Redeploy and check canonicals, sitemap, robots and public pages. Qualification remains noindex.
+5. Submit a marked test inquiry on the business domain and verify JobTread delivery, photos and booking reference synchronization. Check mobile navigation and old URL redirects.
 
-After authorization:
-1. Deploy the reviewed artifact to a separate production project.
-2. Verify TLS/domain mapping, then change only the approved web records. Preserve mail/unrelated records.
-3. Verify resolution, HTTPS, redirects, pages/assets, real live inquiry delivery to JobTread, photos, notifications, and other launch-critical paths. Confirm analytics/alerts without logging PII.
-4. Record production verification and handover evidence.
+Operator access stays on the Worker hostname. Exact DNS targets must come from this account's custom-domain setup.
 
-If agreed critical checks fail, restore recorded prior web records and known-good deployment; preserve leads and prevent duplicate delivery. Verify rollback and return to review before retrying release. Fill exact targets, TTLs, window, and rollback triggers from real infrastructure before approval.
+If launch-critical checks fail, restore recorded prior web DNS and the known-good website deployment. Preserve accepted inquiries and staging objects. Disable `BOOKING_SYNC_ENABLED` to pause calendar processing. Use the existing inquiry receipt for recovery to avoid duplicate JobTread writes.

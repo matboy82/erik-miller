@@ -136,7 +136,10 @@ function vendor(failFile = false) {
   let accountName = '';
   let locationName = '';
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
-    if (String(url).startsWith('https://files.test')) return new Response(init?.method === 'PUT' ? null : image, { status: 200 });
+    if (String(url).startsWith('https://files.test')) {
+      assert.equal(init?.redirect, 'manual', 'Workers must reject redirects through response status without following them');
+      return new Response(init?.method === 'PUT' ? null : image, { status: 200 });
+    }
     const query = JSON.parse(String(init!.body)).query;
     const operation = Object.keys(query).find((key) => key !== '$')!;
     calls.push(operation);
@@ -247,7 +250,8 @@ test('automatic Google sync creates, reschedules and cancels one associated task
   const calls: string[] = [];
   let task: Record<string, unknown> | null = null;
   let tick = 0;
-  globalThis.fetch = (async (url: string | URL | Request) => {
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    assert.equal(init?.redirect, 'manual');
     if (String(url).startsWith('https://oauth2.googleapis.com')) return Response.json({ access_token: 'synthetic-google-token' });
     assert.match(String(url), /^https:\/\/www.googleapis.com\/calendar\/v3\/calendars\/booking-calendar\/events/);
     return Response.json({ items: event ? [event] : [], nextSyncToken: `tick-${++tick}` });
@@ -287,7 +291,8 @@ test('Google changes are saved while lead delivery is pending and ambiguous task
   Object.assign(env!, { BOOKING_SYNC_ENABLED: 'true', GOOGLE_CLIENT_ID: 'client', GOOGLE_CLIENT_SECRET: 'secret', GOOGLE_REFRESH_TOKEN: 'refresh', GOOGLE_BOOKING_CALENDAR_ID: 'booking-calendar' });
   const original = globalThis.fetch;
   let first = true;
-  globalThis.fetch = (async (url: string | URL | Request) => {
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    assert.equal(init?.redirect, 'manual');
     if (String(url).startsWith('https://oauth2.googleapis.com')) return Response.json({ access_token: 'synthetic-google-token' });
     const items = first ? [{ id: 'event', description: receiptId, start: { dateTime: '2026-10-20T10:00:00-06:00' }, end: { dateTime: '2026-10-20T10:30:00-06:00' } }] : [];
     first = false;
@@ -325,7 +330,10 @@ test('Google consent state is bound to operator and single use; refresh tokens a
   const state = authorize.searchParams.get('state');
   const callback = new Request(`https://worker.test/operator/google/callback?code=synthetic-code&state=${state}`);
   const original = globalThis.fetch;
-  globalThis.fetch = (async () => Response.json({ refresh_token: 'synthetic-refresh-token', scope: 'https://www.googleapis.com/auth/calendar.events.readonly' })) as typeof fetch;
+  globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+    assert.equal(init?.redirect, 'manual');
+    return Response.json({ refresh_token: 'synthetic-refresh-token', scope: 'https://www.googleapis.com/auth/calendar.events.readonly' });
+  }) as typeof fetch;
   try {
     assert.equal((await googleAuthorization(callback, env!, 'operator@example.invalid')).status, 303);
     const stored = String(db.raw.prepare("SELECT value FROM integration_state WHERE name = 'google-refresh-token'").get()!.value);

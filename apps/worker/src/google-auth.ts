@@ -41,7 +41,7 @@ export async function googleAuthorization(request: Request, env: GoogleAuthEnvir
   if (!stored) return Response.json({ error: 'google_authorization_expired' }, { status: 400 });
   const consent = JSON.parse(stored.value) as { email: string; expires: number };
   if (consent.email !== email || consent.expires < Date.now()) return Response.json({ error: 'google_authorization_expired' }, { status: 400 });
-  const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10_000),
+  const response = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(10_000),
     body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, code, redirect_uri: redirect.href, grant_type: 'authorization_code' }) });
   const credentials = await response.json() as { refresh_token?: string; scope?: string };
   if (!response.ok || !credentials.refresh_token || !credentials.scope?.split(' ').includes('https://www.googleapis.com/auth/calendar.events.readonly')) return Response.json({ error: 'google_authorization_failed' }, { status: 400 });

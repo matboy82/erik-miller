@@ -1,3 +1,5 @@
+> Current evidence: [account status](account-connection-status.md) and [production review](production-review-2026-10-04.md). Earlier disabled-candidate statements below describe the October 3 setup.
+
 # JobTread and booking setup
 
 Updated 2026-10-03. Matt requested direct implementation, with one review before production. Earlier SDD gate text is historical; this guide describes the current code and remaining account setup.

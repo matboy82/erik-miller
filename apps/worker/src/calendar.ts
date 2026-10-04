@@ -36,7 +36,7 @@ export async function syncCalendar(env: CalendarEnvironment, call: Call): Promis
     if (!refresh) throw new Error('calendar_auth_not_configured');
     const state = await db.prepare("SELECT value FROM integration_state WHERE name = 'google-calendar'").first<{ value: string }>();
     let cursor: Cursor = JSON.parse(state?.value ?? '{}');
-    const auth = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10_000),
+    const auth = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(10_000),
       body: new URLSearchParams({ client_id: env.GOOGLE_CLIENT_ID, client_secret: env.GOOGLE_CLIENT_SECRET, refresh_token: refresh, grant_type: 'refresh_token' }) });
     if (!auth.ok) throw new Error('calendar_auth_failed');
     const credentials = await auth.json() as { access_token?: string };
@@ -48,7 +48,7 @@ export async function syncCalendar(env: CalendarEnvironment, call: Call): Promis
       url.searchParams.set('timeZone', 'America/Denver');
       if (cursor.syncToken) url.searchParams.set('syncToken', cursor.syncToken);
       if (cursor.pageToken) url.searchParams.set('pageToken', cursor.pageToken);
-      const response = await fetch(url, { headers: { Authorization: `Bearer ${credentials.access_token}` }, redirect: 'error', signal: AbortSignal.timeout(10_000) });
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${credentials.access_token}` }, redirect: 'manual', signal: AbortSignal.timeout(10_000) });
       if (response.status === 410) {
         cursor = {};
         const reset = await db.prepare("UPDATE integration_state SET value = '{}' WHERE name = 'google-calendar' AND lease_token = ?1").bind(token).run();
