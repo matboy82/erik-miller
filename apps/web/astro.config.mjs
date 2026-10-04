@@ -9,6 +9,7 @@ import { verifyLive } from '../../scripts/live-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
 import { prepareProjectArtifacts } from '../../scripts/project-artifact.mjs';
 import { readPageContent } from '../../scripts/page-content.mjs';
+import { siteOrigin, prepareSocialImages, crawlerOutput, verifyLaunchFacts } from '../../scripts/site-seo.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 let brand;
@@ -19,6 +20,7 @@ let publicSiteUrl;
 try {
   brand = resolveBuild(root);
   pageContent = await readPageContent(root, { mode: brand.review || brand.live ? 'review' : 'production' });
+  if (brand.live && brand.indexed) verifyLaunchFacts();
   if (brand.indexed) {
     const configuredUrl = process.env.PUBLIC_SITE_URL;
     if (!configuredUrl) throw new Error('Production SEO output requires PUBLIC_SITE_URL after the production domain is approved.');
@@ -27,6 +29,7 @@ try {
       throw new Error('PUBLIC_SITE_URL must be an HTTPS origin with no credentials, path, query, or fragment.');
     }
     publicSiteUrl = parsedUrl.origin;
+    if (brand.live && publicSiteUrl !== siteOrigin) throw Error('Canonical domain must match site.json.');
   }
   project = await readProjectContent(root);
   if (!brand.review && !brand.live) projectArtifacts = await prepareProjectArtifacts(root, project);
@@ -39,14 +42,15 @@ try {
 export default defineConfig({
   output: 'static',
   build: { inlineStylesheets: 'always' },
-  site: publicSiteUrl,
+  site: publicSiteUrl ?? siteOrigin,
+  trailingSlash: 'always',
   integrations: [react(), {
     name: 'miller-production-gate',
-    hooks: { 'astro:build:done': ({ dir }) => {
+    hooks: { 'astro:build:done': async ({ dir }) => {
       const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
       if (brand.indexed) {
         const headers = readFileSync(resolve(root, 'apps/web/public/_headers'), 'utf8').replace(/^\s+X-Robots-Tag:.*\r?\n/gm, '');
-        writeFileSync(resolve(fileURLToPath(dir), '_headers'), headers + '\n/qualify/*\n  X-Robots-Tag: noindex, nofollow\n');
+        writeFileSync(resolve(fileURLToPath(dir), '_headers'), headers + '\n/qualify/\n  X-Robots-Tag: noindex, nofollow\n\n/qualify/*\n  X-Robots-Tag: noindex, nofollow\n\n/404.html\n  X-Robots-Tag: noindex, nofollow\n');
       }
       writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), !brand.indexed
         ? 'User-agent: *\nDisallow: /\n'
@@ -89,6 +93,13 @@ export default defineConfig({
           rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true });
           throw error;
         }
+      }
+      if (brand.live || brand.review) {
+        await prepareSocialImages(fileURLToPath(dir), pageContent);
+        const crawlers = crawlerOutput(pageContent, brand.indexed);
+        writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), crawlers.robots);
+        writeFileSync(resolve(fileURLToPath(dir), 'sitemap.xml'), crawlers.sitemap);
+        writeFileSync(resolve(fileURLToPath(dir), 'llms.txt'), crawlers.llms);
       }
       if (brand.live) {
         try { verifyLive(fileURLToPath(dir), brand); }

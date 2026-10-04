@@ -2,8 +2,8 @@
   "id": "adu",
   "kind": "service",
   "path": "/adu-mother-in-law/",
-  "title": "ADU and mother-in-law suites | Miller Remodeling",
-  "description": "Thoughtfully planned ADUs and mother-in-law spaces for a more flexible way to live.",
+  "title": "ADU & Mother-in-Law Suites in Treasure Valley | Miller Remodeling",
+  "description": "Plan adu & mother-in-law suites with Miller Remodeling in Idaho’s Treasure Valley. Discuss your goals, layout and selections before construction.",
   "heading": "Close to home. A space of their own.",
   "intro": "Thoughtfully planned ADUs and mother-in-law spaces for a more flexible way to live.",
   "sections": [
@@ -30,5 +30,15 @@
     "branding-kit"
   ],
   "status": "draft",
-  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
+  "faqs": [
+    {
+      "question": "How do I start a close to home. a space of their own project?",
+      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+    },
+    {
+      "question": "Are design and selections part of the planning phase?",
+      "answer": "Yes. The paid design phase covers floorplans, selections and a 3D walkthrough before construction. Discuss the deliverables for your particular scope during consultation."
+    }
+  ]
 }

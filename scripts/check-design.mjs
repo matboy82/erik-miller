@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 
@@ -9,7 +10,7 @@ function collect(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = resolve(directory, entry.name);
     if (entry.isDirectory()) collect(path);
-    else if (entry.name.endsWith('.html')) files.push(path);
+    else if (entry.name.endsWith('.html') && entry.name !== '404.html') files.push(path);
   }
 }
 collect(output);
@@ -40,7 +41,11 @@ for (const file of files) {
 const home = readFileSync(resolve(output, 'index.html'), 'utf8');
 assert.equal((home.match(/class="service-card reveal"/g) ?? []).length, 6);
 assert.equal((home.match(/class="step-number"/g) ?? []).length, 5);
-assert.equal((home.match(/class="review-card reveal"/g) ?? []).length, 3);
+assert.equal((home.match(/class="review-card reveal"/g) ?? []).length, 0, 'no invented social proof');
+assert.match(home, /Meet Erik/);
+assert.match(home, /hero-datum/);
+assert.doesNotMatch(home, /font-family:[^;}]*Fraunces/);
+assert.ok(Buffer.byteLength(home) < 200_000, 'homepage HTML budget');
 assert.match(home, /Design is a paid phase/);
 const portfolio = readFileSync(resolve(output, 'portfolio/index.html'), 'utf8');
 for (const heading of ['The challenge', 'The design', 'The result']) assert.ok(portfolio.includes(heading));

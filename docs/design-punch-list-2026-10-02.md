@@ -90,3 +90,5 @@ before writing code. In particular: no banned default font pairings, no
 stock photography at launch, no lorem-grade copy, the full SEO/AI ship list
 (keyword title, real meta description, canonical, OG/Twitter, JSON-LD,
 robots.txt, sitemap.xml, llms.txt), and the pre-ship differentiation review.
+
+Implementation/readiness: [Miller BIS design system](brand/bis-design-system.md) and [SEO/domain launch checklist](operations/seo-domain-launch-checklist.md). The BIS standard supersedes the earlier Fraunces/Inter and numerical placeholder proof directions.

@@ -2,8 +2,8 @@
   "id": "bathroom",
   "kind": "service",
   "path": "/bathroom-remodeling/",
-  "title": "Bathroom remodeling | Miller Remodeling",
-  "description": "Bathroom remodeling that makes room for comfort, thoughtful storage, and the details you notice every day.",
+  "title": "Bathroom Remodeling in Treasure Valley | Miller Remodeling",
+  "description": "Plan bathroom remodeling with Miller Remodeling in Idaho’s Treasure Valley. Discuss your goals, layout and selections before construction.",
   "heading": "A quieter start. A better end to the day.",
   "intro": "Bathroom remodeling that makes room for comfort, thoughtful storage, and the details you notice every day.",
   "sections": [
@@ -30,5 +30,15 @@
     "branding-kit"
   ],
   "status": "draft",
-  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
+  "faqs": [
+    {
+      "question": "How do I start a a quieter start. a better end to the day project?",
+      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+    },
+    {
+      "question": "Are design and selections part of the planning phase?",
+      "answer": "Yes. The paid design phase covers floorplans, selections and a 3D walkthrough before construction. Discuss the deliverables for your particular scope during consultation."
+    }
+  ]
 }

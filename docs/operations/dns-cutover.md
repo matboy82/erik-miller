@@ -4,6 +4,8 @@ The site is published at https://erik-miller-web.pages.dev. The future business 
 
 Pages production uses `SITE_BUILD=live`, `PUBLIC_INDEXING_ENABLED=false` and `PUBLIC_SITE_URL=https://millerremodelingidaho.com`. Update content through this repository and the existing Pages Git build. Indexing stays disabled until the content and domain are ready.
 
+See the [SEO/domain launch checklist](seo-domain-launch-checklist.md) for required factual inputs and the exact indexing switches.
+
 1. Finish content/images, confirm contact details and the existing URL redirect map, and complete the remaining calendar checks in [account status](account-connection-status.md).
 2. Open Cloudflare **Workers & Pages > erik-miller-web > Custom domains > Set up a custom domain**. Add the business hostname and follow that dashboard's actual DNS instructions. Record existing web records and TTLs first. Preserve mail/MX/TXT and unrelated records.
 3. Set up the desired www hostname and canonical redirect. Both hostnames are already permitted by the Worker and Turnstile. Verify domain HTTPS before enabling indexing.

@@ -9,7 +9,8 @@
   --color-paper: var(--brand-paper);
   --color-accent: var(--brand-clay);
   --color-surface: var(--brand-stone);
-  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Archivo', Arial, sans-serif;
+  --font-display: 'Newsreader', Georgia, serif;
   --color-rule: var(--brand-brass);
   --color-decoration: var(--brand-sage);
   --heading-tracking: -.025em;

@@ -2,9 +2,9 @@
   "id": "home",
   "kind": "home",
   "path": "/",
-  "title": "Home | Miller Remodeling",
-  "description": "Kitchens, baths, and additions — planned with an in-house designer and 3D walkthroughs before a single wall comes down.",
-  "heading": "Designed first. Built right.",
+  "title": "Kitchen & Bathroom Remodeling in Treasure Valley | Miller Remodeling",
+  "description": "Miller Remodeling plans kitchens, bathrooms and additions in Idaho’s Treasure Valley with an in-house designer and 3D walkthroughs before construction.",
+  "heading": "Your Treasure Valley remodel starts with a plan.",
   "intro": "Kitchens, baths, and additions — planned with an in-house designer and 3D walkthroughs before a single wall comes down.",
   "sections": [
     {
@@ -35,5 +35,19 @@
     "branding-kit"
   ],
   "status": "draft",
-  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
+  "faqs": [
+    {
+      "question": "What happens before construction begins?",
+      "answer": "Miller Remodeling starts with consultation, then a paid design phase. Floorplans, selections and a 3D walkthrough let you review the proposed space before construction begins."
+    },
+    {
+      "question": "What should I include in my project inquiry?",
+      "answer": "Describe the rooms you want to change, your location, timing and the problems you want to solve. The project form lets you add photos so Erik can understand the starting point."
+    },
+    {
+      "question": "Can I see the design before demolition?",
+      "answer": "Yes. Miller Remodeling’s design process includes a 3D walkthrough so you can review the layout and selections before demolition."
+    }
+  ]
 }

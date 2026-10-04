@@ -1,7 +1,7 @@
 * { box-sizing: border-box; }
 :root { --space-section: clamp(64px, 8vw, 120px); }
 html { scroll-behavior: smooth; scroll-padding-top: 110px; }
-body { margin: 0; background: var(--color-paper); color: var(--color-text); font-family: 'Inter', Arial, sans-serif; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--color-paper); color: var(--color-text); font-family: var(--font-body, 'Archivo', Arial, sans-serif); line-height: 1.65; -webkit-font-smoothing: antialiased; }
 ::selection { background: #a8824a; color: #fff; }
 a { color: inherit; text-underline-offset: 5px; transition: color .2s, background .2s; }
 a:hover { color: var(--brand-clay); }
@@ -304,3 +304,25 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } .reveal.will-reveal { opacity: 1; transform: none; } }
 
 .reveal:focus-within { opacity: 1; transform: none; }
+
+/* Miller's drawing-sheet treatment: numbered scope, brass datum and a visible plan sequence. */
+.hero-datum { display:flex; justify-content:space-between; align-items:center; gap:24px; border-top:1px solid #c6a46f80; padding-top:20px; margin-top:44px; max-width:740px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+.hero-datum strong { font-weight:400; color:#e1c89e; }
+.hero-plan { display:flex; flex-wrap:wrap; gap:8px 20px; margin:20px 0 0; padding:0; list-style:none; font-size:12px; }
+.hero-plan li { display:flex; gap:8px; align-items:center; }
+.hero-plan span { color:#e1c89e; font-variant-numeric:tabular-nums; }
+.home-hero::after { content:''; position:absolute; right:3.5%; top:48px; bottom:70px; width:22%; border:1px solid #ffffff35; border-left:0; pointer-events:none; z-index:-1; }
+.faq-section { padding-block:var(--space-section); border-top:1px solid #1b242025; }
+.faq-list { max-width:900px; }
+.faq-list article { padding:24px 0; border-top:1px solid #1b242025; }
+.faq-list h3 { font-size:clamp(23px,2.5vw,30px); }
+.faq-list p { max-width:70ch; }
+.breadcrumbs { background:var(--brand-paper); padding-block:14px; font-size:12px; }
+.breadcrumbs ol { display:flex; flex-wrap:wrap; gap:10px; list-style:none; margin:0; padding:0; }
+.breadcrumbs li+li::before { content:'/'; padding-right:10px; color:#765b31; }
+@media(max-width:800px) { .home-hero::after { display:none; } .hero-datum { align-items:flex-start; flex-direction:column; gap:8px; } }
+
+.home-hero .hero-content { padding-block:48px; }
+.home-hero h1 { font-size:clamp(42px,5.5vw,78px); line-height:1.05; max-width:840px; }
+.home-hero .hero-actions { margin-top:24px; }
+.home-hero .hero-datum { margin-top:24px; }

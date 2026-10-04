@@ -2,8 +2,8 @@
   "id": "process",
   "kind": "information",
   "path": "/about-process/",
-  "title": "About and process | Miller Remodeling",
-  "description": "One team. A considered plan. An in-house designer to help you see the space before we build it.",
+  "title": "Remodeling Design Process in Treasure Valley | Miller Remodeling",
+  "description": "See Miller Remodeling’s paid design process: consultation, floorplans, selections and a 3D walkthrough before construction in Idaho’s Treasure Valley.",
   "heading": "A good remodel starts on paper.",
   "intro": "One team. A considered plan. An in-house designer to help you see the space before we build it.",
   "sections": [
@@ -38,5 +38,19 @@
     "branding-kit"
   ],
   "status": "draft",
-  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production."
+  "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
+  "faqs": [
+    {
+      "question": "What happens before construction begins?",
+      "answer": "Miller Remodeling starts with consultation, then a paid design phase. Floorplans, selections and a 3D walkthrough let you review the proposed space before construction begins."
+    },
+    {
+      "question": "What should I include in my project inquiry?",
+      "answer": "Describe the rooms you want to change, your location, timing and the problems you want to solve. The project form lets you add photos so Erik can understand the starting point."
+    },
+    {
+      "question": "Can I see the design before demolition?",
+      "answer": "Yes. Miller Remodeling’s design process includes a 3D walkthrough so you can review the layout and selections before demolition."
+    }
+  ]
 }

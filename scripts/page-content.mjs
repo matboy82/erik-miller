@@ -29,6 +29,7 @@ export const pageSchema = z.object({
   sources: z.array(z.enum(['mr06-story', 'mr06-spec', 'branding-kit'])).min(1),
   status: z.enum(['draft', 'approved']), draftReason: plainText.optional(),
   approval: z.object({ approvedBy: z.literal('Erik Miller'), approvedOn: isoDate, evidence: plainText, contentSha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict().optional(),
+  faqs: z.array(z.object({ question: plainText, answer: plainText }).strict()).min(1).optional(),
 }).strict().superRefine((page, context) => {
   if (page.status === 'draft' && (!page.draftReason || page.approval)) context.addIssue({ code: 'custom', message: 'Draft pages require a reason and cannot carry approval' });
   if (page.status === 'approved' && (!page.approval || page.draftReason)) context.addIssue({ code: 'custom', message: 'Approved pages require exact approval and cannot retain a Draft reason' });

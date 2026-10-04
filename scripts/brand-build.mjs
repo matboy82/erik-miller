@@ -61,14 +61,14 @@ export function resolveBuild(root, env = process.env) {
 
 export function brandCss(root, build) {
   const files = { A: 'tokens.css', B: 'direction-b.css', C: 'direction-c.css' };
-  const fonts = { A: 'fraunces', B: 'archivo', C: 'newsreader' };
+  const fonts = { A: 'newsreader', B: 'archivo', C: 'newsreader' };
   const selected = build.review ? directions : [build.direction];
   const tokens = selected.map((direction) => {
     const css = readFileSync(resolve(root, 'apps/web/src/styles', files[direction]), 'utf8');
     return build.review && direction !== 'A' ? css.replace(':root', `:root[data-theme="${direction}"]`) : css;
   }).join('\n');
   const require = createRequire(import.meta.url);
-  const fontCss = ['inter', ...selected.map((direction) => fonts[direction])].map((font) => {
+  const fontCss = [...new Set(['archivo', ...selected.map((direction) => fonts[direction])])].map((font) => {
     const file = require.resolve(`@fontsource/${font}/latin-400.css`);
     const css = readFileSync(file, 'utf8');
     // Embed only the selected WOFF2 file, avoiding Vite's unused imported font copies.

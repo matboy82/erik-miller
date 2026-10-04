@@ -11,7 +11,7 @@ export function verifyLive(output, { indexed }) {
     }
   }
   walk(output);
-  const pages = files.filter(path => path.endsWith('.html'));
+  const pages = files.filter(path => path.endsWith('.html') && !path.endsWith('404.html'));
   if (pages.length !== 17) throw Error('Live output must include all 17 website routes.');
   for (const file of files.filter(path => /\.(html|js|css|json|map|txt|xml)$/.test(path))) {
     const text = readFileSync(file, 'utf8');
@@ -19,6 +19,11 @@ export function verifyLive(output, { indexed }) {
     if (file.endsWith('.html')) {
       if (text.includes('REVIEW BUILD')) throw Error('Review badge found in live output.');
       if (!indexed && !/<meta\s+name="robots"\s+content="noindex, nofollow"/.test(text)) throw Error('Unindexed live page is missing its robots control.');
+      if (indexed) {
+        if (/\/_astro\/stock-[^" ]+/.test(text)) throw Error('Stock photography blocks the business launch. Replace used imagery with client work.');
+        const visible = text.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ');
+        if (/\[[^\]]+\]/.test(visible)) throw Error('Unresolved business facts block the business launch.');
+      }
     }
   }
   const robots = readFileSync(join(output, 'robots.txt'), 'utf8');

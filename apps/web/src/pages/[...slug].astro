@@ -4,6 +4,7 @@ import ContactForm from '../components/ContactForm';
 import PortfolioContent from '../components/PortfolioContent.astro';
 import ProcessBand from '../components/ProcessBand.astro';
 import PageShell from '../layouts/PageShell.astro';
+import { identity, publicAddress } from '../../../../scripts/site-seo.mjs';
 import { staticPagePath } from '../../../../scripts/page-content.mjs';
 import QualificationWizard from '../components/QualificationWizard';
 export async function getStaticPaths() {
@@ -23,7 +24,7 @@ const { page, qualification = false } = Astro.props;
   {qualification ? <div class="section-wrap"><QualificationWizard client:load /></div> : page.id === 'portfolio' ? <PortfolioContent /> : <>
     {page.id === 'process' && <ProcessBand />}
     {page.id !== 'contact' && <div class="section-wrap editorial-sections">{page.sections.map((section: { heading: string; paragraphs: string[] }, index: number) => <section class="editorial-row reveal"><div><p class="eyebrow">0{index + 1} / {page.kind === 'area' ? 'Your neighborhood' : 'Thoughtfully planned'}</p><h2>{section.heading}</h2></div><div>{section.paragraphs.map((paragraph: string) => <p>{paragraph}</p>)}</div></section>)}</div>}
-    {page.kind === 'contact' && <div class="section-wrap contact-details"><p>Call <a href="tel:+12086084439">(208) 608-4439</a> · [Business hours]</p><p>[Business email] · [Business address]</p></div>}
+    {page.kind === 'contact' && <div class="section-wrap contact-details"><p>Call <a href={`tel:${identity.telephone}`}>(208) 608-4439</a> · [Business hours]</p><p><a href={`mailto:${identity.email}`}>{identity.email}</a> · {publicAddress()}</p></div>}
     {page.id === 'contact' ? <div class="section-wrap"><ContactForm client:load /></div> : <section class="cta-band"><div class="section-wrap reveal"><p class="eyebrow">Start with a conversation</p><h2>Good work starts<br />with a good plan.</h2><p>Tell us what you have in mind. We’ll take it from there.</p><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a></div></section>}
   </>}
 </PageShell>

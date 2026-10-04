@@ -13,7 +13,7 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
   mkdirSync(parent, { recursive: true });
   const root = mkdtempSync(resolve(parent, 'brand-fixture-'));
   try {
-    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/live-artifact.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'scripts/page-content.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
+    for (const name of ['apps/web/src', 'apps/web/public', 'apps/web/astro.config.mjs', 'apps/web/tsconfig.json', 'apps/web/package.json', 'apps/web/node_modules/cookie', 'scripts/brand-build.mjs', 'scripts/production-artifact.mjs', 'scripts/live-artifact.mjs', 'scripts/site-seo.mjs', 'scripts/project-content.mjs', 'scripts/project-artifact.mjs', 'scripts/page-content.mjs', 'docs/content', 'PLACEHOLDERS.md']) {
       const target = resolve(root, name);
       mkdirSync(resolve(target, '..'), { recursive: true });
       cpSync(resolve(repository, name), target, { recursive: true });
@@ -54,6 +54,8 @@ function stageProductionRendererFixture(root) {
   ]) {
     cpSync(resolve(repository, 'scripts/test/fixtures', source), resolve(root, 'apps/web/src', target));
   }
+  // The historical synthetic route inventory excludes the real site's error document.
+  rmSync(resolve(root, 'apps/web/src/pages/404.astro'), { force: true });
   // The synthetic guard renderer does not use the site's branding assets.
   for (const asset of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'favicon.ico', 'icon-192.png', 'icon-512.png', 'site.webmanifest']) {
     rmSync(resolve(root, 'apps/web/public', asset), { force: true });

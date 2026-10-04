@@ -6,13 +6,18 @@ import BrandLogo from '../components/BrandLogo.astro';
 import { images, services } from '../content/design';
 import { brand, css } from 'virtual:miller-brand';
 import '../styles/global.css';
+import { pageSeo } from '../../../../scripts/site-seo.mjs';
+import PageFaq from '../components/PageFaq.astro';
 type PageRecord = {
   id: string; kind: string; path: string; title: string; description: string; heading: string; intro: string;
   sections: { heading: string; paragraphs: string[] }[]; processSteps?: string[];
+  faqs?: { question: string; answer: string }[];
   primaryAction: { label: string; href: string }; secondaryAction?: { label: string; href: string };
 };
 interface Props { page: PageRecord; pages: { data: PageRecord }[]; qualification?: boolean }
 const { page, qualification = false } = Astro.props as Props;
+const seo = pageSeo(page, { qualification });
+const schemaJson = JSON.stringify(seo.graph).replaceAll('<', '\u003c');
 const home = page.id === 'home' && !qualification;
 const image = services.find((service) => service.id === page.id)?.image ?? (page.id === 'process' || qualification ? images.designer : images.kitchen);
 const heading = qualification ? 'Let’s find your project fit.' : page.heading;
@@ -30,9 +35,25 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
     <meta name="theme-color" content="#1B2420" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content={brand.indexed && !qualification ? 'index, follow' : 'noindex, nofollow'} />
-    {brand.indexed && !qualification && <link rel="canonical" href={new URL(page.path, Astro.site)} />}
-    <meta name="description" content={qualification ? intro : page.description} />
-    <title>{qualification ? 'Your project | Miller Remodeling' : page.title}</title>
+    {!qualification && <link rel="canonical" href={seo.url} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Miller Remodeling" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={seo.title} />
+    <meta property="og:description" content={seo.description} />
+    <meta property="og:url" content={seo.url} />
+    <meta property="og:image" content={seo.image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={seo.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={seo.title} />
+    <meta name="twitter:description" content={seo.description} />
+    <meta name="twitter:image" content={seo.image} />
+    <meta name="twitter:image:alt" content={seo.title} />
+    <script type="application/ld+json" set:html={schemaJson} />
+    <meta name="description" content={seo.description} />
+    <title>{seo.title}</title>
     <style is:inline set:html={css} />
   </head>
   <body>
@@ -50,11 +71,13 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
           <p class="eyebrow">{eyebrow}</p>
           <h1 id="page-title">{heading}</h1>
           <p class="hero-intro">{intro}</p>
-          {home && <><div class="hero-actions"><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/about-process/">See How We Work</a></div><p class="trust-line">[25] years <span>·</span> Licensed &amp; insured [ID #] <span>·</span> [X] five-star Google reviews</p></>}
+          {home && <><div class="hero-actions"><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/about-process/">See How We Work</a></div><div class="hero-datum"><strong>Miller / Treasure Valley, Idaho</strong><span>Plan sequence / 01–05</span></div><ol class="hero-plan"><li><span>01</span> Consult</li><li><span>02</span> Design</li><li><span>03</span> Select</li><li><span>04</span> Build</li><li><span>05</span> Walk through</li></ol></>}
         </div>
         {home && <span class="hero-footnote" aria-hidden="true">Thoughtful design. Lasting craftsmanship.</span>}
       </section>
+      {!home && !qualification && <nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="section-wrap"><li><a href="/">Home</a></li><li aria-current="page">{page.heading}</li></ol></nav>}
       <slot />
+      {!qualification && <PageFaq faqs={page.faqs} />}
     </main>
     <SiteFooter />
     {brand.review && <span class="review-badge">REVIEW BUILD</span>}
