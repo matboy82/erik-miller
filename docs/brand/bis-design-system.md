@@ -2,7 +2,7 @@
 
 Source: BIS-Vault `00-System/Standards/Design Differentiation Standard.md`, read October 4, 2026. This replaces the earlier punch-list instruction to use Fraunces with Inter. The maintained visibility method is the [Client Search Visibility & AI Citation Master Playbook](https://drive.google.com/file/d/1fERNcR1jM9K-8h1TLPDvgfaNLFWw5-G_uaq6opTJU6w).
 
-- Display: Newsreader, chosen for the feel of a considered project narrative. Text: Archivo, chosen for legibility and the restraint of plans and schedules. Fonts are self-hosted; no external font request.
+- Display: Newsreader, chosen for the feel of a considered project narrative. Text: Archivo, chosen for legibility and the restraint of plans and schedules. Fonts are self-hosted as two content-hashed, cached WOFF2 files; no third-party font request.
 - Colors: existing Miller ink, warm paper, brass and clay tokens preserved. Brass marks the drawing datum; clay is reserved for actions. No new generic gradient palette.
 - Signature: the homepage carries a Miller/Treasure Valley datum, a numbered five-step planning sequence, drawing-sheet corner lines and an explicit remodeling/location headline. The process is the visual subject. Stock kitchen images remain temporary development inputs.
 - Voice examples: “Your Treasure Valley remodel starts with a plan.” / “You approve the design before demo day.” / “Meet Erik. Talk through the plan.” / “Questions worth asking.”

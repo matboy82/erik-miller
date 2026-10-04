@@ -3,7 +3,7 @@ import react from '@astrojs/react';
 import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { brandCss, resolveBuild } from '../../scripts/brand-build.mjs';
+import { brandCss, resolveBuild, writeBrandFonts } from '../../scripts/brand-build.mjs';
 import { verifyProduction } from '../../scripts/production-artifact.mjs';
 import { verifyLive } from '../../scripts/live-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
@@ -95,6 +95,7 @@ export default defineConfig({
         }
       }
       if (brand.live || brand.review) {
+        writeBrandFonts(fileURLToPath(dir), { ...brand, review: false });
         await prepareSocialImages(fileURLToPath(dir), pageContent);
         const crawlers = crawlerOutput(pageContent, brand.indexed);
         writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), crawlers.robots);
@@ -113,7 +114,7 @@ export default defineConfig({
     resolveId(id) { if (['virtual:miller-brand', 'virtual:miller-project', 'virtual:miller-project-image'].includes(id)) return '\0' + id; },
     load(id) {
       // This design pass has one visual direction; omit unused theme tokens and fonts.
-      if (id === '\0virtual:miller-brand') return `export const brand = ${JSON.stringify(brand)}; export const css = ${JSON.stringify(brandCss(root, { ...brand, review: false }))};`;
+      if (id === '\0virtual:miller-brand') return `export const brand = ${JSON.stringify(brand)}; export const css = ${JSON.stringify(brandCss(root, { ...brand, review: false }, { externalFonts: brand.live || brand.review }))};`;
       if (id === '\0virtual:miller-project') return `export const project = ${JSON.stringify({ image: project.image, credit: project.credit, stockLabel: project.stockLabel, draftLabel: project.draftLabel })};`;
       if (id === '\0virtual:miller-project-image') return `export { default } from ${JSON.stringify(contentFile(root, project.image.path, 'apps/web/src/assets/projects').replaceAll('\\', '/'))};`;
     },

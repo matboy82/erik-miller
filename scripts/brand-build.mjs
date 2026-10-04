@@ -1,4 +1,5 @@
-import { readFileSync, realpathSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, realpathSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, isAbsolute, resolve, sep } from 'node:path';
 import { copy, taglines, reviewInitialDirection } from '../apps/web/src/content/brand.ts';
@@ -59,23 +60,36 @@ export function resolveBuild(root, env = process.env) {
   return { review, live, indexed, direction: choice.direction, copyDirection: choice.copyDirection, taglineId: choice.taglineId, content };
 }
 
-export function brandCss(root, build) {
-  const files = { A: 'tokens.css', B: 'direction-b.css', C: 'direction-c.css' };
+export function brandFonts(build) {
   const fonts = { A: 'newsreader', B: 'archivo', C: 'newsreader' };
+  const selected = build.review ? directions : [build.direction];
+  const require = createRequire(import.meta.url);
+  return [...new Set(['archivo', ...selected.map(direction => fonts[direction])])].map(font => {
+    const file = require.resolve(`@fontsource/${font}/latin-400.css`);
+    const css = readFileSync(file, 'utf8');
+    const asset = /url\(([^)]+\.woff2)\) format\('woff2'\)/.exec(css)?.[1];
+    if (!asset) throw Error('Missing self-hosted font.');
+    const bytes = readFileSync(resolve(dirname(file), asset.replaceAll("'", '')));
+    const name = `${font}-latin-400-${createHash('sha256').update(bytes).digest('hex').slice(0, 12)}.woff2`;
+    return { css, bytes, name };
+  });
+}
+
+export function writeBrandFonts(output, build) {
+  mkdirSync(resolve(output, 'fonts'), { recursive: true });
+  for (const { name, bytes } of brandFonts(build)) writeFileSync(resolve(output, 'fonts', name), bytes);
+}
+
+export function brandCss(root, build, { externalFonts = false } = {}) {
+  const files = { A: 'tokens.css', B: 'direction-b.css', C: 'direction-c.css' };
   const selected = build.review ? directions : [build.direction];
   const tokens = selected.map((direction) => {
     const css = readFileSync(resolve(root, 'apps/web/src/styles', files[direction]), 'utf8');
     return build.review && direction !== 'A' ? css.replace(':root', `:root[data-theme="${direction}"]`) : css;
   }).join('\n');
-  const require = createRequire(import.meta.url);
-  const fontCss = [...new Set(['archivo', ...selected.map((direction) => fonts[direction])])].map((font) => {
-    const file = require.resolve(`@fontsource/${font}/latin-400.css`);
-    const css = readFileSync(file, 'utf8');
-    // Embed only the selected WOFF2 file, avoiding Vite's unused imported font copies.
-    const asset = /url\(([^)]+\.woff2)\) format\('woff2'\)/.exec(css)?.[1];
-    if (!asset) throw Error('Missing self-hosted font.');
-    const data = readFileSync(resolve(dirname(file), asset.replaceAll("'", ''))).toString('base64');
-    return css.replace(/src:[^;]+;/, `src: url(data:font/woff2;base64,${data}) format('woff2');`);
+  const fontCss = brandFonts(build).map(({ css, bytes, name }) => {
+    const url = externalFonts ? `/fonts/${name}` : `data:font/woff2;base64,${bytes.toString('base64')}`;
+    return css.replace(/src:[^;]+;/, `src: url(${url}) format('woff2');`);
   }).join('\n');
   return tokens + fontCss;
 }

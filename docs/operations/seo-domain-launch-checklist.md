@@ -17,7 +17,7 @@ Updated October 4, 2026. Domain: **https://millerremodelingidaho.com**. DNS is u
 | llms.txt | Markdown links to canonical pages and the same planning answers; not a ranking or citation control |
 | robots | Dev disallows crawling; launch allows public content and keeps qualification excluded |
 | Error route | Dedicated noindex 404 document without homepage canonical; verify real HTTP status after deployment |
-| Cache | Hashed Astro assets immutable; robots/sitemap/llms and stable social URLs have one-hour cache |
+| Cache | Hashed Astro assets and font files immutable; robots/sitemap/llms and stable social URLs have one-hour cache |
 | Favicon / viewport | Existing client favicon set, responsive viewport and user zoom preserved |
 | Safety | Launch check requires real client imagery and verified business facts/location; indexed HTML also rejects used stock assets and bracketed facts |
 
@@ -72,7 +72,7 @@ Record exact prompt, surface/model, date/time, locale/account state, brand inclu
 
 - Full test suite: 87 passed. Lint and type checks passed.
 - SEO artifact check: all 17 routes, unique metadata, canonical/OG URLs, graph/FAQ matching, 17 route-specific social JPEGs and dedicated noindex error document passed.
-- Homepage HTML: approximately 99 KB, under the BIS 200 KB budget. Homepage contains more than 300 words of main content; no invented numerical proof.
+- Homepage HTML: approximately 50 KB (13.5 KB gzipped), under the BIS 200 KB budget. Homepage contains more than 300 words of main content; no invented numerical proof.
 - Mobile Lighthouse, three runs: performance 97/97/98, accessibility 100/100/100, best practices 100/100/100, LCP 2.195/2.191/2.055 seconds. SEO 69/69/69 with only the deliberate crawl/index block failing. Do not remove that block for a cosmetic score.
 - Browser widths 360, 390, 768, 1024 and 1440: one H1 and no horizontal overflow. Mobile menu opens and closes, with expanded state exposed accessibly.
 - Google consent, custom-domain TLS/redirects, production schema validators, indexing and external citation observations are not established by these dev checks.

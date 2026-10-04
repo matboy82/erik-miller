@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { createRequire } from 'node:module';
 import { Buffer } from 'node:buffer';
+import { gzipSync } from 'node:zlib';
 import { siteOrigin } from './site-seo.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -47,6 +48,10 @@ for (const file of files) {
   assert.equal(dimensions.width, 1200); assert.equal(dimensions.height, 630); assert.equal(dimensions.format, 'jpeg');
   assert.ok(statSync(imageFile).size < 250_000);
   assert.ok(Buffer.byteLength(html) < 200_000, `${path}: HTML budget`);
+  assert.ok(gzipSync(html).length < 40_000, `${path}: compressed HTML budget`);
+  const fonts = [...html.matchAll(/url\((\/fonts\/[a-z0-9-]+\.woff2)\)/g)];
+  assert.equal(fonts.length, 2, `${path}: selected cached font files`);
+  for (const [, font] of fonts) assert.ok(statSync(resolve(output, '.' + font)).size > 0);
 }
 const sitemap = readFileSync(resolve(output, 'sitemap.xml'), 'utf8');
 const llms = readFileSync(resolve(output, 'llms.txt'), 'utf8');
@@ -57,4 +62,4 @@ assert.match(errorPage, /noindex, nofollow/); assert.doesNotMatch(errorPage, /re
 const home = readFileSync(resolve(output, 'index.html'), 'utf8');
 const words = home.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
 assert.ok(words >= 300, 'homepage copy floor');
-console.log(JSON.stringify({ routes: files.length, metadataAndSchema: 'passed', socialImages: 'passed', homeWords: words, homeHtmlBytes: Buffer.byteLength(home), errorDocument: 'passed' }));
+console.log(JSON.stringify({ routes: files.length, metadataAndSchema: 'passed', socialImages: 'passed', homeWords: words, homeHtmlBytes: Buffer.byteLength(home), homeGzipBytes: gzipSync(home).length, errorDocument: 'passed' }));
