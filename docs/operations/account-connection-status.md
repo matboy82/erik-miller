@@ -23,9 +23,9 @@ Operator: https://erik-miller-worker.matt-boyer.workers.dev/operator/
 
 ## Remaining calendar setup
 
-Google OAuth is External and still in Testing, with Matt as the only test user. Publishing the app to Production requires Matt's explicit confirmation; that question remains pending. Browser automatic approval rejected publishing because it expands the eligible OAuth audience. No workaround was used.
+Matt explicitly approved OAuth publication and the GitHub release push on October 4. Google OAuth is now External / In production, verified in the console. Google flags the app as requiring verification; production publishing does not mean verification is approved. The release commit edd978e is pushed to the existing GitHub main branch.
 
-After publishing, Erik opens the operator URL, signs in with his Gmail using the email PIN, clicks **Connect Erik's Google booking calendar**, and grants the requested calendar read scope using the account that owns the booking calendar. Codex can then verify encrypted token storage, actual calendar access and synchronization before setting `BOOKING_SYNC_ENABLED=true`.
+Erik opens the operator URL, signs in with his Gmail using the email PIN, clicks **Connect Erik's Google booking calendar**, and grants the requested calendar read scope using the account that owns the booking calendar. Codex can then verify encrypted token storage, actual calendar access and synchronization before setting `BOOKING_SYNC_ENABLED=true`.
 
 The Google booking form must collect the exact website project reference and include it in the event description. The real booking reference field and Google-to-JobTread end-to-end booking flow remain unverified. JobTread task creation, deduplication, rescheduling and cancellation passed direct API tests; these do not prove the Google connection.
 

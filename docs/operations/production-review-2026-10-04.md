@@ -22,7 +22,7 @@ Matt authorized production hosting ahead of final content and business DNS cutov
 
 Forms and photo delivery are live on the Pages hostname. Business DNS is unchanged. Final content/images, custom-domain HTTPS and indexing activation remain before business cutover.
 
-Calendar sync is disabled pending explicit OAuth publication approval, Erik's consent and real booking-reference/event verification. Operational email/SMS alerts and automatic fit thresholds are not configured. Direct API and mocked calendar tests do not establish Google end-to-end readiness.
+OAuth was published and release commit edd978e pushed after Matt explicitly approved both. Google still flags the app for verification. Calendar sync is disabled pending Erik's consent and real booking-reference/event verification. Operational email/SMS alerts and automatic fit thresholds are not configured. Direct API and mocked calendar tests do not establish Google end-to-end readiness.
 
 Flags: `INTAKE_ENABLED=true`, `BOOKING_SYNC_ENABLED=false`. Enable booking only after actual calendar read and event/reference readback pass.
 
