@@ -80,3 +80,13 @@ This page must demonstrate the *format* Erik will use forever: writeup + before/
 - Real logo design, real photos, real reviews (Erik supplies; slots are ready).
 - JobTread integration (Phase 1 scope).
 - The deleted brand-lock/review-gate specs — do not reintroduce them.
+
+## BIS Design Differentiation Standard
+
+This build must satisfy the BIS Design Differentiation Standard
+(`00-System/Standards/Design Differentiation Standard.md` in BIS-Vault).
+Read it before designing anything. Flag any requirement you cannot meet
+before writing code. In particular: no banned default font pairings, no
+stock photography at launch, no lorem-grade copy, the full SEO/AI ship list
+(keyword title, real meta description, canonical, OG/Twitter, JSON-LD,
+robots.txt, sitemap.xml, llms.txt), and the pre-ship differentiation review.
