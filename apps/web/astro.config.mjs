@@ -39,7 +39,7 @@ export default defineConfig({
   output: 'static',
   build: { inlineStylesheets: 'always' },
   site: publicSiteUrl,
-  integrations: [...(brand.review ? [react()] : []), {
+  integrations: [react(), {
     name: 'miller-production-gate',
     hooks: { 'astro:build:done': ({ dir }) => {
       const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');

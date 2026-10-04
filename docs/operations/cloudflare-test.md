@@ -1,5 +1,7 @@
 # Deploy the test apps with Cloudflare Git integration
 
+For the current JobTread, photo, and automatic booking integration, follow [Connect the accounts](connect-accounts.md). This older deployment guide describes the original health-only scaffold; its no-runtime-secret guidance does not apply to the integration.
+
 Cloudflare builds and deploys both apps from matboy82/erik-miller. GitHub Actions runs verification only. No GitHub Cloudflare token, account secret, project variable, test environment, or deployment flag is required by this workflow. Existing GitHub entries can remain unused.
 
 The [accepted 0002 amendment](../architecture/decisions/0002-test-deployment-isolation.md) records Matt's 2026-10-01 instruction to use Cloudflare's existing repository access. This guide replaces the GitHub Direct Upload setup. No remote settings or deployment were changed locally.
@@ -16,7 +18,7 @@ A Worker project is a separate resource and cannot act as the Pages destination.
 
 | Pages setting | Value |
 |---|---|
-| Project name | erik-miller-web (distinct from the erik-miller Worker) |
+| Project name | erik-miller-web (distinct from the erik-miller-worker Worker) |
 | Production branch | main |
 | Framework preset | None (use the explicit command below) |
 | Root directory | Leave blank: repository root |
@@ -30,7 +32,7 @@ The Pages production-branch label means the persistent branch of this isolated t
 
 ## 3. Configure the health Worker
 
-Open the existing erik-miller Worker, then Settings > Build. Connect the same GitHub repository if it is not already connected. Its name must match erik-miller in apps/worker/wrangler.jsonc.
+Open the erik-miller-worker Worker, then Settings > Build. Connect the same GitHub repository if it is not already connected. Its name must match erik-miller-worker in apps/worker/wrangler.jsonc. If the existing deployed Worker is still named erik-miller, reconcile that name before deploying.
 
 | Workers Builds setting | Value |
 |---|---|
@@ -62,7 +64,7 @@ Sources: [Pages Git integration](https://developers.cloudflare.com/pages/get-sta
 
 ## Future intake credentials
 
-When approved intake work defines the secret binding, add it to the selected Worker through Cloudflare → Workers & Pages → Worker → Settings → Variables and Secrets, choosing a secret. Alternatively, from `apps/worker`, run `npx --no-install wrangler secret put <APPROVED_BINDING_NAME>` and enter the value at its prompt. Wrangler secret commands can update a live Worker; use them only at that authorized step. The current test Worker is `erik-miller` and its health endpoint does not use the key.
+When approved intake work defines the secret binding, add it to the selected Worker through Cloudflare → Workers & Pages → Worker → Settings → Variables and Secrets, choosing a secret. Alternatively, from `apps/worker`, run `npx --no-install wrangler secret put <APPROVED_BINDING_NAME>` and enter the value at its prompt. Wrangler secret commands can update a live Worker; use them only at that authorized step. The original test Worker was `erik-miller` and its health endpoint does not use the key.
 
 For approved local intake work, Wrangler reads an untracked `apps/worker/.dev.vars` alongside its configuration. This repository ignores `.dev.vars` and `.env` files. Do not commit values, put them in `PUBLIC_...` variables, or use production customer data for development verification. Booking uses Erik's Google Calendar Appointment Schedule; its URL and owner-managed settings require no website API credential. Any later server-side JobTread association credential remains gated by its approved contract.
 

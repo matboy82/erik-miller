@@ -1,2 +1,23 @@
-# The WS-0 Worker needs no secrets. Add approved WS-2 bindings later.
-# Set actual values with Wrangler secrets, never in tracked files.
+# Synthetic local development. Real secrets belong in Wrangler's secret store.
+INTAKE_ENABLED=true
+INTAKE_MODE=synthetic
+ALLOWED_ORIGINS=http://127.0.0.1:4321,http://localhost:4321
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+JOBTREAD_API_KEY=
+JOBTREAD_ORGANIZATION_ID=
+JOBTREAD_EMAIL_CUSTOM_FIELD_ID=
+JOBTREAD_PHONE_CUSTOM_FIELD_ID=
+# Exact origins returned by the official upload request; no wildcards.
+JOBTREAD_TRANSFER_ORIGINS=
+ACCESS_TEAM_DOMAIN=
+ACCESS_AUD=
+OPERATOR_EMAILS=
+BOOKING_SYNC_ENABLED=false
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_BOOKING_CALENDAR_ID=
+GOOGLE_OAUTH_REDIRECT_URI=
+# A random 32-byte key in base64; store as a Worker secret.
+GOOGLE_TOKEN_ENCRYPTION_KEY=
+# Optional alternative to the operator OAuth connection, stored only as a secret.
+GOOGLE_REFRESH_TOKEN=

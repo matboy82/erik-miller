@@ -1,6 +1,6 @@
 # Miller Remodeling
 
-Static-first website and lead qualification system for Miller Remodeling LLC in the Treasure Valley. Bootstrap includes a draft design review page and a health-check Worker. Intake, JobTread, booking, and portfolio publishing are future approved work.
+Static-first website and lead intake for Miller Remodeling LLC in the Treasure Valley. Contact and project forms use a Cloudflare Worker, durable queued JobTread delivery, private photo staging, and automatic Google-calendar consultation association. Account setup and live end-to-end verification remain before launch; see [functional setup](docs/operations/functional-launch.md).
 
 ## Run locally
 
@@ -37,11 +37,11 @@ Local JobTread verification tooling and the exact live-test approval plan are in
 
 The representative project section uses a local Content Layer record with labeled licensed stock photography and Draft prose. See [project content replacement](docs/operations/project-content.md) for editing, source/license records, exact-content approval and placeholder closure. `node scripts/check-brand-lighthouse.mjs --project-content` measures A/B/C with both the normal record and portrait/long-copy replacement. Every production web entry also requires approved Miller content and a root register without Open entries.
 
-The site map uses typed, one-record-per-route content for service, process, contact, portfolio, and area pages. The noindex review build also includes a generated Draft qualification flow at `/qualify/`, a local portfolio-editor preview on `/portfolio/`, and a review-workflow preview on `/about-process/`. Those previews use no live intake or publishing; the Google booking schedule loads only after a visitor asks to view it. See [page copy review](docs/operations/site-pages.md) for Draft copy, Erik's exact approval evidence, and production eligibility.
+The site map uses typed, one-record-per-route content for service, process, contact, portfolio, and area pages. `/qualify/` captures a complete project brief and photos; set the public intake URL to connect its submissions. Google booking loads after receipt and only when requested. Portfolio authoring and review automation remain previews. See [functional setup](docs/operations/functional-launch.md) and [page copy review](docs/operations/site-pages.md).
 
 ## Codex
 
-Read [AGENTS.md](AGENTS.md) and [the workflow guide](docs/how-to/codex-workflow.md). Invoke `$atlas-sdd` to find the current gate or `$sdd-epic` to plan from the brief. Role skills do not automatically launch subagents.
+Matt selected direct implementation with one review before production on 2026-10-03. The [workflow guide](docs/how-to/codex-workflow.md) and previous SDD artifacts describe the earlier process. AGENTS.md was removed by the repository owner. Role skills do not automatically launch subagents.
 
 ## Production
 

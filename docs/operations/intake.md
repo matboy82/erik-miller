@@ -1,5 +1,7 @@
 # General inquiry intake operations
 
+**Current implementation (2026-10-03):** Contact and project forms are connected through a configured public intake URL. Private photo delivery, automatic calendar task synchronization, and the operator page are implemented locally. Use [functional launch setup](functional-launch.md) for current configuration and verification; the older preview-only statements below describe the MR-05 prototype.
+
 MR-05 uses D1 as a short-lived delivery ledger and Queues for asynchronous JobTread delivery. JobTread remains the system of record. The Worker never returns a lead payload or offers general search/export.
 
 ## Local/demo
@@ -24,7 +26,7 @@ npx --no-install wrangler d1 list --config apps/worker/wrangler.jsonc
 
 Create `miller-intake-dead-letter` only if it is missing. Also create `miller-intake-delivery` if it is absent. Both queues must exist before deployment; the dead-letter consumer records exhausted delivery attempts as failed. Keep that consumer and the delivery queue's `dead_letter_queue` setting.
 
-Replace the all-zero `database_id` in `apps/worker/wrangler.jsonc` with the ID of the existing `miller-remodeling-intake` database returned by `d1 list`. If that database is absent, create it with `wrangler d1 create miller-remodeling-intake --config apps/worker/wrangler.jsonc` and use the returned ID. Apply its schema before enabling intake:
+Confirm the configured `database_id` in `apps/worker/wrangler.jsonc` matches `miller-remodeling-intake` in the intended account. If that database is absent, create it with `wrangler d1 create miller-remodeling-intake --config apps/worker/wrangler.jsonc` and use the returned ID. Apply its schema before enabling intake:
 
 ```powershell
 npx --no-install wrangler d1 migrations apply INTAKE_DB --remote --config apps/worker/wrangler.jsonc

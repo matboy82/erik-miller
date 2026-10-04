@@ -4,7 +4,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
+  "keep_vars": true,
   "observability": { "enabled": true },
+  "r2_buckets": [{ "binding": "INTAKE_PHOTOS", "bucket_name": "miller-intake-photos" }],
   "d1_databases": [
     {
       "binding": "INTAKE_DB",
@@ -31,5 +33,5 @@
       }
     ]
   },
-  "triggers": { "crons": ["0 * * * *"] }
+  "triggers": { "crons": ["0 * * * *", "*/5 * * * *"] }
 }

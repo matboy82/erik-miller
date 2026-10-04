@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import { emailError, phoneError, formatPhone } from '../lib/contact-input';
+import { intakeUrl, bookingUrl, preparePhoto, sendInquiry, resetChallenge } from '../lib/intake';
+import SecurityCheck from './SecurityCheck';
 
 type SelectionKey = 'projectType' | 'location' | 'timeline' | 'budget' | 'experience' | 'referralSource';
 type SelectionValues = Record<SelectionKey, string>;
@@ -12,7 +14,6 @@ type WizardValues = SelectionValues & {
 };
 
 const storageKey = 'miller-review-qualification-v1';
-const appointmentScheduleUrl = 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ3yGOu537xocx0E6JCgrbNeC3bf_jSF8CuCn9fS41FLe8nhR9QZR_EH5suk7HGBTPbr1NZbxS_8?gv=true';
 const emptySelections: SelectionValues = {
   projectType: '', location: '', timeline: '', budget: '', experience: '', referralSource: '',
 };
@@ -56,7 +57,11 @@ export default function QualificationWizard() {
   const [ready, setReady] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [contactTouched, setContactTouched] = useState({ name: false, email: false, phone: false });
-  const [outcome, setOutcome] = useState<'qualified-example' | 'alternate-example' | ''>('');
+  const [outcome, setOutcome] = useState('');
+  const [sending, setSending] = useState(false);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [copied, setCopied] = useState(false);
+  const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const [bookingLoaded, setBookingLoaded] = useState(false);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const progress = useMemo(() => `${Math.round(((step + 1) / steps.length) * 100)}%`, [step]);
@@ -91,7 +96,7 @@ export default function QualificationWizard() {
         const parsed: unknown = JSON.parse(raw);
         if (validSnapshot(parsed)) {
           setValues((current) => ({ ...current, ...parsed.selections }));
-          setStep(parsed.step);
+          setStep(Math.min(parsed.step, 3));
         }
       }
     } catch {
@@ -122,7 +127,8 @@ export default function QualificationWizard() {
     if (step === 2 && (!values.timeline || !values.budget)) return ['Choose a timing and budget option to continue.'];
     if (step === 3) {
       const issues: string[] = [];
-      if (!values.description.trim()) issues.push('Add a short sample project description.');
+      if (!values.description.trim()) issues.push('Add a short project description.');
+      if (values.description.length > 5000) issues.push('Keep the project description under 5,000 characters.');
       if (!values.experience || !values.referralSource) issues.push('Complete both questions to continue.');
       return issues;
     }
@@ -160,17 +166,43 @@ export default function QualificationWizard() {
     setBookingLoaded(false);
     setPhotoInputKey((current) => current + 1);
     setContactTouched({ name: false, email: false, phone: false });
+    setPhotos([]);
+    setCopied(false);
+    attempt.current = null;
   }
 
   function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-    if (file && !allowedPhotoTypes.includes(file.type)) {
+    const selected = Array.from(event.currentTarget.files ?? []);
+    if (selected.length > 3 || selected.some((file) => !allowedPhotoTypes.includes(file.type) || file.size > 20 * 1024 * 1024)) {
       setValues((current) => ({ ...current, photoName: '' }));
-      setErrors(['Choose a JPEG, PNG, or WebP sample image. No image is uploaded.']);
+      setErrors(['Choose up to three JPEG, PNG, or WebP photos under 20 MB each.']);
+      setPhotos([]);
       setPhotoInputKey((current) => current + 1);
       return;
     }
-    update('photoName', file ? file.name : '');
+    setPhotos(selected);
+    update('photoName', selected.map((file) => file.name).join(', '));
+  }
+
+  async function submitProject() {
+    if (sending || outcome) return;
+    setErrors([]); setSending(true);
+    try {
+      if (!attempt.current) {
+        attempt.current = { key: crypto.randomUUID(), payload: {
+          name: values.name.trim(), ...(values.email.trim() ? { email: values.email.trim() } : { phone: values.phone.trim() }),
+          project: { ...selectionSnapshot(values), description: values.description.trim() },
+          photos: await Promise.all(photos.map(preparePhoto)),
+        } };
+      }
+      const token = formRef.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
+      const receipt = await sendInquiry('project', attempt.current.payload, attempt.current.key, token);
+      setOutcome(receipt);
+      try { window.localStorage.removeItem(storageKey); } catch { /* Optional storage. */ }
+    } catch (error) {
+      setErrors([error instanceof Error ? error.message : 'We could not confirm receipt. Try again or call (208) 608-4439.']);
+      resetChallenge();
+    } finally { setSending(false); }
   }
 
   const selection = (key: SelectionKey, label: string, options: string[]) => (
@@ -185,7 +217,7 @@ export default function QualificationWizard() {
 
   return (
     <section className="qualification" aria-label="Project questions">
-      <p className="demo-note">Use sample details. Nothing is submitted or uploaded.</p>
+      {!intakeUrl && <p className="demo-note">This form is being prepared for launch. You can explore the questions, or call (208) 608-4439.</p>}
 
 
       <div className="wizard-progress">
@@ -223,14 +255,14 @@ export default function QualificationWizard() {
           <legend tabIndex={-1}>Tell us a little more</legend>
           <label className="wizard-field" htmlFor="qualification-description">
             <span>Project description</span>
-            <textarea id="qualification-description" rows={5} aria-invalid={errors.length > 0 && step === 3 && !values.description.trim()} value={values.description} onChange={(event) => update('description', event.currentTarget.value)} placeholder="Sample: We are exploring a kitchen update and would like to understand the design process." />
+            <textarea id="qualification-description" rows={5} maxLength={5000} aria-invalid={errors.length > 0 && step === 3 && !values.description.trim()} value={values.description} onChange={(event) => update('description', event.currentTarget.value)} placeholder="What would you like to change, and what matters most to you?" />
           </label>
           <label className="wizard-field" htmlFor="qualification-photo">
-            <span>Optional project photo <span className="wizard-pending">Local only</span></span>
-            <input key={photoInputKey} id="qualification-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} />
+            <span>Optional project photos</span>
+            <input key={photoInputKey} id="qualification-photo" type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} />
           </label>
-          <p className="wizard-help">The selected file stays in this browser tab and is never uploaded or saved. Use a sample file only; avoid private photos.</p>
-          {values.photoName && <p className="wizard-file-state">Selected sample file: {values.photoName}</p>}
+          <p className="wizard-help">Up to three photos, 20 MB each. Photos are resized before sending. Avoid including people, documents, or private details.</p>
+          {values.photoName && <p className="wizard-file-state">Selected photos: {values.photoName}</p>}
           {selection('experience', 'Have you worked with a designer or builder before?', ['Yes', 'No', 'Not sure'])}
           {selection('referralSource', 'How did you hear about Miller Remodeling?', referralOptions)}
         </fieldset>}
@@ -239,8 +271,8 @@ export default function QualificationWizard() {
           <legend tabIndex={-1}>How can we reach you?</legend>
           <p id="qualification-contact-hint" className="wizard-contact-hint">Choose one way to reach you: email or phone.</p>
           <div className="wizard-field">
-            <label htmlFor="qualification-name">Name <span className="wizard-pending">Use a sample</span></label>
-            <input id="qualification-name" autoComplete="off" value={values.name} onChange={(event) => update('name', event.currentTarget.value)} onBlur={() => touchContact('name')} aria-invalid={contactTouched.name && Boolean(contactErrors.name)} aria-describedby={contactTouched.name && contactErrors.name ? 'qualification-name-error' : undefined} />
+            <label htmlFor="qualification-name">Name</label>
+            <input id="qualification-name" autoComplete="name" maxLength={120} value={values.name} onChange={(event) => update('name', event.currentTarget.value)} onBlur={() => touchContact('name')} aria-invalid={contactTouched.name && Boolean(contactErrors.name)} aria-describedby={contactTouched.name && contactErrors.name ? 'qualification-name-error' : undefined} />
             {contactTouched.name && contactErrors.name && <span id="qualification-name-error" className="wizard-field-error" aria-live="polite">{contactErrors.name}</span>}
           </div>
           <div className="wizard-field">
@@ -258,42 +290,33 @@ export default function QualificationWizard() {
         </fieldset>}
 
         {step === 5 && <div className="wizard-outcomes">
-          <h3 tabIndex={-1}>Your next steps</h3>
-          <p>Explore the next steps for your project.</p>
-          <div className="wizard-actions wizard-outcome-actions">
-            <button type="button" className="button" onClick={() => { setOutcome('qualified-example'); setBookingLoaded(false); }}>Explore a design conversation</button>
-            <button type="button" className="button button-secondary" onClick={() => { setOutcome('alternate-example'); setBookingLoaded(false); }}>Explore another next step</button>
-          </div>
-          {outcome && <div className="wizard-result" role="status" aria-live="polite">
-            <strong>{outcome === 'qualified-example' ? 'Let’s talk about the design.' : 'Let’s find the right next step.'}</strong>
-            <p>{outcome === 'qualified-example'
-              ? 'A design conversation is the place to explore your goals, layout, and investment. [Project-fit criteria]'
-              : '[Alternative next step for projects outside our scope]'}</p>
-            <p className="wizard-result-note">No inquiry has been sent.</p>
-            {outcome === 'qualified-example' && <div className="wizard-booking">
-              <h4>Owner-managed appointment schedule</h4>
-              <p>Choose a time to talk with Erik. This opens the live appointment schedule.</p>
-              {!bookingLoaded
-                ? <button type="button" className="button button-secondary" onClick={() => setBookingLoaded(true)}>Load the appointment schedule</button>
-                : <iframe title="Erik’s Google Calendar appointment schedule" src={appointmentScheduleUrl} width="100%" height="600" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />}
-              <a className="wizard-booking-link" href={appointmentScheduleUrl} target="_blank" rel="noreferrer">Open the schedule in a new tab</a>
-              <p className="wizard-help">[Appointment format]</p>
-            </div>}
+          <h3 tabIndex={-1}>{outcome ? 'Thank you. Your project inquiry is received.' : 'Review your project'}</h3>
+          {!outcome && <><dl>{nonSensitiveKeys.map((key) => <div key={key}><dt>{key.replace(/([A-Z])/g, ' $1')}</dt><dd>{values[key]}</dd></div>)}<dt>Project description</dt><dd>{values.description}</dd><dt>Contact</dt><dd>{values.name} · {values.email || values.phone}</dd><dt>Photos</dt><dd>{photos.length} selected</dd></dl>
+            <p>Erik will review your project details and follow up about the next step.</p>
+            <SecurityCheck />
+            <button type="button" className="button" disabled={sending} onClick={submitProject}>{sending ? 'Sending your project…' : attempt.current ? 'Retry project inquiry' : 'Send my project'}</button>
+          </>}
+          {outcome && <div className="wizard-result" role="status" aria-live="polite"><p>Erik will review the details and follow up.</p><p>Your reference: <strong>{outcome}</strong></p><button type="button" className="button button-secondary" onClick={async () => { try { await navigator.clipboard.writeText(outcome); setCopied(true); } catch { setCopied(false); } }}>{copied ? 'Reference copied' : 'Copy project reference'}</button>
+            <div className="wizard-booking"><h4>A time to talk</h4><p>You can choose a conversation time on Erik’s calendar. Include your project reference when booking so he can find your inquiry.</p>
+              {!bookingLoaded ? <button type="button" className="button button-secondary" onClick={() => setBookingLoaded(true)}>Load the appointment schedule</button>
+                : <iframe title="Erik’s Google Calendar appointment schedule" src={bookingUrl} width="100%" height="600" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />}
+              <a className="wizard-booking-link" href={bookingUrl} target="_blank" rel="noreferrer">Open the schedule in a new tab</a>
+            </div>
           </div>}
         </div>}
 
         {errors.length > 0 && <div className="wizard-errors" role="alert" aria-live="assertive">
-          <strong>Review these sample fields:</strong>
+          <strong>Please check:</strong>
           <ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul>
         </div>}
 
         <div className="wizard-actions">
-          {step > 0 && <button type="button" className="button button-secondary" onClick={() => { setStep((current) => Math.max(0, current - 1)); setErrors([]); setOutcome(''); }}>Back</button>}
+          {step > 0 && !attempt.current && !outcome && <button type="button" className="button button-secondary" onClick={() => { setStep((current) => Math.max(0, current - 1)); setErrors([]); setOutcome(''); }}>Back</button>}
           {step < steps.length - 1 && <button type="submit" className="button">Continue</button>}
-          <button type="button" className="wizard-clear" onClick={clearProgress}>Start over</button>
+          <button type="button" className="wizard-clear" disabled={sending} onClick={clearProgress}>{attempt.current && !outcome ? 'Start a new inquiry' : 'Start over'}</button>
         </div>
       </form>
-      <p className="wizard-storage-note">Your choices stay in this browser. Contact details, descriptions, and photos are never saved.</p>
+      <p className="wizard-storage-note">Your choices stay in this browser until you start over. Contact details, descriptions, and photos are sent only when you submit; they are never saved in browser storage.</p>
     </section>
   );
 }

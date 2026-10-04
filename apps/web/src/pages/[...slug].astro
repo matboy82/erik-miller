@@ -1,16 +1,15 @@
 ---
 import { getCollection } from 'astro:content';
-import ContactPreview from '../components/ContactPreview.astro';
+import ContactForm from '../components/ContactForm';
 import PortfolioContent from '../components/PortfolioContent.astro';
 import ProcessBand from '../components/ProcessBand.astro';
 import PageShell from '../layouts/PageShell.astro';
 import { staticPagePath } from '../../../../scripts/page-content.mjs';
-import { brand } from 'virtual:miller-brand';
 import QualificationWizard from '../components/QualificationWizard';
 export async function getStaticPaths() {
   const pages = await getCollection('pages');
   const paths = pages.filter((entry) => entry.id !== 'home').map((entry) => ({ ...staticPagePath(entry.data), props: { page: entry.data, qualification: false } }));
-  if (brand.review) {
+  {
     const home = pages.find((entry) => entry.id === 'home');
     if (!home) throw new Error('Required home page content is missing');
     paths.push({ params: { slug: 'qualify' }, props: { page: home.data, qualification: true } });
@@ -25,6 +24,6 @@ const { page, qualification = false } = Astro.props;
     {page.id === 'process' && <ProcessBand />}
     {page.id !== 'contact' && <div class="section-wrap editorial-sections">{page.sections.map((section: { heading: string; paragraphs: string[] }, index: number) => <section class="editorial-row reveal"><div><p class="eyebrow">0{index + 1} / {page.kind === 'area' ? 'Your neighborhood' : 'Thoughtfully planned'}</p><h2>{section.heading}</h2></div><div>{section.paragraphs.map((paragraph: string) => <p>{paragraph}</p>)}</div></section>)}</div>}
     {page.kind === 'contact' && <div class="section-wrap contact-details"><p>Call <a href="tel:+12086084439">(208) 608-4439</a> · [Business hours]</p><p>[Business email] · [Business address]</p></div>}
-    {page.id === 'contact' ? <div class="section-wrap"><ContactPreview /></div> : <section class="cta-band"><div class="section-wrap reveal"><p class="eyebrow">Start with a conversation</p><h2>Good work starts<br />with a good plan.</h2><p>Tell us what you have in mind. We’ll take it from there.</p><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a></div></section>}
+    {page.id === 'contact' ? <div class="section-wrap"><ContactForm client:load /></div> : <section class="cta-band"><div class="section-wrap reveal"><p class="eyebrow">Start with a conversation</p><h2>Good work starts<br />with a good plan.</h2><p>Tell us what you have in mind. We’ll take it from there.</p><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a></div></section>}
   </>}
 </PageShell>

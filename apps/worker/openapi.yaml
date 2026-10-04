@@ -1,11 +1,97 @@
 openapi: 3.1.0
 info:
   title: Miller Remodeling Intake API
-  version: 1.0.0
-  description: Synthetic/demo contract. Live intake remains disabled until listed operational and owner approvals are complete.
+  version: 1.1.0
+  description: Durable contact/project intake with private photo staging and calendar consultation synchronization. Live connections require the functional-launch setup and end-to-end verification.
 servers:
   - url: https://worker.test
 paths:
+  /intake/project:
+    options:
+      summary: Preflight for an explicitly allowed website origin
+      responses:
+        '204': { description: POST with Content-Type and Idempotency-Key is allowed. }
+        '403': { description: Origin is not allowed. }
+    post:
+      summary: Submit a complete project brief with optional photos
+      description: Same durable receipt/idempotency semantics as contact. The entire JSON body is limited to 9 MiB. Every project currently needs Erik's review. Photos are staged privately and verified before delivery is marked complete.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, project]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 120 }
+                email: { type: string, format: email, maxLength: 254 }
+                phone: { type: string, maxLength: 32 }
+                turnstileToken: { type: string, maxLength: 2048 }
+                project:
+                  type: object
+                  additionalProperties: false
+                  required: [projectType, location, timeline, budget, description, experience, referralSource]
+                  properties:
+                    projectType: { type: string, minLength: 1, maxLength: 200 }
+                    location: { type: string, minLength: 1, maxLength: 200 }
+                    timeline: { type: string, minLength: 1, maxLength: 200 }
+                    budget: { type: string, minLength: 1, maxLength: 200 }
+                    description: { type: string, minLength: 1, maxLength: 5000 }
+                    experience: { type: string, minLength: 1, maxLength: 200 }
+                    referralSource: { type: string, minLength: 1, maxLength: 200 }
+                photos:
+                  type: array
+                  maxItems: 3
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [type, data]
+                    properties:
+                      type: { type: string, enum: [image/jpeg, image/png, image/webp] }
+                      data: { type: string, contentEncoding: base64, maxLength: 2800000, description: Image bytes, at most 2 MiB after decoding. }
+              oneOf:
+                - required: [email]
+                  not: { required: [phone] }
+                - required: [phone]
+                  not: { required: [email] }
+      responses:
+        '202':
+          description: Durably accepted and queued; CRM delivery is asynchronous.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receipt' }
+        '400': { description: Field, image, size, or security-check validation failed. }
+        '403': { description: Origin is not allowed. }
+        '409': { description: Changed retry payload or reconciliation required. }
+        '410': { description: Existing receipt payload expired. }
+        '503': { description: Intake, security verification, ledger, staging, or queue unavailable. }
+  /operator/:
+    get:
+      summary: Open the operator recovery and connection page
+      security: [{ cloudflareAccess: [] }]
+      responses:
+        '200': { description: Private operator HTML. }
+        '401': { description: Access identity not allowlisted. }
+  /operator/readiness:
+    get:
+      summary: Check configured connections without exposing secret values
+      security: [{ cloudflareAccess: [] }]
+      responses:
+        '200': { description: Boolean configuration checks, not live capability proof. }
+        '401': { description: Access identity not allowlisted. }
+  /operator/calendar/sync:
+    post:
+      summary: Attempt the configured automatic booking sync now
+      security: [{ cloudflareAccess: [] }]
+      responses:
+        '200': { description: Sync attempted; failures remain in durable state and safe logs. }
+        '401': { description: Access identity not allowlisted. }
   /intake/contact:
     post:
       summary: Submit a general inquiry
@@ -82,7 +168,7 @@ paths:
               additionalProperties: false
               required: [step, outcome]
               properties:
-                step: { type: string, enum: [account, location, contact, job] }
+                step: { type: string, pattern: '^(account|location|contact|job|photo_[0-2]_(upload|file))$' }
                 outcome: { type: string, enum: [present, absent] }
                 recordId: { type: string, maxLength: 128, description: Required when outcome is present. }
       responses:
@@ -104,6 +190,7 @@ components:
         email: { type: string, format: email, maxLength: 254 }
         phone: { type: string, minLength: 1, maxLength: 32 }
         message: { type: string, minLength: 1, maxLength: 5000 }
+        turnstileToken: { type: string, maxLength: 2048, description: Required for live-mode security verification. }
       oneOf:
         - required: [email]
           not: { required: [phone] }

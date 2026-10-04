@@ -134,6 +134,7 @@ function testEnv(db = new MemoryDatabase(), options: { queueFails?: boolean } = 
   const sent: string[] = [];
   const env = {
     INTAKE_ENABLED: 'true',
+    INTAKE_MODE: 'synthetic',
     INTAKE_DB: db,
     INTAKE_QUEUE: {
       send: async (message: string) => {
@@ -186,7 +187,7 @@ test('intake is disabled by default and stores no submission', async () => {
 
 test('invalid fields and malformed JSON never write or enqueue', async () => {
   const { env, db, sent } = testEnv();
-  const invalid = await worker.fetch(contactRequest({ ...validPayload, phone: '555-0100' }), env);
+  const invalid = await worker.fetch(contactRequest({ ...validPayload, phone: '(208) 555-0100' }), env);
   const malformed = await worker.fetch(new Request('https://worker.test/intake/contact', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: '{',
   }), env);

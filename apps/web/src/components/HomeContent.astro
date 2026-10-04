@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import ServiceGrid from './ServiceGrid.astro';
 import ProcessBand from './ProcessBand.astro';
 import ReviewStrip from './ReviewStrip.astro';
-import ContactPreview from './ContactPreview.astro';
+import ContactForm from './ContactForm';
 import { images } from '../content/design';
 ---
 <ServiceGrid />
@@ -17,4 +17,4 @@ import { images } from '../content/design';
   <ReviewStrip />
 </section>
 <section class="fit-band"><div class="section-wrap reveal"><p class="eyebrow">A good fit, from the start</p><h2>Big changes.<br />Thoughtfully planned.</h2><p>Our best fits are kitchen and bath remodels and additions — projects where thoughtful design pays for itself.</p><a class="button" href="/qualify/">Find Your Project Fit <span aria-hidden="true">↗</span></a></div></section>
-<div class="section-wrap"><ContactPreview /></div>
+<div class="section-wrap"><ContactForm client:visible /></div>

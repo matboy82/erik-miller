@@ -43,6 +43,8 @@ export function stageBrandFixture(direction, { production = true, copyDirection 
 }
 
 function stageProductionRendererFixture(root) {
+  const config = resolve(root, 'apps/web/astro.config.mjs');
+  writeFileSync(config, readFileSync(config, 'utf8').replace('integrations: [react(), {', 'integrations: [{'));
   // Guard fixtures have synthetic approvals and content, not a publishable website.
   // Keep their renderer independent of review-only stock stories and React previews.
   for (const [source, target] of [
@@ -53,7 +55,7 @@ function stageProductionRendererFixture(root) {
     cpSync(resolve(repository, 'scripts/test/fixtures', source), resolve(root, 'apps/web/src', target));
   }
   // The synthetic guard renderer does not use the site's branding assets.
-  for (const asset of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png']) {
+  for (const asset of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'favicon.ico', 'icon-192.png', 'icon-512.png', 'site.webmanifest']) {
     rmSync(resolve(root, 'apps/web/public', asset), { force: true });
   }
 }
