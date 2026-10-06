@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticE
 import { emailError, phoneError, formatPhone } from '../lib/contact-input';
 import { intakeUrl, bookingUrl, preparePhoto, sendInquiry, resetChallenge } from '../lib/intake';
 import SecurityCheck from './SecurityCheck';
+import CostGuideForm from './CostGuideForm';
 
 type SelectionKey = 'projectType' | 'location' | 'timeline' | 'budget' | 'experience' | 'referralSource';
 type SelectionValues = Record<SelectionKey, string>;
@@ -63,6 +64,10 @@ export default function QualificationWizard() {
   const [copied, setCopied] = useState(false);
   const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const [bookingLoaded, setBookingLoaded] = useState(false);
+  const [bands,setBands]=useState<{projectType:string;min:number;max:number;scope:string}[]>([]);
+  const [followupConsent,setFollowupConsent]=useState(false);
+  const selectedBand=bands.find(b=>b.projectType===values.projectType);
+  useEffect(()=>{if(intakeUrl)fetch(`${intakeUrl}/conversion/public`).then(r=>r.json()).then(c=>setBands(Array.isArray(c.budgetBands)?c.budgetBands:[])).catch(()=>{});},[]);
   const [photoInputKey, setPhotoInputKey] = useState(0);
   const progress = useMemo(() => `${Math.round(((step + 1) / steps.length) * 100)}%`, [step]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -168,6 +173,7 @@ export default function QualificationWizard() {
     setContactTouched({ name: false, email: false, phone: false });
     setPhotos([]);
     setCopied(false);
+    setFollowupConsent(false);
     attempt.current = null;
   }
 
@@ -193,6 +199,7 @@ export default function QualificationWizard() {
           name: values.name.trim(), ...(values.email.trim() ? { email: values.email.trim() } : { phone: values.phone.trim() }),
           project: { ...selectionSnapshot(values), description: values.description.trim() },
           photos: await Promise.all(photos.map(preparePhoto)),
+          followupConsent: Boolean(values.email.trim() && followupConsent),
         } };
       }
       const token = formRef.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
@@ -286,11 +293,13 @@ export default function QualificationWizard() {
             {contactTouched.phone && contactErrors.phone && <span id="qualification-phone-error" className="wizard-field-error" aria-live="polite">{contactErrors.phone}</span>}
           </div>
           {showContactChoiceError && <p id="qualification-contact-error" className="wizard-field-error" aria-live="polite">{contactChoiceError}</p>}
+          {values.email.trim() && <label className="followup-choice"><input type="checkbox" checked={followupConsent} onChange={event=>setFollowupConsent(event.currentTarget.checked)}/><span>Send me up to three planning follow-ups by email over fourteen days. I can unsubscribe at any time.</span></label>}
 
         </fieldset>}
 
         {step === 5 && <div className="wizard-outcomes">
           <h3 tabIndex={-1}>{outcome ? 'Thank you. Your project inquiry is received.' : 'Review your project'}</h3>
+          {selectedBand && <div className="wizard-result"><h4>A planning range for your {values.projectType.toLowerCase()}</h4><p><strong>{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(selectedBand.min)}–{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(selectedBand.max)}</strong></p><p>{selectedBand.scope}</p><p>This is a planning range, not a quote. Scope, site conditions, and selections affect the final proposal.</p></div>}
           {!outcome && <><dl>{nonSensitiveKeys.map((key) => <div key={key}><dt>{key.replace(/([A-Z])/g, ' $1')}</dt><dd>{values[key]}</dd></div>)}<dt>Project description</dt><dd>{values.description}</dd><dt>Contact</dt><dd>{values.name} · {values.email || values.phone}</dd><dt>Photos</dt><dd>{photos.length} selected</dd></dl>
             <p>Erik will review your project details and follow up about the next step.</p>
             <SecurityCheck />
@@ -317,6 +326,7 @@ export default function QualificationWizard() {
         </div>
       </form>
       <p className="wizard-storage-note">Your choices stay in this browser until you start over. Contact details, descriptions, and photos are sent only when you submit; they are never saved in browser storage.</p>
+      <CostGuideForm />
     </section>
   );
 }

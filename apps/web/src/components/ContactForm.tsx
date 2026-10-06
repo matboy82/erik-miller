@@ -11,6 +11,7 @@ export default function ContactForm() {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [received, setReceived] = useState(false);
+  const [followupConsent,setFollowupConsent]=useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const form = useRef<HTMLFormElement>(null);
@@ -23,7 +24,7 @@ export default function ContactForm() {
     setErrors(issues);
     if (issues.length) return;
     setBusy(true); setStatus('Sending your inquiry…');
-    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : { phone: phone.trim() }), message: message.trim() } };
+    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : { phone: phone.trim() }), message: message.trim(),followupConsent:Boolean(email.trim()&&followupConsent) } };
     try {
       const token = form.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
       const receipt = await sendInquiry('contact', attempt.current.payload, attempt.current.key, token);
@@ -44,6 +45,7 @@ export default function ContactForm() {
         <label htmlFor="inquiry-phone">Phone</label><input id="inquiry-phone" type="tel" autoComplete="tel" maxLength={32} value={phone} onChange={(event) => setPhone(formatPhone(event.currentTarget.value))} />
         <p className="field-hint">Choose one way to reach you: email or phone.</p>
         <label htmlFor="inquiry-message">What would you like help with?</label><textarea id="inquiry-message" rows={5} maxLength={5000} value={message} onChange={(event) => setMessage(event.currentTarget.value)} required />
+        {email.trim() && <label className="followup-choice"><input type="checkbox" checked={followupConsent} onChange={event=>setFollowupConsent(event.currentTarget.checked)}/><span>Send me up to three planning follow-ups by email over fourteen days. I can unsubscribe at any time.</span></label>}
       </fieldset>
       {!received && <SecurityCheck />}
       {errors.length > 0 && <div role="alert" className="wizard-errors"><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}

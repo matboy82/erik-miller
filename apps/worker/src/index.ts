@@ -4,8 +4,9 @@ import { operatorPage } from './operator.ts';
 import { recordBooking, validBooking } from './booking.ts';
 import { syncCalendar, type CalendarEnvironment } from './calendar.ts';
 import { googleAuthorization } from './google-auth.ts';
+import { approvedConversion, captureConversion, captureCompletedJob, cleanupConversion, conversionOperator, conversionPublic, runConversion, type ConversionEnvironment } from './conversion.ts';
 
-export interface IntakeEnvironment extends CalendarEnvironment {
+export interface IntakeEnvironment extends CalendarEnvironment, ConversionEnvironment {
   INTAKE_ENABLED?: string;
   INTAKE_DB?: D1Database;
   INTAKE_QUEUE?: Queue<string>;
@@ -60,7 +61,7 @@ function validatePayload(value: unknown): { ok: true; payload: Record<string, st
   return { ok: true, payload };
 }
 
-async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject = false): Promise<Response> {
+async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject = false, isGuide = false): Promise<Response> {
   if (request.method !== 'POST') return new Response(null, { status: 405, headers: { ...noStoreHeaders, Allow: 'POST' } });
   if (env.INTAKE_ENABLED !== 'true') return json({ error: 'intake_disabled' }, 503);
   if (env.INTAKE_MODE !== 'synthetic' && !env.TURNSTILE_SECRET_KEY) return json({ error: 'verification_not_configured' }, 503);
@@ -102,7 +103,12 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return json({ error: 'validation_failed', fields: ['body'] }, 400);
   const input = parsed as Record<string, unknown>;
-  const { turnstileToken, ...lead } = input;
+  const { turnstileToken, followupConsent, ...lead } = input;
+  if (followupConsent !== undefined && typeof followupConsent !== 'boolean') return json({ error: 'validation_failed', fields: ['followupConsent'] }, 400);
+  if (followupConsent === true && !lead.email) return json({ error: 'validation_failed', fields: ['email'] }, 400);
+  const conversion = isGuide ? await approvedConversion(env) : null;
+  if (isGuide && !conversion?.guide.enabled) return json({ error: 'guide_unavailable' }, 503);
+  if (isGuide && (typeof lead.email !== 'string' || Object.keys(lead).some(field => !['name','email','phone'].includes(field)))) return json({ error: 'validation_failed', fields: ['email','body'] }, 400);
   if (env.TURNSTILE_SECRET_KEY) {
     if (typeof turnstileToken !== 'string' || turnstileToken.length > 2048) return json({ error: 'verification_required' }, 400);
     try {
@@ -121,7 +127,9 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
     try { projectData = await decodeProject(lead, key); }
     catch { return json({ error: 'validation_failed', fields: ['project', 'photos'] }, 400); }
   }
-  const validated = validatePayload(isProject ? { name: lead.name, email: lead.email, phone: lead.phone, message: projectData!.message.slice(0, 5000) } : lead);
+  const guidePhone = isGuide && typeof lead.phone === 'string' ? lead.phone.trim() : '';
+  if (guidePhone && !validatePayload({name:lead.name,phone:guidePhone,message:'Cost guide'}).ok) return json({error:'validation_failed',fields:['phone']},400);
+  const validated = validatePayload(isProject ? { name: lead.name, email: lead.email, phone: lead.phone, message: projectData!.message.slice(0, 5000) } : isGuide ? {name:lead.name,email:lead.email,message:'Website lead type: lead_magnet\nCost-guide request'} : lead);
   if (!validated.ok) return json({ error: 'validation_failed', fields: validated.fields }, 400);
   if (!env.INTAKE_DB || !env.INTAKE_QUEUE) return json({ error: 'intake_unavailable' }, 503);
 
@@ -129,11 +137,13 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
     const existing = await env.INTAKE_DB.prepare(
       'SELECT receipt_id, state, payload, delivery_step FROM intake_submissions WHERE idempotency_key = ?1',
     ).bind(key).first<{ receipt_id: string; state: string; payload: string | null; delivery_step: string }>();
-    const payload = projectData ? { ...validated.payload, message: projectData.message, project: projectData.project, fit: 'needs-review', photos: projectData.photos } : validated.payload;
+    const normalizedGuidePhone = guidePhone ? validatePayload({name:lead.name,phone:guidePhone,message:'Cost guide'}) : null;
+    const basePayload = projectData ? { ...validated.payload, message: projectData.message, project: projectData.project, fit: 'needs-review', photos: projectData.photos } : isGuide ? {...validated.payload,leadType:'lead_magnet',...(normalizedGuidePhone?.ok?{phone:normalizedGuidePhone.payload.phone}: {})} : validated.payload;
+    const payload = { ...basePayload, ...(followupConsent !== undefined ? {followupConsent} : {}) };
     const serializedPayload = JSON.stringify(payload);
     if (existing?.payload === null) return json({ error: 'receipt_expired' }, 410);
     if (existing && existing.payload !== serializedPayload) return json({ error: 'idempotency_conflict' }, 409);
-    if (existing && (existing.state === 'delivered' || existing.state === 'processing' || existing.delivery_step.endsWith('_writing'))) {
+    if (!isGuide && existing && (existing.state === 'delivered' || existing.state === 'processing' || existing.delivery_step.endsWith('_writing'))) {
       // The delivery consumer already received this durable inquiry. A browser retry only needs its receipt.
       return json({ receiptId: existing.receipt_id, state: 'accepted' }, 202);
     }
@@ -158,8 +168,11 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
         : await insert.run();
       if (!result.success) return json({ error: 'intake_unavailable' }, 503);
     }
-    await env.INTAKE_QUEUE.send(receiptId);
-    return json({ receiptId, state: 'accepted' }, 202);
+    // Capture opt-in and the exact approved guide before queueing. A retry repairs a failed capture.
+    if (isGuide || followupConsent !== undefined) await captureConversion(env,receiptId,payload,isGuide ? `${conversion!.guide.title}\n\n${conversion!.guide.text}\n\nPlanning ranges only, not a quote. Final scope and pricing require a project-specific design and proposal.` : undefined);
+    if (!existing || !['delivered','processing'].includes(existing.state)) await env.INTAKE_QUEUE.send(receiptId);
+    const guide = isGuide ? await env.INTAKE_DB.prepare('SELECT download_token FROM conversion_leads WHERE receipt_id = ?1').bind(receiptId).first<{download_token:string}>() : null;
+    return json({ receiptId, state: 'accepted', ...(guide ? {downloadUrl:`${new URL(request.url).origin}/conversion/download?token=${guide.download_token}`} : {}) }, 202);
   } catch {
     return json({ error: 'intake_unavailable' }, 503);
   }
@@ -199,6 +212,13 @@ async function operatorEmail(request: Request, env: IntakeEnvironment): Promise<
 async function operatorRoute(request: Request, env: IntakeEnvironment, path: string): Promise<Response> {
   const email = await operatorEmail(request, env);
   if (!email) return json({ error: 'operator_unauthorized' }, 401);
+  if (path.startsWith('/operator/conversion/')) {
+    try { return await conversionOperator(request,env,email,operation=>{
+      if(!env.JOBTREAD_API_KEY)throw new Error('delivery_not_configured');
+      return jobTreadCall(env.JOBTREAD_API_KEY,operation);
+    }); }
+    catch { return json({error:'conversion_unavailable'},503); }
+  }
   if (path === '/operator/readiness' && request.method === 'GET') {
     const tokenStored = await env.INTAKE_DB?.prepare("SELECT name FROM integration_state WHERE name = 'google-refresh-token'").first();
     return json({ intakeEnabled: env.INTAKE_ENABLED === 'true', mode: env.INTAKE_MODE === 'synthetic' ? 'synthetic' : 'live',
@@ -435,7 +455,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     await updateDelivery(db, receiptId, { state: 'failed', error_category: 'external_result_unknown' });
     return;
   }
-  const payload = JSON.parse(row.payload) as Partial<ProjectPayload> & { name: string; message: string };
+  const payload = JSON.parse(row.payload) as Partial<ProjectPayload> & { name: string; message: string; leadType?: string };
   const alias = receiptId.replace(/-/g, '').slice(-8).toUpperCase();
   let leaseToken = '';
   const step = async (name: string) => {
@@ -497,9 +517,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     if (location?.id !== row.external_location_id || location.account?.id !== row.external_account_id || location.account.organization?.id !== env.JOBTREAD_ORGANIZATION_ID
       || location.name !== (payload.project ? `${payload.project.location} ${alias}` : `General inquiry ${alias}`)) throw new Error('jobtread_readback_failed');
     await step('contact');
-    const contactFields = payload.email
-      ? { [env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID]: payload.email }
-      : { [env.JOBTREAD_PHONE_CUSTOM_FIELD_ID]: payload.phone };
+    const contactFields = { ...(payload.email ? { [env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID]: payload.email } : {}), ...(payload.phone ? { [env.JOBTREAD_PHONE_CUSTOM_FIELD_ID]: payload.phone } : {}) };
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
       createContact: {
         $: { accountId: row.external_account_id, name: payload.name, customFieldValues: contactFields },
@@ -521,7 +539,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     await step('job');
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
       createJob: {
-        $: { locationId: row.external_location_id, name: `${payload.project ? 'Project' : 'Inquiry'} ${alias}`, description: payload.message },
+        $: { locationId: row.external_location_id, name: `${payload.leadType === 'lead_magnet' ? 'Cost guide' : payload.project ? 'Project' : 'Inquiry'} ${alias}`, description: payload.message },
         createdJob: { id: {}, name: {}, location: { id: {}, account: { id: {} } } },
       },
     });
@@ -752,7 +770,17 @@ async function cleanupExpired(env: IntakeEnvironment): Promise<void> {
 export default {
   async fetch(request: Request, env: IntakeEnvironment = {}): Promise<Response> {
     const path = new URL(request.url).pathname;
-    if (path === '/intake/contact' || path === '/intake/project') {
+    if(path==='/conversion/job-completed'){
+      if(request.method!=='POST')return json({error:'method_not_allowed'},405);
+      // Secret is a header, never a URL; completion and contact ownership are read back from JobTread.
+      if(!env.CONVERSION_WEBHOOK_SECRET || request.headers.get('Authorization')!==`Bearer ${env.CONVERSION_WEBHOOK_SECRET}`)return json({error:'unauthorized'},401);
+      const raw=await request.text();if(raw.length>500)return json({error:'validation_failed'},400);
+      try{const input=JSON.parse(raw);if(typeof input?.jobId!=='string'||typeof input.contactId!=='string')return json({error:'validation_failed'},400);
+        if(!env.JOBTREAD_API_KEY)return json({error:'delivery_not_configured'},503);
+        return json(await captureCompletedJob(env,op=>jobTreadCall(env.JOBTREAD_API_KEY!,op),input.jobId,input.contactId));
+      }catch{return json({error:'completion_not_confirmed'},409);}
+    }
+    if (path === '/intake/contact' || path === '/intake/project' || path === '/intake/lead-magnet' || path === '/conversion/public') {
       const origin = request.headers.get('Origin');
       const allowed = (env.ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
       if (origin && !allowed.includes(origin)) return json({ error: 'origin_not_allowed' }, 403);
@@ -762,9 +790,16 @@ export default {
           'Access-Control-Allow-Origin': origin, Vary: 'Origin', 'Access-Control-Allow-Methods': 'POST',
           'Access-Control-Allow-Headers': 'Content-Type, Idempotency-Key', 'Access-Control-Max-Age': '600' } });
       }
-      const response = await acceptInquiry(request, env, path === '/intake/project');
+      let response: Response;
+      try { response = path === '/conversion/public' ? await conversionPublic(request,env) : await acceptInquiry(request, env, path === '/intake/project', path === '/intake/lead-magnet'); }
+      catch { response = json({error:'conversion_unavailable'},503); }
       if (origin) { response.headers.set('Access-Control-Allow-Origin', origin); response.headers.set('Vary', 'Origin'); }
       return response;
+    }
+    if (path.startsWith('/conversion/')) {
+      const origin=request.headers.get('Origin');
+      if(origin && !(env.ALLOWED_ORIGINS??'').split(',').map(v=>v.trim()).includes(origin) && origin!==new URL(request.url).origin)return json({error:'origin_not_allowed'},403);
+      try { const response=await conversionPublic(request,env);if(origin){response.headers.set('Access-Control-Allow-Origin',origin);response.headers.set('Vary','Origin');}return response; } catch { return json({error:'conversion_unavailable'},503); }
     }
     if (path === '/operator' || path.startsWith('/operator/')) return operatorRoute(request, env, path);
     if (path !== '/' && path !== '/health') return json({ error: 'not_found' }, 404);
@@ -781,10 +816,17 @@ export default {
     else await consumeQueue(batch, env);
   },
   async scheduled(_controller: ScheduledController, env: IntakeEnvironment): Promise<void> {
-    if (!_controller.cron || _controller.cron === '0 * * * *') await cleanupExpired(env);
+    if (!_controller.cron || _controller.cron === '0 * * * *') {
+      if(env.INTAKE_DB && env.CONVERSION_ENABLED!==undefined)await cleanupConversion(env.INTAKE_DB);
+      await cleanupExpired(env);
+    }
     await syncCalendar(env, (operation) => {
       if (!env.JOBTREAD_API_KEY) throw new Error('delivery_not_configured');
       return jobTreadCall(env.JOBTREAD_API_KEY, operation);
     });
+    try { await runConversion(env, (operation) => {
+      if (!env.JOBTREAD_API_KEY) throw new Error('delivery_not_configured');
+      return jobTreadCall(env.JOBTREAD_API_KEY,operation);
+    }); } catch { console.warn(JSON.stringify({event:'conversion_processing_failed'})); }
   },
 };

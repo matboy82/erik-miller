@@ -6,6 +6,10 @@
   "workers_dev": true,
   "keep_vars": true,
   "vars": {
+    "CONVERSION_ENABLED": "false",
+    "CONVERSION_OWNER_EMAIL": "millerremodelingidaho@gmail.com",
+    "CONVERSION_OPERATOR_EMAIL": "millerremodelingidaho@gmail.com",
+    "CONVERSION_PUBLIC_URL": "https://erik-miller-worker.matt-boyer.workers.dev",
     "ALLOWED_ORIGINS": "https://erik-miller-web.pages.dev,https://millerremodelingidaho.com,https://www.millerremodelingidaho.com",
     "JOBTREAD_TRANSFER_ORIGINS": "https://storage.googleapis.com,https://cdn.jobtread.com",
     "ACCESS_TEAM_DOMAIN": "weathered-wind-af3d.cloudflareaccess.com",

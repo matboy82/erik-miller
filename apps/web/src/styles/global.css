@@ -326,3 +326,6 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 .home-hero h1 { font-size:clamp(42px,5.5vw,78px); line-height:1.05; max-width:840px; }
 .home-hero .hero-actions { margin-top:24px; }
 .home-hero .hero-datum { margin-top:24px; }
+/* Explicit email permission stays separate from sending an inquiry. */
+.followup-choice { display:flex !important; align-items:flex-start; gap:12px; font-size:0.9rem; line-height:1.5; }
+.followup-choice input[type="checkbox"] { width:20px !important; height:20px; flex:0 0 20px; margin-top:3px; accent-color:var(--color-ink); }
