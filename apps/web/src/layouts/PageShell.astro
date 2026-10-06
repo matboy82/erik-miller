@@ -75,7 +75,6 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
         </div>
         {home && <span class="hero-footnote" aria-hidden="true">Thoughtful design. Lasting craftsmanship.</span>}
       </section>
-      {!home && !qualification && <nav class="breadcrumbs" aria-label="Breadcrumb"><ol class="section-wrap"><li><a href="/">Home</a></li><li aria-current="page">{page.heading}</li></ol></nav>}
       <slot />
       {!qualification && <PageFaq faqs={page.faqs} />}
     </main>

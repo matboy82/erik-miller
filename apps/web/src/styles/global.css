@@ -317,9 +317,6 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 .faq-list article { padding:24px 0; border-top:1px solid #1b242025; }
 .faq-list h3 { font-size:clamp(23px,2.5vw,30px); }
 .faq-list p { max-width:70ch; }
-.breadcrumbs { background:var(--brand-paper); padding-block:14px; font-size:12px; }
-.breadcrumbs ol { display:flex; flex-wrap:wrap; gap:10px; list-style:none; margin:0; padding:0; }
-.breadcrumbs li+li::before { content:'/'; padding-right:10px; color:#765b31; }
 @media(max-width:800px) { .home-hero::after { display:none; } .hero-datum { align-items:flex-start; flex-direction:column; gap:8px; } }
 
 .home-hero .hero-content { padding-block:48px; }
