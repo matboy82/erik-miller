@@ -14,7 +14,7 @@ function walk(dir) { for (const entry of readdirSync(dir, { withFileTypes: true 
   const file = resolve(dir, entry.name); if (entry.isDirectory()) walk(file); else if (entry.name === 'index.html') files.push(file);
 } }
 walk(output);
-assert.equal(files.length, 17);
+assert.equal(files.length, 15);
 const titles = new Set(); const descriptions = new Set(); const urls = [];
 for (const file of files) {
   const path = '/' + relative(output, file).replaceAll('\\', '/').replace(/index.html$/, '');
@@ -56,7 +56,7 @@ for (const file of files) {
 const sitemap = readFileSync(resolve(output, 'sitemap.xml'), 'utf8');
 const llms = readFileSync(resolve(output, 'llms.txt'), 'utf8');
 for (const url of urls) { assert.ok(sitemap.includes(`<loc>${url}</loc>`)); assert.ok(llms.includes(`](${url})`)); }
-assert.doesNotMatch(sitemap, /qualify|404|workers\.dev|pages\.dev/);
+assert.doesNotMatch(sitemap, /qualify|portfolio|service-areas\/kuna|404|workers\.dev|pages\.dev/);
 const errorPage = readFileSync(resolve(output, '404.html'), 'utf8');
 assert.match(errorPage, /noindex, nofollow/); assert.doesNotMatch(errorPage, /rel="canonical"/);
 const home = readFileSync(resolve(output, 'index.html'), 'utf8');

@@ -6,7 +6,7 @@
   "workers_dev": true,
   "keep_vars": true,
   "vars": {
-    "CONVERSION_ENABLED": "false",
+    "CONVERSION_ENABLED": "true",
     "CONVERSION_OWNER_EMAIL": "millerremodelingidaho@gmail.com",
     "CONVERSION_OPERATOR_EMAIL": "millerremodelingidaho@gmail.com",
     "CONVERSION_PUBLIC_URL": "https://erik-miller-worker.matt-boyer.workers.dev",

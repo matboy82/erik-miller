@@ -74,7 +74,7 @@ test('C3 complete built artifacts reject unused stock, altered media, hidden cop
     assert.equal(inventory.filter((entry) => entry.path.endsWith('.webp')).length, 4);
     const sitemapFile = resolve(output, 'sitemap.xml');
     const sitemap = readFileSync(sitemapFile, 'utf8');
-    assert.match(sitemap, /https:\/\/miller-fixture\.invalid\/portfolio\//);
+    assert.doesNotMatch(sitemap, /https:\/\/miller-fixture\.invalid\/portfolio\//);
     assert.match(readFileSync(resolve(output, 'llms.txt'), 'utf8'), /https:\/\/miller-fixture\.invalid\//);
     writeFileSync(sitemapFile, sitemap.replace('</urlset>', '<!-- Development stock photo -->\n</urlset>'));
     assert.throws(() => verifyProduction(output, 'A', selection), /development/i);

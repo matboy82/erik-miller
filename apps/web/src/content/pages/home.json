@@ -25,10 +25,6 @@
     "label": "Start Your Project",
     "href": "/contact/"
   },
-  "secondaryAction": {
-    "label": "View the portfolio preview",
-    "href": "/portfolio/"
-  },
   "sources": [
     "mr06-story",
     "mr06-spec",

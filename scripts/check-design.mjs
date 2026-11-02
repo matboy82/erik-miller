@@ -15,7 +15,6 @@ function collect(directory) {
 }
 collect(output);
 const textOf = (html) => html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '').replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]*>/g, ' ');
-const facts = readFileSync(resolve(root, 'erik-facts.md'), 'utf8');
 for (const file of files) {
   const html = readFileSync(file, 'utf8');
   const name = relative(output, file);
@@ -29,7 +28,7 @@ for (const file of files) {
   for (const [, value] of html.matchAll(/aria-(?:labelledby|describedby)="([^"]+)"/g)) {
     for (const id of value.split(/\s+/)) assert.ok(html.includes(`id="${id}"`), `${name}: missing accessible reference ${id}`);
   }
-  for (const match of textOf(html).matchAll(/\[([^\]]+)\]/g)) assert.ok(facts.includes(`[${match[1]}]`), `${name}: unregistered fact ${match[0]}`);
+  assert.doesNotMatch(textOf(html), /\[[^\]]+\]/, `${name}: visible placeholder`);
   for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
     if (!href.startsWith('/') && !href.startsWith('#')) continue;
     const url = new URL(href, `http://localhost/${name.replaceAll('\\', '/').replace(/index\.html$/, '')}`);
@@ -47,8 +46,7 @@ assert.match(home, /hero-datum/);
 assert.doesNotMatch(home, /font-family:[^;}]*Fraunces/);
 assert.ok(Buffer.byteLength(home) < 200_000, 'homepage HTML budget');
 assert.match(home, /Design is a paid phase/);
-const portfolio = readFileSync(resolve(output, 'portfolio/index.html'), 'utf8');
-assert.match(portfolio, /Project stories and photos are coming soon/);
-assert.doesNotMatch(portfolio, /A Kitchen Planned\s*<br\s*\/>\s*Around Morning Light/);
-assert.equal((portfolio.match(/class="upcoming-card reveal"/g) ?? []).length, 6);
-console.log(`Design checks passed: ${files.length} pages, local links, homepage sections, and the empty portfolio story.`);
+assert.ok(!existsSync(resolve(output, 'portfolio/index.html')), 'portfolio is hidden');
+assert.ok(!existsSync(resolve(output, 'service-areas/kuna/index.html')), 'Kuna page is hidden');
+assert.doesNotMatch(home, /href="\/portfolio\//);
+console.log(`Design checks passed: ${files.length} pages and hidden routes.`);

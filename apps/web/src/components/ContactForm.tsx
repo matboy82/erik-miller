@@ -11,7 +11,6 @@ export default function ContactForm() {
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [received, setReceived] = useState(false);
-  const [followupConsent,setFollowupConsent]=useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const form = useRef<HTMLFormElement>(null);
@@ -24,7 +23,7 @@ export default function ContactForm() {
     setErrors(issues);
     if (issues.length) return;
     setBusy(true); setStatus('Sending your inquiry…');
-    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : {}), ...(phone.trim() ? { phone: phone.trim() } : {}), message: message.trim(),followupConsent:Boolean(email.trim()&&followupConsent) } };
+    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : {}), ...(phone.trim() ? { phone: phone.trim() } : {}), message: message.trim() } };
     try {
       const token = form.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
       const receipt = await sendInquiry('contact', attempt.current.payload, attempt.current.key, token);
@@ -45,14 +44,13 @@ export default function ContactForm() {
         <label htmlFor="inquiry-phone">Phone</label><input id="inquiry-phone" type="tel" autoComplete="tel" maxLength={32} value={phone} onChange={(event) => setPhone(formatPhone(event.currentTarget.value))} />
         <p className="field-hint">Add an email address, phone number, or both.</p>
         <label htmlFor="inquiry-message">What would you like help with?</label><textarea id="inquiry-message" rows={5} maxLength={5000} value={message} onChange={(event) => setMessage(event.currentTarget.value)} required />
-        {email.trim() && <label className="followup-choice"><input type="checkbox" checked={followupConsent} onChange={event=>setFollowupConsent(event.currentTarget.checked)}/><span>Send me up to three planning follow-ups by email over fourteen days. I can unsubscribe at any time.</span></label>}
       </fieldset>
       {!received && <SecurityCheck />}
       {errors.length > 0 && <div role="alert" className="wizard-errors"><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
       {!received && <button type="submit" className="button" disabled={busy}>{busy ? 'Sending…' : attempt.current ? 'Retry inquiry' : 'Send inquiry'}</button>}
       <p className="form-status" role="status" aria-live="polite" aria-atomic="true">{status}</p>
       {attempt.current && !busy && !received && <button type="button" className="wizard-clear" onClick={() => { attempt.current = null; setErrors([]); setStatus('You may edit the details. An earlier attempt may still have been received; call us if you need to check.'); }}>Edit as a new inquiry</button>}
-      <p className="field-hint">Your details are used to respond to this inquiry.</p>
+      <p className="field-hint">We may also send a few project planning follow-up emails. You can unsubscribe at any time.</p>
     </form>
   </section>;
 }

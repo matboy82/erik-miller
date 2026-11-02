@@ -23,7 +23,7 @@ const emptyValues: WizardValues = {
 };
 const steps = ['Project', 'Location', 'Timing and budget', 'Project details', 'Contact', 'Next steps'];
 const projectTypes = ['Kitchen', 'Bathroom', 'Whole home', 'Addition', 'ADU or mother-in-law space', 'Home repair', 'Another project'];
-const locations = ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton', 'Kuna', 'Another area', 'Not sure yet'];
+const locations = ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton', 'Another area', 'Not sure yet'];
 const timelineOptions = ['Still exploring', 'I have a target timeframe', 'I would like to discuss timing'];
 const budgetOptions = ['Still estimating', 'I have a range in mind', 'I would like to discuss budget'];
 const referralOptions = ['Search', 'A recommendation', 'Social media', 'Another source', 'Prefer not to say'];
@@ -65,7 +65,6 @@ export default function QualificationWizard() {
   const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const [bookingLoaded, setBookingLoaded] = useState(false);
   const [bands,setBands]=useState<{projectType:string;min:number;max:number;scope:string}[]>([]);
-  const [followupConsent,setFollowupConsent]=useState(false);
   const selectedBand=bands.find(b=>b.projectType===values.projectType);
   useEffect(()=>{if(intakeUrl)fetch(`${intakeUrl}/conversion/public`).then(r=>r.json()).then(c=>setBands(Array.isArray(c.budgetBands)?c.budgetBands:[])).catch(()=>{});},[]);
   const [photoInputKey, setPhotoInputKey] = useState(0);
@@ -173,7 +172,6 @@ export default function QualificationWizard() {
     setContactTouched({ name: false, email: false, phone: false });
     setPhotos([]);
     setCopied(false);
-    setFollowupConsent(false);
     attempt.current = null;
   }
 
@@ -199,7 +197,6 @@ export default function QualificationWizard() {
           name: values.name.trim(), ...(values.email.trim() ? { email: values.email.trim() } : {}), ...(values.phone.trim() ? { phone: values.phone.trim() } : {}),
           project: { ...selectionSnapshot(values), description: values.description.trim() },
           photos: await Promise.all(photos.map(preparePhoto)),
-          followupConsent: Boolean(values.email.trim() && followupConsent),
         } };
       }
       const token = formRef.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
@@ -277,6 +274,7 @@ export default function QualificationWizard() {
         {step === 4 && <fieldset className="wizard-contact-fields">
           <legend tabIndex={-1}>How can we reach you?</legend>
           <p id="qualification-contact-hint" className="wizard-contact-hint">Add an email address, phone number, or both.</p>
+          <p className="wizard-contact-hint">If you provide an email address, we may send a few project planning follow-ups. You can unsubscribe at any time.</p>
           <div className="wizard-field">
             <label htmlFor="qualification-name">Name</label>
             <input id="qualification-name" autoComplete="name" maxLength={120} value={values.name} onChange={(event) => update('name', event.currentTarget.value)} onBlur={() => touchContact('name')} aria-invalid={contactTouched.name && Boolean(contactErrors.name)} aria-describedby={contactTouched.name && contactErrors.name ? 'qualification-name-error' : undefined} />
@@ -293,7 +291,6 @@ export default function QualificationWizard() {
             {contactTouched.phone && contactErrors.phone && <span id="qualification-phone-error" className="wizard-field-error" aria-live="polite">{contactErrors.phone}</span>}
           </div>
           {showContactChoiceError && <p id="qualification-contact-error" className="wizard-field-error" aria-live="polite">{contactChoiceError}</p>}
-          {values.email.trim() && <label className="followup-choice"><input type="checkbox" checked={followupConsent} onChange={event=>setFollowupConsent(event.currentTarget.checked)}/><span>Send me up to three planning follow-ups by email over fourteen days. I can unsubscribe at any time.</span></label>}
 
         </fieldset>}
 

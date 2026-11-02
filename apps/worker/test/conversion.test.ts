@@ -10,7 +10,7 @@ const start=Date.parse('2026-10-05T12:00:00Z');
 const day=86400_000;
 function database(){
   const sql=new DatabaseSync(':memory:');
-  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql','0006_public_references.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
+  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql','0006_public_references.sql','0007_inquiry_nurture.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
   const db={prepare(query:string){let values:unknown[]=[];return {bind(...args:unknown[]){values=args;return this;},async first(){return sql.prepare(query).get(...values)??null;},async all(){return {results:sql.prepare(query).all(...values)};},async run(){const result=sql.prepare(query).run(...values);return {success:true,meta:{changes:Number(result.changes)}};}};},async batch(statements:{run:()=>Promise<unknown>}[]){sql.exec('BEGIN');try{const results=[];for(const s of statements)results.push(await s.run());sql.exec('COMMIT');return results;}catch(e){sql.exec('ROLLBACK');throw e;}}};
   return {sql,db:db as unknown as D1Database};
 }
@@ -51,6 +51,21 @@ test('unsubscribe stops pending touches immediately, including after a prior boo
   assert.equal((await conversionPublic(new Request(url,{method:'POST'}),s.env)).status,200);
   assert.equal(s.sql.prepare('SELECT stop_reason FROM conversion_leads').get()?.stop_reason,'unsubscribed');
   await runConversion(s.env,s.call,start+8*day);assert.equal(s.sent.length,0);
+});
+test('inquiry enrollment is distinct from consent and unsubscribe suppresses future inquiries for the same email',async()=>{
+  const s=await setup();
+  s.sql.exec('UPDATE conversion_leads SET nurture_consent=0, inquiry_nurture=1');
+  await runConversion(s.env,s.call,start);
+  assert.equal(s.sql.prepare("SELECT count(*) n FROM conversion_messages WHERE kind LIKE 'nurture_%'").get()?.n,3);
+  s.sql.exec('UPDATE conversion_leads SET email=NULL'); // A retained unsubscribe link still works after contact-data cleanup.
+  await stopNurture(s.db,receipt,'unsubscribed');
+  const next='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  s.sql.prepare(`INSERT INTO intake_submissions(receipt_id,idempotency_key,state,created_at,updated_at,delivered_at,payload_expires_at,metadata_expires_at,payload,external_job_id) VALUES(?,?,'delivered',?,?,?,?,?,?,?)`).run(next,next,new Date(start+3*day).toISOString(),new Date(start+3*day).toISOString(),new Date(start+3*day).toISOString(),new Date(start+30*day).toISOString(),new Date(start+90*day).toISOString(),'{}','job-two');
+  await captureConversion(s.env,next,{email:'homeowner@example.com',inquiryNurture:true});
+  await runConversion(s.env,s.call,start+3*day);
+  assert.equal(s.sent.length,0);
+  assert.equal(s.sql.prepare('SELECT nurture_consent FROM conversion_leads WHERE receipt_id=?').get(next)?.nurture_consent,0);
+  assert.equal(s.sql.prepare("SELECT count(*) n FROM conversion_messages WHERE receipt_id=?").get(next)?.n,0);
 });
 test('missing consent, inactive calendar, disabled feature, and undelivered lead cannot send',async()=>{
   for(const scenario of ['consent','calendar','feature','delivered']){

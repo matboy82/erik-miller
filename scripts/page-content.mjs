@@ -90,14 +90,15 @@ export async function readPageContent(root, { mode = 'review' } = {}) {
     if (!expected || expected.path !== page.path || expected.kind !== page.kind || name !== `${page.id}.json`) throw Error(`Page route identity mismatch for ${name}`);
     return page;
   });
-  const paths = new Set(pages.map((page) => page.path));
-  if (paths.size !== pages.length) throw Error('Page routes must be unique');
-  for (const page of pages) {
+  const activePages = pages.filter((page) => !['portfolio', 'kuna'].includes(page.id));
+  const paths = new Set(activePages.map((page) => page.path));
+  if (paths.size !== activePages.length) throw Error('Page routes must be unique');
+  for (const page of activePages) {
     for (const action of [page.primaryAction, page.secondaryAction].filter(Boolean)) {
       if (action.href.startsWith('/') && !paths.has(action.href)) throw Error(`Page ${page.id} links to unknown route ${action.href}`);
     }
     if (page.status === 'approved') verifyPageApproval(root, page);
     if (mode === 'production' && page.status !== 'approved') throw Error(`Draft page content ${page.id} blocks production`);
   }
-  return pages.sort((a, b) => a.path.localeCompare(b.path));
+  return activePages.sort((a, b) => a.path.localeCompare(b.path));
 }

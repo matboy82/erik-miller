@@ -12,7 +12,7 @@ class Database {
   raw = new DatabaseSync(':memory:');
   constructor() {
     this.raw.exec('PRAGMA foreign_keys = ON');
-    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0006_public_references.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
+    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0005_lead_conversion.sql', '0006_public_references.sql', '0007_inquiry_nurture.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
   }
   prepare(sql: string) {
     const statement = this.raw.prepare(sql);
@@ -65,6 +65,9 @@ test('project acceptance stores a complete brief and private photo descriptors a
   assert.equal(response.status, 202);
   assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'https://site.test');
   const receipt = await response.json() as { receiptId: string };
+  const nurture = db.raw.prepare('SELECT nurture_consent, inquiry_nurture FROM conversion_leads WHERE receipt_id = ?').get(receipt.receiptId)!;
+  assert.equal(nurture.nurture_consent, 0);
+  assert.equal(nurture.inquiry_nurture, 1);
   const row = db.raw.prepare('SELECT * FROM intake_submissions').get()!;
   const payload = JSON.parse(String(row.payload));
   assert.deepEqual(payload.project, project);

@@ -58,19 +58,35 @@ export async function approvedConversion(env: ConversionEnvironment): Promise<Co
 export function publicConversion(c: ConversionConfig | null) { return { budgetBands: c?.budgetBands ?? [], guide: c?.guide.enabled ? { title: c.guide.title } : null }; }
 export function nurtureSchedule(c: ConversionConfig, start: number) { return c.nurture.touches.map(t => ({ ...t, dueAt: new Date(start + t.day * DAY).toISOString(), expiresAt: new Date(start + (t.day + 1) * DAY).toISOString() })); }
 
-export async function captureConversion(env: ConversionEnvironment, receipt: string, payload: { email?: string; followupConsent?: boolean; leadType?: string }, guide?: string): Promise<void> {
+async function emailHash(email: string): Promise<string> {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.trim().toLowerCase()));
+  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+export async function captureConversion(env: ConversionEnvironment, receipt: string, payload: { email?: string; followupConsent?: boolean; leadType?: string; inquiryNurture?: boolean }, guide?: string): Promise<void> {
   if (!env.INTAKE_DB) throw new Error('conversion_unavailable');
-  const result = await env.INTAKE_DB.prepare(`INSERT OR IGNORE INTO conversion_leads (receipt_id,email,nurture_consent,unsubscribe_token,download_token,guide_snapshot)
-    VALUES (?1,?2,?3,?4,?5,?6)`).bind(receipt, payload.email ?? null, payload.followupConsent === true ? 1 : 0, crypto.randomUUID() + crypto.randomUUID(), payload.leadType === 'lead_magnet' ? crypto.randomUUID() + crypto.randomUUID() : null, guide ?? null).run();
+  const result = await env.INTAKE_DB.prepare(`INSERT OR IGNORE INTO conversion_leads (receipt_id,email,nurture_consent,unsubscribe_token,download_token,guide_snapshot,inquiry_nurture,unsubscribe_email_hash)
+    VALUES (?1,?2,?3,?4,?5,?6,?7,?8)`).bind(receipt, payload.email ?? null, payload.followupConsent === true ? 1 : 0, crypto.randomUUID() + crypto.randomUUID(), payload.leadType === 'lead_magnet' ? crypto.randomUUID() + crypto.randomUUID() : null, guide ?? null, payload.inquiryNurture ? 1 : 0, payload.email ? await emailHash(payload.email) : null).run();
   if (!result.success) throw new Error('conversion_capture_failed');
 }
-type Lead = { receipt_id: string; email: string | null; nurture_consent: number; unsubscribe_token: string; enrolled_at: string | null; stopped_at: string | null; stop_reason: string | null; completed_at: string | null; review_reported_at: string | null; review_source: string | null };
+type Lead = { receipt_id: string; email: string | null; nurture_consent: number; inquiry_nurture: number; unsubscribe_email_hash: string | null; unsubscribe_token: string; enrolled_at: string | null; stopped_at: string | null; stop_reason: string | null; completed_at: string | null; review_reported_at: string | null; review_source: string | null };
 type Inquiry = { state: string; external_job_id: string | null; delivered_at: string | null; created_at: string };
 async function enqueue(db: D1Database, receipt: string, kind: string, recipient: string, subject: string, body: string, due: string, expires: string) {
   const saved = await db.prepare(`INSERT OR IGNORE INTO conversion_messages (id,receipt_id,kind,recipient,subject,body,due_at,expires_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)`).bind(crypto.randomUUID(),receipt,kind,recipient,subject,body,due,expires).run();
   if (!saved.success) throw new Error('conversion_checkpoint_failed');
 }
 export async function stopNurture(db: D1Database, receipt: string, reason: string): Promise<void> {
+  if (reason === 'unsubscribed') {
+    const lead = await db.prepare('SELECT email, unsubscribe_email_hash FROM conversion_leads WHERE receipt_id = ?1').bind(receipt).first<{email:string|null;unsubscribe_email_hash:string|null}>();
+    const hash = lead?.unsubscribe_email_hash ?? (lead?.email ? await emailHash(lead.email) : null);
+    if (hash) {
+      const saved = await db.batch([
+        db.prepare('INSERT OR IGNORE INTO conversion_unsubscribed (email_hash, unsubscribed_at) VALUES (?1, ?2)').bind(hash, new Date().toISOString()),
+        db.prepare("UPDATE conversion_leads SET stopped_at = COALESCE(stopped_at, ?1), stop_reason = 'unsubscribed' WHERE unsubscribe_email_hash = ?2 OR receipt_id = ?3").bind(new Date().toISOString(),hash,receipt),
+        db.prepare("UPDATE conversion_messages SET state = 'cancelled' WHERE receipt_id IN (SELECT receipt_id FROM conversion_leads WHERE unsubscribe_email_hash = ?1 OR receipt_id = ?2) AND state IN ('pending','failed') AND kind != 'operator_review'").bind(hash,receipt),
+      ]);
+      if (saved.some(r => !r.success)) throw new Error('conversion_stop_failed');
+    }
+  }
   const result = await db.batch([
     db.prepare("UPDATE conversion_leads SET stopped_at = COALESCE(stopped_at, ?1), stop_reason = CASE WHEN ?2 = 'unsubscribed' THEN ?2 ELSE COALESCE(stop_reason, ?2) END WHERE receipt_id = ?3").bind(new Date().toISOString(),reason,receipt),
     db.prepare("UPDATE conversion_messages SET state = 'cancelled' WHERE receipt_id = ?1 AND kind LIKE 'nurture_%' AND state IN ('pending','failed')").bind(receipt),
@@ -108,7 +124,7 @@ export async function captureCompletedJob(env: ConversionEnvironment, call: JobT
   if(!old)operations.push(db.prepare('INSERT INTO conversion_review_jobs(job_id,receipt_id,created_at) VALUES(?1,?2,?3)').bind(jobId,receiptId,now));
   if(operations.length){const saved=await db.batch(operations);if(saved.some(r=>!r.success))throw new Error('conversion_checkpoint_failed');}
   await captureConversion(env,receiptId,{email:address});
-  await db.prepare('UPDATE conversion_leads SET email=?1 WHERE receipt_id=?2').bind(address.toLowerCase(),receiptId).run();
+  await db.prepare('UPDATE conversion_leads SET email=?1, unsubscribe_email_hash=?2 WHERE receipt_id=?3').bind(address.toLowerCase(),await emailHash(address),receiptId).run();
   return {receiptId};
 }
 
@@ -121,7 +137,7 @@ export async function cleanupConversion(db:D1Database):Promise<void>{
   ]);
 }
 const baseUrl = (env: ConversionEnvironment) => env.CONVERSION_PUBLIC_URL ?? 'https://erik-miller-worker.matt-boyer.workers.dev';
-function footer(c: ConversionConfig, env: ConversionEnvironment, token: string) { return `\n\nMiller Remodeling LLC\n${c.postalAddress}\nStop these follow-ups: ${baseUrl(env)}/conversion/unsubscribe?token=${encodeURIComponent(token)}`; }
+function footer(c: ConversionConfig, env: ConversionEnvironment, token: string) { return `\n\nPromotional message from Miller Remodeling LLC\n${c.postalAddress}\nStop these follow-ups: ${baseUrl(env)}/conversion/unsubscribe?token=${encodeURIComponent(token)}`; }
 export async function runConversion(env: ConversionEnvironment, call: JobTread, now = Date.now()): Promise<void> {
   const c = await approvedConversion(env);
   if (!c || !env.INTAKE_DB) return;
@@ -131,7 +147,8 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
     const inquiry = await db.prepare('SELECT state, external_job_id, delivered_at, created_at FROM intake_submissions WHERE receipt_id = ?1').bind(lead.receipt_id).first<Inquiry>();
     if (!inquiry?.external_job_id || !inquiry.delivered_at) continue;
     if (!lead.stopped_at && await hasBooking(db, lead.receipt_id)) { await stopNurture(db,lead.receipt_id,'consultation_booked'); lead.stopped_at = new Date(now).toISOString(); }
-    if (c.nurture.enabled && env.BOOKING_SYNC_ENABLED === 'true' && lead.nurture_consent && !lead.enrolled_at && !lead.stopped_at && now - Date.parse(inquiry.created_at) <= DAY) {
+    const suppressed = await db.prepare('SELECT email_hash FROM conversion_unsubscribed WHERE email_hash = ?1').bind(lead.unsubscribe_email_hash ?? await emailHash(lead.email!)).first();
+    if (c.nurture.enabled && env.BOOKING_SYNC_ENABLED === 'true' && (lead.nurture_consent || lead.inquiry_nurture) && !suppressed && !lead.enrolled_at && !lead.stopped_at && now - Date.parse(inquiry.created_at) <= DAY) {
       const scheduled = nurtureSchedule(c, Date.parse(inquiry.created_at));
       for (const touch of scheduled) await enqueue(db,lead.receipt_id,`nurture_${touch.day}`,lead.email!,touch.subject,touch.text + footer(c,env,lead.unsubscribe_token),touch.dueAt,touch.expiresAt);
       await db.prepare('UPDATE conversion_leads SET enrolled_at = ?1 WHERE receipt_id = ?2 AND enrolled_at IS NULL').bind(new Date(now).toISOString(),lead.receipt_id).run();
@@ -155,14 +172,15 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
   for (const m of messages.results) {
     const lead = await db.prepare('SELECT * FROM conversion_leads WHERE receipt_id = ?1').bind(m.receipt_id).first<Lead>();
     const inquiry = await db.prepare('SELECT state, external_job_id FROM intake_submissions WHERE receipt_id = ?1').bind(m.receipt_id).first<Inquiry>();
-    const optedOut = Boolean(lead?.stopped_at && lead.stop_reason === 'unsubscribed');
-    const nurtureBlocked = m.kind.startsWith('nurture_') && (!c.nurture.enabled || env.BOOKING_SYNC_ENABLED !== 'true' || !lead?.nurture_consent || lead.stopped_at || await hasBooking(db,m.receipt_id));
+    const optedOut = Boolean(lead?.stopped_at && lead.stop_reason === 'unsubscribed') || (m.kind !== 'operator_review' && Boolean(await db.prepare('SELECT email_hash FROM conversion_unsubscribed WHERE email_hash = ?1').bind(await emailHash(m.recipient)).first()));
+    const nurtureBlocked = m.kind.startsWith('nurture_') && (!c.nurture.enabled || env.BOOKING_SYNC_ENABLED !== 'true' || !(lead?.nurture_consent || lead?.inquiry_nurture) || lead.stopped_at || await hasBooking(db,m.receipt_id));
     if (!lead || inquiry?.state !== 'delivered' || !inquiry.external_job_id || now > Date.parse(m.expires_at) || optedOut || nurtureBlocked || (m.kind.startsWith('review_') && !c.reviews.enabled)) {
       await db.prepare("UPDATE conversion_messages SET state = 'cancelled' WHERE id = ?1 AND state IN ('pending','failed')").bind(m.id).run(); continue;
     }
     const claim = await db.prepare(`UPDATE conversion_messages SET state = 'sending', attempts = attempts + 1, claimed_at = ?2 WHERE id = ?1 AND state IN ('pending','failed')
       AND EXISTS(SELECT 1 FROM conversion_config WHERE id=1 AND approved=?3)
-      AND EXISTS(SELECT 1 FROM conversion_leads WHERE receipt_id=conversion_messages.receipt_id AND (stop_reason IS NULL OR stop_reason!='unsubscribed'))`).bind(m.id,new Date(now).toISOString(),JSON.stringify(c)).run();
+      AND EXISTS(SELECT 1 FROM conversion_leads WHERE receipt_id=conversion_messages.receipt_id AND (stop_reason IS NULL OR stop_reason!='unsubscribed'))
+      AND (kind = 'operator_review' OR NOT EXISTS(SELECT 1 FROM conversion_unsubscribed s JOIN conversion_leads l ON l.unsubscribe_email_hash=s.email_hash WHERE l.receipt_id=conversion_messages.receipt_id))`).bind(m.id,new Date(now).toISOString(),JSON.stringify(c)).run();
     if (claim.meta?.changes !== 1) continue;
     try {
       const result = await env.EMAIL.send({ to:m.recipient, from:c.sender, replyTo:c.replyTo, subject:m.subject, text:m.body });
@@ -261,7 +279,7 @@ export async function conversionPublic(request: Request, env: ConversionEnvironm
   if(!['/conversion/unsubscribe','/conversion/review'].includes(url.pathname))return reply({error:'not_found'},404);
   if(request.method==='GET') {
     const unsubscribe=url.pathname.endsWith('unsubscribe');
-    return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Miller Remodeling</title><body><h1>${unsubscribe?'Stop follow-up emails':'Tell Erik you posted a review'}</h1><p>${unsubscribe?'This stops optional follow-ups for this inquiry.':'This sends Erik a notification. It does not publish a testimonial or verify the review.'}</p><form method="post"><button>${unsubscribe?'Stop follow-ups':'I posted a review'}</button></form></body></html>`,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'none'; form-action 'self'; frame-ancestors 'none'"}});
+    return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>Miller Remodeling</title><body><h1>${unsubscribe?'Stop follow-up emails':'Tell Erik you posted a review'}</h1><p>${unsubscribe?'This stops marketing emails to this email address.':'This sends Erik a notification. It does not publish a testimonial or verify the review.'}</p><form method="post"><button>${unsubscribe?'Stop follow-ups':'I posted a review'}</button></form></body></html>`,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'none'; form-action 'self'; frame-ancestors 'none'"}});
   }
   if(request.method!=='POST')return reply({error:'method_not_allowed'},405);
   if(url.pathname.endsWith('unsubscribe')) { await stopNurture(db,lead.receipt_id,'unsubscribed'); return reply({stopped:true,message:'Your follow-up emails have been stopped.'}); }

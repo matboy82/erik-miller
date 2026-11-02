@@ -170,7 +170,7 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
     }
     const reference = await ensurePublicReference(env.INTAKE_DB, receiptId);
     // Capture opt-in and the exact approved guide before queueing. A retry repairs a failed capture.
-    if (isGuide || followupConsent !== undefined) await captureConversion(env,receiptId,payload,isGuide ? `${conversion!.guide.title}\n\n${conversion!.guide.text}\n\nPlanning ranges only, not a quote. Final scope and pricing require a project-specific design and proposal.` : undefined);
+    if (isGuide || followupConsent !== undefined || validated.payload.email) await captureConversion(env,receiptId,{ ...payload, inquiryNurture: !isGuide && Boolean(validated.payload.email) },isGuide ? `${conversion!.guide.title}\n\n${conversion!.guide.text}\n\nPlanning ranges only, not a quote. Final scope and pricing require a project-specific design and proposal.` : undefined);
     if (!existing || !['delivered','processing'].includes(existing.state)) await env.INTAKE_QUEUE.send(receiptId);
     const guide = isGuide ? await env.INTAKE_DB.prepare('SELECT download_token FROM conversion_leads WHERE receipt_id = ?1').bind(receiptId).first<{download_token:string}>() : null;
     return json({ receiptId, reference, state: 'accepted', ...(guide ? {downloadUrl:`${new URL(request.url).origin}/conversion/download?token=${guide.download_token}`} : {}) }, 202);

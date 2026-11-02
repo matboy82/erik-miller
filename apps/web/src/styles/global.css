@@ -336,3 +336,6 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 /* Explicit email permission stays separate from sending an inquiry. */
 .followup-choice { display:flex !important; align-items:flex-start; gap:12px; font-size:0.9rem; line-height:1.5; }
 .followup-choice input[type="checkbox"] { width:20px !important; height:20px; flex:0 0 20px; margin-top:3px; accent-color:var(--color-ink); }
+
+.footer-contact { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.footer-contact h2 { margin-bottom: 12px; }

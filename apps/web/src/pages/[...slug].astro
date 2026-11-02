@@ -9,7 +9,7 @@ import { staticPagePath } from '../../../../scripts/page-content.mjs';
 import QualificationWizard from '../components/QualificationWizard';
 export async function getStaticPaths() {
   const pages = await getCollection('pages');
-  const paths = pages.filter((entry) => entry.id !== 'home').map((entry) => ({ ...staticPagePath(entry.data), props: { page: entry.data, qualification: false } }));
+  const paths = pages.filter((entry) => !['home', 'portfolio', 'kuna'].includes(entry.id)).map((entry) => ({ ...staticPagePath(entry.data), props: { page: entry.data, qualification: false } }));
   {
     const home = pages.find((entry) => entry.id === 'home');
     if (!home) throw new Error('Required home page content is missing');
