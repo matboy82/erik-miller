@@ -17,7 +17,7 @@ function database(){
 function config():ConversionConfig{return {...structuredClone(defaultConversionConfig),sender:'erik@example.com',postalAddress:'Owner-approved business mailing address',nurture:{enabled:true,touches:[{day:3,subject:'Checking in',text:'Would you like to talk about your project?'},{day:8,subject:'Planning your project',text:'You can review our design process before choosing a consultation.'},{day:14,subject:'We’ll leave it here',text:'We’ll stop these follow-ups here. Reach out when you are ready.'}]}};}
 async function setup(c=config()){
   const {sql,db}=database();const sent:{to:string;text:string}[]=[];const timeline:Record<string,unknown>[]=[];
-  sql.prepare('INSERT INTO conversion_config(id,revision,draft,approved,approved_by,approved_at) VALUES(1,?,?,?,?,?)').run('revision',JSON.stringify(c),JSON.stringify(c),'millerremodelingidaho@gmail.com',new Date(start).toISOString());
+  sql.prepare('INSERT INTO conversion_config(id,revision,draft,approved,approved_by,approved_at) VALUES(1,?,?,?,?,?)').run('revision',JSON.stringify(c),JSON.stringify(c),'erik@millerremodelingidaho.com',new Date(start).toISOString());
   sql.prepare(`INSERT INTO intake_submissions(receipt_id,idempotency_key,state,created_at,updated_at,delivered_at,payload_expires_at,metadata_expires_at,payload,external_job_id) VALUES(?,?,'delivered',?,?,?,?,?,?,?)`).run(receipt,receipt,new Date(start).toISOString(),new Date(start).toISOString(),new Date(start).toISOString(),new Date(start+30*day).toISOString(),new Date(start+90*day).toISOString(),JSON.stringify({name:'Test homeowner',email:'homeowner@example.com',message:'Test'}),'job-one');
   const env={INTAKE_DB:db,CONVERSION_ENABLED:'true',BOOKING_SYNC_ENABLED:'true',EMAIL:{async send(m:{to:string;text:string}){sent.push(m);return {messageId:`email-${sent.length}`};}}};
   await captureConversion(env,receipt,{email:'homeowner@example.com',followupConsent:true});
@@ -88,8 +88,8 @@ test('draft edits invalidate approval; only Erik may approve the exact current r
   const {revision}=await result.json() as {revision:string};assert.equal(await approvedConversion(s.env),null);
   const approve=(rev:string)=>new Request('https://worker.test/operator/conversion/approve',{method:'POST',body:JSON.stringify({revision:rev})});
   assert.equal((await conversionOperator(approve(revision),s.env,'matt.boyer@boyerimpactsystems.com')).status,403);
-  assert.equal((await conversionOperator(approve('old'),s.env,'millerremodelingidaho@gmail.com')).status,409);
-  assert.equal((await conversionOperator(approve(revision),s.env,'millerremodelingidaho@gmail.com')).status,200);assert.ok(await approvedConversion(s.env));
+  assert.equal((await conversionOperator(approve('old'),s.env,'erik@millerremodelingidaho.com')).status,409);
+  assert.equal((await conversionOperator(approve(revision),s.env,'erik@millerremodelingidaho.com')).status,200);assert.ok(await approvedConversion(s.env));
   assert.equal((await worker.fetch(new Request(url),s.env)).status,401);
 });
 test('guide capture stores both contacts, types JobTread payload, and waits for verified delivery before download',async()=>{

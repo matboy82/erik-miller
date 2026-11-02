@@ -1,0 +1,44 @@
+{
+  "id": "terms",
+  "kind": "information",
+  "path": "/terms/",
+  "title": "Website Terms and Conditions | Miller Remodeling Idaho",
+  "description": "Terms for using the Miller Remodeling website and submitting project inquiries in Idaho.",
+  "heading": "Website terms and conditions",
+  "intro": "These terms apply to your use of the Miller Remodeling website.",
+  "sections": [
+    {
+      "heading": "Website information",
+      "paragraphs": [
+        "Website content is general information about our services. Project scope, availability, timing, design deliverables, and pricing are discussed individually and confirmed in a written agreement when applicable."
+      ]
+    },
+    {
+      "heading": "Submitting an inquiry",
+      "paragraphs": [
+        "Please provide accurate contact and project information and share only photos or material you have permission to provide. Sending an inquiry or booking a conversation does not by itself create a construction contract."
+      ]
+    },
+    {
+      "heading": "Using the site",
+      "paragraphs": [
+        "Do not misuse the site, interfere with its operation, or submit unlawful or harmful content. Third-party services, including appointment scheduling, have their own terms and privacy practices."
+      ]
+    },
+    {
+      "heading": "Contact",
+      "paragraphs": [
+        "For questions about these terms, call (208) 608-4439 or use the contact form."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact us",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-spec"
+  ],
+  "status": "draft",
+  "draftReason": "Draft for Matt and Erik review before launch."
+}

@@ -1,0 +1,44 @@
+{
+  "id": "privacy",
+  "kind": "information",
+  "path": "/privacy/",
+  "title": "Privacy Policy | Miller Remodeling Idaho",
+  "description": "How Miller Remodeling handles website inquiry information in Idaho.",
+  "heading": "Privacy policy",
+  "intro": "This policy explains how Miller Remodeling handles information submitted through this website.",
+  "sections": [
+    {
+      "heading": "Information you provide",
+      "paragraphs": [
+        "When you contact us or submit a project inquiry, we collect the details you choose to share, such as your name, email address, phone number, project answers, description, and photos. Please avoid sending sensitive personal documents or photos of people."
+      ]
+    },
+    {
+      "heading": "How we use and share information",
+      "paragraphs": [
+        "We use your information to respond to your inquiry, discuss and manage a project, and send project-planning follow-up emails when applicable. You can unsubscribe from marketing follow-ups using the link in those emails. We use service providers including Cloudflare and JobTread to operate the site, store and deliver inquiries, and manage project records."
+      ]
+    },
+    {
+      "heading": "Appointments and website security",
+      "paragraphs": [
+        "If you choose to book an appointment, Google Calendar handles the booking and its own privacy terms apply. We use Cloudflare security tools to protect the inquiry forms and prevent abuse."
+      ]
+    },
+    {
+      "heading": "Retention and your choices",
+      "paragraphs": [
+        "Website intake details and uploaded photos are retained for limited periods for delivery and recovery; project records may be retained separately in JobTread. To ask about access, correction, or deletion of your information, call (208) 608-4439 or use the contact form. We may retain information when needed for business, legal, or security purposes."
+      ]
+    }
+  ],
+  "primaryAction": {
+    "label": "Contact us",
+    "href": "/contact/"
+  },
+  "sources": [
+    "mr06-spec"
+  ],
+  "status": "draft",
+  "draftReason": "Draft for Matt and Erik review before launch."
+}

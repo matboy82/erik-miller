@@ -9,5 +9,5 @@ const bookingUrl = import.meta.env.PUBLIC_BOOKING_URL ?? '';
   <div class="footer-contact"><h2>Let’s talk</h2><a href={`tel:${identity.telephone}`}>(208) 608-4439</a><a class="text-link" href="/contact/">Tell us about your project <span aria-hidden="true">↗</span></a>{bookingUrl && <p><a href={bookingUrl} target="_blank" rel="noreferrer">Schedule a job walk</a></p>}</div>
   <div><h2>Explore</h2><ul><li><a href="/#services">Services</a></li><li><a href="/about-process/">Our process</a></li><li><a href="/#reviews">Meet Erik</a></li><li><a href="/qualify/">Start your project</a></li></ul></div>
   <div><h2>Service areas</h2><ul>{areas.map((area) => <li><a href={`/service-areas/${area.toLowerCase()}/`}>{area}</a></li>)}</ul></div></div>
-  <div class="footer-bottom"><p>© {new Date().getFullYear()} Miller Remodeling LLC</p><p>Built around your home. Planned around your life.</p></div>
+  <div class="footer-bottom"><p>© {new Date().getFullYear()} Miller Remodeling LLC</p><p><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://erik-miller-worker.matt-boyer.workers.dev/operator/">Staff sign-in</a></p></div>
 </div></footer>

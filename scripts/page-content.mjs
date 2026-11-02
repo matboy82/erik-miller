@@ -14,6 +14,7 @@ export const requiredPages = Object.freeze({
   additions: route('service', '/additions/'), adu: route('service', '/adu-mother-in-law/'),
   'home-repair': route('service', '/home-repair/'), process: route('information', '/about-process/'),
   portfolio: route('portfolio', '/portfolio/'), contact: route('contact', '/contact/'),
+  privacy: route('information', '/privacy/'), terms: route('information', '/terms/'),
   eagle: route('area', '/service-areas/eagle/'), star: route('area', '/service-areas/star/'),
   meridian: route('area', '/service-areas/meridian/'), boise: route('area', '/service-areas/boise/'),
   middleton: route('area', '/service-areas/middleton/'), kuna: route('area', '/service-areas/kuna/'),

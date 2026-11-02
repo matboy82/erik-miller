@@ -20,10 +20,10 @@ export interface ConversionEnvironment {
 }
 export type JobTread = (operation: Record<string, unknown>) => Promise<Record<string, unknown>>;
 const DAY = 86400_000;
-const owner = 'millerremodelingidaho@gmail.com';
+const owner = 'erik@millerremodelingidaho.com';
 export const defaultConversionConfig: ConversionConfig = {
   budgetBands: [], guide: { enabled: false, title: 'Planning your Treasure Valley remodel', text: '' },
-  sender: '', replyTo: owner, postalAddress: '',
+  sender: owner, replyTo: owner, postalAddress: '',
   reviews: { enabled: false, delayDays: 3, links: [], subject: 'Your Miller Remodeling project', ask: '', thanks: '' },
   nurture: { enabled: false, touches: [] },
 };

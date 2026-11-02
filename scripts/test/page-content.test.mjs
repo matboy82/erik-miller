@@ -8,7 +8,7 @@ import { pageContentHash, readPageContent, staticPagePath } from '../page-conten
 const requiredPaths = [
   '/', '/kitchen-remodeling/', '/bathroom-remodeling/', '/whole-home-remodeling/',
   '/additions/', '/adu-mother-in-law/', '/home-repair/', '/about-process/',
-  '/contact/', '/service-areas/eagle/', '/service-areas/star/',
+  '/contact/', '/privacy/', '/terms/', '/service-areas/eagle/', '/service-areas/star/',
   '/service-areas/meridian/', '/service-areas/boise/', '/service-areas/middleton/',
 ];
 

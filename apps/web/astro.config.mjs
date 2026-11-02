@@ -103,7 +103,7 @@ export default defineConfig({
         writeFileSync(resolve(fileURLToPath(dir), 'llms.txt'), crawlers.llms);
       }
       if (brand.live) {
-        try { verifyLive(fileURLToPath(dir), brand); }
+        try { verifyLive(fileURLToPath(dir), { ...brand, paths: [...pageContent.map((page) => page.path), '/qualify/'] }); }
         catch (error) { rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true }); throw error; }
       }
     } },

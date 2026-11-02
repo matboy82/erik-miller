@@ -14,7 +14,7 @@ function walk(dir) { for (const entry of readdirSync(dir, { withFileTypes: true 
   const file = resolve(dir, entry.name); if (entry.isDirectory()) walk(file); else if (entry.name === 'index.html') files.push(file);
 } }
 walk(output);
-assert.equal(files.length, 15);
+assert.equal(files.length, 17);
 const titles = new Set(); const descriptions = new Set(); const urls = [];
 for (const file of files) {
   const path = '/' + relative(output, file).replaceAll('\\', '/').replace(/index.html$/, '');

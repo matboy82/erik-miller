@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
-export function verifyLive(output, { indexed }) {
+export function verifyLive(output, { indexed, paths }) {
   const files = [];
   function walk(directory) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -12,7 +12,10 @@ export function verifyLive(output, { indexed }) {
   }
   walk(output);
   const pages = files.filter(path => path.endsWith('.html') && !path.endsWith('404.html'));
-  if (pages.length !== 17) throw Error('Live output must include all 17 website routes.');
+  if (!Array.isArray(paths) || !paths.length || new Set(paths).size !== paths.length) throw Error('Expected live routes are missing or duplicated.');
+  const actual = pages.map((file) => `/${relative(output, file).replaceAll('\\', '/').replace(/index\.html$/, '')}`).sort();
+  const expected = [...paths].sort();
+  if (actual.length !== expected.length || actual.some((path, index) => path !== expected[index])) throw Error('Live output routes do not match the active website routes.');
   for (const file of files.filter(path => /\.(html|js|css|json|map|txt|xml)$/.test(path))) {
     const text = readFileSync(file, 'utf8');
     if (/JOBTREAD_API_KEY|GOOGLE_CLIENT_SECRET|GOOGLE_TOKEN_ENCRYPTION_KEY|grantKey/.test(text)) throw Error('Server credential code found in public output.');
