@@ -34,9 +34,9 @@ test('development output is auditable without allowing crawling; launch excludes
 });
 
 test('indexing cannot turn draft business facts and stock imagery into a launch', () => {
-  assert.throws(() => verifyLaunchFacts(), /real client photography; verified business facts; verified public location/);
+  assert.throws(() => verifyLaunchFacts(), /real client photography; verified business facts/);
   const ready = JSON.parse(JSON.stringify(identity));
   ready.launch.clientPhotographyVerified = true;
   ready.launch.businessFactsVerified = true;
-  assert.throws(() => verifyLaunchFacts(ready), /verified public location/);
+  assert.doesNotThrow(() => verifyLaunchFacts(ready));
 });

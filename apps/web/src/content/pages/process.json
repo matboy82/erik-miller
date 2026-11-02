@@ -3,15 +3,15 @@
   "kind": "information",
   "path": "/about-process/",
   "title": "Remodeling Design Process in Treasure Valley | Miller Remodeling",
-  "description": "See Miller Remodeling’s paid design process: consultation, floorplans, selections and a 3D walkthrough before construction in Idaho’s Treasure Valley.",
+  "description": "See Miller Remodeling’s paid design process: consultation, floorplans, selections and project renderings before construction in Idaho’s Treasure Valley.",
   "heading": "A good remodel starts on paper.",
   "intro": "One team. A considered plan. An in-house designer to help you see the space before we build it.",
   "sections": [
     {
       "heading": "Design is real work.",
       "paragraphs": [
-        "The paid design phase gives you floorplans, selections, and a 3D walkthrough. We work through the layout and details together, so construction begins with decisions made.",
-        "Design investment: [Design fee and package]."
+        "The paid design phase gives you floorplans, selections, and project renderings. We work through the layout and details together, so construction begins with decisions made.",
+        "Design investment varies by project size and scope and is discussed during consultation."
       ]
     },
     {
@@ -42,7 +42,7 @@
   "faqs": [
     {
       "question": "What happens before construction begins?",
-      "answer": "Miller Remodeling starts with consultation, then a paid design phase. Floorplans, selections and a 3D walkthrough let you review the proposed space before construction begins."
+      "answer": "Miller Remodeling starts with consultation, then a paid design phase. Floorplans, selections and project renderings let you review the proposed space before construction begins."
     },
     {
       "question": "What should I include in my project inquiry?",
@@ -50,7 +50,7 @@
     },
     {
       "question": "Can I see the design before demolition?",
-      "answer": "Yes. Miller Remodeling’s design process includes a 3D walkthrough so you can review the layout and selections before demolition."
+      "answer": "Yes. Miller Remodeling’s design process includes project renderings so you can review the layout and selections before demolition."
     }
   ]
 }

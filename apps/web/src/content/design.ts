@@ -18,7 +18,7 @@ export const services = [
 ];
 export const process = [
   { title: 'Consult', text: 'Tell us how you live and what needs to change. We talk through your goals, scope, and investment.' },
-  { title: 'Design', text: 'Work with our in-house designer on floorplans and a 3D walkthrough. See the space before we build it.' },
+  { title: 'Design', text: 'Work with our in-house designer on floorplans and project renderings. See the space before we build it.' },
   { title: 'Selections', text: 'Choose cabinetry, fixtures, and finishes together. The details belong in the plan, before construction starts.' },
   { title: 'Build', text: 'With the design approved, we bring it to life. A clear plan keeps the work and the conversation moving.' },
   { title: 'Walkthrough', text: 'Walk the finished space with us. We review the details together and make sure you know your new home.' },

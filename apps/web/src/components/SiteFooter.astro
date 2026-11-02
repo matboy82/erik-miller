@@ -1,11 +1,12 @@
 ---
 import BrandLogo from './BrandLogo.astro';
-import { identity, publicAddress } from '../../../../scripts/site-seo.mjs';
-const areas = ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton', 'Kuna'];
+import { identity } from '../../../../scripts/site-seo.mjs';
+const areas = ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton'];
+const bookingUrl = import.meta.env.PUBLIC_BOOKING_URL ?? '';
 ---
 <footer class="site-footer"><div class="section-wrap">
-  <div class="footer-top"><div class="footer-brand"><BrandLogo tone="white" /><p>Designed first. Built right.</p><p>License [ID #]<br />[Business hours]</p></div>
-  <div><h2>Let’s talk</h2><a href={`tel:${identity.telephone}`}>(208) 608-4439</a><p><a href={`mailto:${identity.email}`}>{identity.email}</a><br />{publicAddress()}</p><a class="text-link" href="/contact/">Tell us about your project <span aria-hidden="true">↗</span></a></div>
+  <div class="footer-top"><div class="footer-brand"><BrandLogo tone="white" /><p>Designed first. Built right.</p><p>License [ID #]<br />Mon–Fri 8:30 AM–5:30 PM<br />Sat–Sun Closed</p></div>
+  <div><h2>Let’s talk</h2><a href={`tel:${identity.telephone}`}>(208) 608-4439</a><a class="text-link" href="/contact/">Tell us about your project <span aria-hidden="true">↗</span></a>{bookingUrl && <p><a href={bookingUrl} target="_blank" rel="noreferrer">Schedule a job walk</a></p>}</div>
   <div><h2>Explore</h2><ul><li><a href="/#services">Services</a></li><li><a href="/about-process/">Our process</a></li><li><a href="/portfolio/">Project stories</a></li><li><a href="/#reviews">Meet Erik</a></li><li><a href="/qualify/">Start your project</a></li></ul></div>
   <div><h2>Service areas</h2><ul>{areas.map((area) => <li><a href={`/service-areas/${area.toLowerCase()}/`}>{area}</a></li>)}</ul><p class="footer-small">[Service coverage]</p></div></div>
   <div class="footer-bottom"><p>© {new Date().getFullYear()} Miller Remodeling LLC</p><p>Built around your home. Planned around your life.</p></div>

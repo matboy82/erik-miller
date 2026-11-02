@@ -8,12 +8,6 @@ import siteIdentity from '../apps/web/src/content/site.json' with { type: 'json'
 export const identity = siteIdentity;
 export const siteOrigin = new URL(identity.url).origin;
 const absolute = (path) => new URL(path, siteOrigin).href;
-export function publicAddress() {
-  const location = identity.publicLocation;
-  if (location?.verified !== true) return '[Business address]';
-  const address = location.address;
-  return [address.streetAddress, address.addressLocality, address.addressRegion, address.postalCode].filter(Boolean).join(', ');
-}
 
 export function pageSeo(page, { qualification = false } = {}) {
   const path = qualification ? '/qualify/' : page.path;
@@ -27,15 +21,7 @@ export function pageSeo(page, { qualification = false } = {}) {
     description: identity.description, logo: { '@type': 'ImageObject', '@id': absolute('/#logo'), url: absolute('/miller-logo.png') },
     ...(identity.officialProfiles.length ? { sameAs: identity.officialProfiles } : {}),
   };
-  // Only a verified, public customer-facing location can promote the entity to LocalBusiness.
-  const location = identity.publicLocation;
-  if (location?.verified === true) {
-    if (!location.address?.streetAddress || !location.address?.addressLocality || !location.address?.postalCode
-      || !Number.isFinite(location.geo?.latitude) || !Number.isFinite(location.geo?.longitude)) throw Error('Verified public location requires a real address and coordinates.');
-    organization['@type'] = 'GeneralContractor';
-    organization.address = { '@type': 'PostalAddress', ...location.address };
-    organization.geo = { '@type': 'GeoCoordinates', ...location.geo };
-  }
+  // This service-area business does not publish a street address or coordinates.
   const webPage = {
     '@type': page.kind === 'contact' ? 'ContactPage' : page.id === 'process' ? 'AboutPage' : page.kind === 'portfolio' ? 'CollectionPage' : 'WebPage',
     '@id': `${url}#webpage`, url, name: title, description,
@@ -102,6 +88,5 @@ export function verifyLaunchFacts(facts = identity) {
   const missing = [];
   if (!facts.launch.clientPhotographyVerified) missing.push('real client photography');
   if (!facts.launch.businessFactsVerified) missing.push('verified business facts');
-  if (!facts.publicLocation?.verified) missing.push('verified public location and coordinates');
   if (missing.length) throw Error(`Business launch is not ready: ${missing.join('; ')}. Keep PUBLIC_INDEXING_ENABLED=false.`);
 }

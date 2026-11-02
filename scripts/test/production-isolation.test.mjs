@@ -14,7 +14,7 @@ test('production isolation detects leaked controls and alternate token sets', ()
     const valid = `<html><style>${brandCss(resolve('.'), { review: false, direction: 'A' })}</style>
       <p data-copy="tagline">Designed first. Built right.</p>
       <h1 data-copy="headline">Kitchens and baths, designed before they're built.</h1>
-      <p data-copy="description">25 years of Treasure Valley remodels. You approve the floorplans, selections, and 3D walkthrough before demo day — then we build it on time and on budget.</p>
+      <p data-copy="description">25 years of Treasure Valley remodels. You approve the floorplans, selections, and project renderings before demo day — then we build it on time and on budget.</p>
       <h2 data-copy="process">One process, from first sketch to final walkthrough.</h2></html>`;
     writeFileSync(file, valid);
     assert.doesNotThrow(() => verifyProduction(directory, 'A'));

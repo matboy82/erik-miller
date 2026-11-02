@@ -2,7 +2,7 @@ export const copy = {
   A: {
     tagline: 'Designed first. Built right.',
     headline: "Kitchens and baths, designed before they're built.",
-    description: '25 years of Treasure Valley remodels. You approve the floorplans, selections, and 3D walkthrough before demo day — then we build it on time and on budget.',
+    description: '25 years of Treasure Valley remodels. You approve the floorplans, selections, and project renderings before demo day — then we build it on time and on budget.',
     process: 'One process, from first sketch to final walkthrough.',
   },
   B: {

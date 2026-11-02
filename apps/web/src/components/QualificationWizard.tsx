@@ -314,11 +314,11 @@ export default function QualificationWizard() {
             <button type="button" className="button" disabled={sending} onClick={submitProject}>{sending ? 'Sending your project…' : attempt.current ? 'Retry project inquiry' : 'Send my project'}</button>
           </>}
           {outcome && <div className="wizard-result" role="status" aria-live="polite"><p>Erik will review the details and follow up.</p><p>Your reference: <strong>{outcome}</strong></p><button type="button" className="button button-secondary" onClick={async () => { try { await navigator.clipboard.writeText(outcome); setCopied(true); } catch { setCopied(false); } }}>{copied ? 'Reference copied' : 'Copy project reference'}</button>
-            <div className="wizard-booking"><h4>A time to talk</h4><p>You can choose a conversation time on Erik’s calendar. Include your project reference when booking so he can find your inquiry.</p>
+            {bookingUrl && <div className="wizard-booking"><h4>A time to talk</h4><p>You can choose a conversation time on Erik’s calendar. Include your project reference when booking so he can find your inquiry.</p>
               {!bookingLoaded ? <button type="button" className="button button-secondary" onClick={() => setBookingLoaded(true)}>Load the appointment schedule</button>
                 : <iframe title="Erik’s Google Calendar appointment schedule" src={bookingUrl} width="100%" height="600" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />}
               <a className="wizard-booking-link" href={bookingUrl} target="_blank" rel="noreferrer">Open the schedule in a new tab</a>
-            </div>
+            </div>}
           </div>}
         </div>}
 

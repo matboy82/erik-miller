@@ -1,6 +1,6 @@
 export const intakeUrl = (import.meta.env.PUBLIC_INTAKE_API_URL ?? '').replace(/\/$/, '');
 export const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
-export const bookingUrl = import.meta.env.PUBLIC_BOOKING_URL ?? 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ3yGOu537xocx0E6JCgrbNeC3bf_jSF8CuCn9fS41FLe8nhR9QZR_EH5suk7HGBTPbr1NZbxS_8?gv=true';
+export const bookingUrl = import.meta.env.PUBLIC_BOOKING_URL ?? '';
 
 export async function sendInquiry(path: 'contact' | 'project', payload: Record<string, unknown>, key: string, token = ''): Promise<string> {
   if (!intakeUrl) throw new Error('This form is being prepared for launch. Please call (208) 608-4439 to discuss your project.');
