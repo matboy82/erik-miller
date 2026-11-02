@@ -12,7 +12,7 @@
 
 1. **Renderings, NOT 3D walkthrough.** Erik does not offer a 3D walkthrough. He offers renderings in the "new package" (accurate renderings / project renderings). Rewrite every 3D-walkthrough claim on the site (homepage plan copy, design-phase copy, process page) to renderings.
 2. **No design fees on the process page.** The "Design investment: [Design fee and package]" line must NOT be filled with a number. Fees vary by project size and scope. Replace with language that design investment is discussed at consult, or drop the line. No figure on the page.
-3. **Footer contact: phone + hours yes, address no.** Post phone (208.608.4439, verify against GBP) and business hours (fill from Erik's Google Business Profile — see §5; do NOT use hours belonging to any other company named Miller). Remove the [Business address] placeholder. No street address on the site.
+3. **Footer contact: phone + hours yes, address no.** Post phone (208.608.4439, confirmed on GBP) and business hours from GBP, verified Nov 2: Mon–Fri 8:30 AM–5:30 PM, Sat–Sun Closed. Remove the [Business address] placeholder. No street address on the site.
 4. **Form-first contact; new Workspace email.** Visitors should use the inquiry form rather than seeing Erik's email posted in the footer. The form's destination updates to erik@millerremodelingidaho.com (Erik's new Google Workspace address; replaces millerremodelingidaho@gmail.com). Test that the first inquiry lands in the new Workspace inbox before launch.
 5. **Footer service areas: drop Kuna.** Footer lists Eagle, Star, Middleton, Boise, Meridian. Kuna is OUT of the footer. McCall is NOT requested as a page (Erik's McCall remark was preference emphasis). Service-area pages themselves are untouched unless Erik says otherwise.
 6. **Portfolio: liked, no star project yet.** Erik likes the portfolio page but has no star project with good photo/video worth posting. Do NOT invent a featured project. The homepage "Featured project story" slot (currently a [Project location] placeholder) stays unfilled until Erik supplies a real project.
@@ -49,7 +49,7 @@ Still to do before deploy:
 - Final content and photos (including a real featured project if Erik supplies one; otherwise the slot stays empty per §1.6).
 - Lead-funnel questions (open — list them for Matt if any block launch).
 - A replacement for the operator page.
-- Footer hours value: fill from Erik's Google Business Profile (Matt shared the GBP link Nov 2). If the hours cannot be verified from GBP, leave flagged for Erik — do not guess.
+- Footer hours value: VERIFIED from GBP Nov 2: Mon–Fri 8:30 AM–5:30 PM, Sat–Sun Closed. Panel also confirms 5.0 stars, 16 reviews, phone (208) 608-4439, and no street address displayed — consistent with Erik not listing an address on GBP.
 
 ## 6. Deploy sequence
 
