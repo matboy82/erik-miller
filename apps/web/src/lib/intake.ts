@@ -9,8 +9,8 @@ export async function sendInquiry(path: 'contact' | 'project', payload: Record<s
     body: JSON.stringify({ ...payload, ...(token ? { turnstileToken: token } : {}) }),
     signal: AbortSignal.timeout(30_000),
   });
-  const result = await response.json() as { receiptId?: string; state?: string; error?: string };
-  if (response.status === 202 && result.state === 'accepted' && typeof result.receiptId === 'string') return result.receiptId;
+  const result = await response.json() as { reference?: string; state?: string; error?: string };
+  if (response.status === 202 && result.state === 'accepted' && typeof result.reference === 'string') return result.reference;
   if (result.error === 'verification_required') throw new Error('Complete the security check and try again.');
   if (result.error === 'idempotency_conflict') throw new Error('The earlier attempt used different details. Restore those details to retry, or start a new inquiry.');
   if (response.status === 400) throw new Error('Check your contact details, project answers, and photos, then try again.');

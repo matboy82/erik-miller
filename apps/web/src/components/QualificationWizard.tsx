@@ -77,8 +77,8 @@ export default function QualificationWizard() {
     email: emailError(values.email),
     phone: phoneError(values.phone),
   };
-  const contactChoiceError = Boolean(values.email.trim()) === Boolean(values.phone.trim())
-    ? 'Enter either an email address or a phone number.' : '';
+  const contactChoiceError = !values.email.trim() && !values.phone.trim()
+    ? 'Enter an email address or phone number to continue.' : '';
   const showContactChoiceError = contactTouched.email && contactTouched.phone && Boolean(contactChoiceError);
 
   function touchContact(key: 'name' | 'email' | 'phone') {
@@ -196,7 +196,7 @@ export default function QualificationWizard() {
     try {
       if (!attempt.current) {
         attempt.current = { key: crypto.randomUUID(), payload: {
-          name: values.name.trim(), ...(values.email.trim() ? { email: values.email.trim() } : { phone: values.phone.trim() }),
+          name: values.name.trim(), ...(values.email.trim() ? { email: values.email.trim() } : {}), ...(values.phone.trim() ? { phone: values.phone.trim() } : {}),
           project: { ...selectionSnapshot(values), description: values.description.trim() },
           photos: await Promise.all(photos.map(preparePhoto)),
           followupConsent: Boolean(values.email.trim() && followupConsent),
@@ -276,7 +276,7 @@ export default function QualificationWizard() {
 
         {step === 4 && <fieldset className="wizard-contact-fields">
           <legend tabIndex={-1}>How can we reach you?</legend>
-          <p id="qualification-contact-hint" className="wizard-contact-hint">Choose one way to reach you: email or phone.</p>
+          <p id="qualification-contact-hint" className="wizard-contact-hint">Add an email address, phone number, or both.</p>
           <div className="wizard-field">
             <label htmlFor="qualification-name">Name</label>
             <input id="qualification-name" autoComplete="name" maxLength={120} value={values.name} onChange={(event) => update('name', event.currentTarget.value)} onBlur={() => touchContact('name')} aria-invalid={contactTouched.name && Boolean(contactErrors.name)} aria-describedby={contactTouched.name && contactErrors.name ? 'qualification-name-error' : undefined} />
@@ -300,7 +300,15 @@ export default function QualificationWizard() {
         {step === 5 && <div className="wizard-outcomes">
           <h3 tabIndex={-1}>{outcome ? 'Thank you. Your project inquiry is received.' : 'Review your project'}</h3>
           {selectedBand && <div className="wizard-result"><h4>A planning range for your {values.projectType.toLowerCase()}</h4><p><strong>{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(selectedBand.min)}–{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(selectedBand.max)}</strong></p><p>{selectedBand.scope}</p><p>This is a planning range, not a quote. Scope, site conditions, and selections affect the final proposal.</p></div>}
-          {!outcome && <><dl>{nonSensitiveKeys.map((key) => <div key={key}><dt>{key.replace(/([A-Z])/g, ' $1')}</dt><dd>{values[key]}</dd></div>)}<dt>Project description</dt><dd>{values.description}</dd><dt>Contact</dt><dd>{values.name} · {values.email || values.phone}</dd><dt>Photos</dt><dd>{photos.length} selected</dd></dl>
+          {!outcome && <><div className="wizard-review">
+            <section aria-labelledby="review-project-title"><h4 id="review-project-title">Project overview</h4><dl className="wizard-review-grid">
+              <div><dt>Project type</dt><dd>{values.projectType}</dd></div><div><dt>Location</dt><dd>{values.location}</dd></div>
+              <div><dt>Timing</dt><dd>{values.timeline}</dd></div><div><dt>Budget</dt><dd>{values.budget}</dd></div>
+              <div><dt>Previous design or building experience</dt><dd>{values.experience}</dd></div><div><dt>How you heard about us</dt><dd>{values.referralSource}</dd></div>
+            </dl></section>
+            <section aria-labelledby="review-description-title"><h4 id="review-description-title">Project details</h4><p>{values.description}</p><p className="wizard-review-photo">{photos.length === 0 ? 'No photos attached' : `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'} attached`}</p></section>
+            <section aria-labelledby="review-contact-title"><h4 id="review-contact-title">Your contact details</h4><dl className="wizard-review-grid"><div><dt>Name</dt><dd>{values.name}</dd></div>{values.email.trim() && <div><dt>Email</dt><dd>{values.email}</dd></div>}{values.phone.trim() && <div><dt>Phone</dt><dd>{values.phone}</dd></div>}</dl></section>
+          </div>
             <p>Erik will review your project details and follow up about the next step.</p>
             <SecurityCheck />
             <button type="button" className="button" disabled={sending} onClick={submitProject}>{sending ? 'Sending your project…' : attempt.current ? 'Retry project inquiry' : 'Send my project'}</button>

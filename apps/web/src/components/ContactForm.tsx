@@ -20,11 +20,11 @@ export default function ContactForm() {
     event.preventDefault();
     if (busy || received) return;
     const issues = [!name.trim() ? 'Enter your name.' : '', !email.trim() && !phone.trim() ? 'Enter an email address or phone number.' : '',
-      email.trim() && phone.trim() ? 'Choose email or phone as your contact method.' : '', emailError(email), phoneError(phone), !message.trim() ? 'Tell us what you would like help with.' : ''].filter(Boolean);
+      emailError(email), phoneError(phone), !message.trim() ? 'Tell us what you would like help with.' : ''].filter(Boolean);
     setErrors(issues);
     if (issues.length) return;
     setBusy(true); setStatus('Sending your inquiry…');
-    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : { phone: phone.trim() }), message: message.trim(),followupConsent:Boolean(email.trim()&&followupConsent) } };
+    attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : {}), ...(phone.trim() ? { phone: phone.trim() } : {}), message: message.trim(),followupConsent:Boolean(email.trim()&&followupConsent) } };
     try {
       const token = form.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
       const receipt = await sendInquiry('contact', attempt.current.payload, attempt.current.key, token);
@@ -43,7 +43,7 @@ export default function ContactForm() {
         <label htmlFor="inquiry-name">Your name</label><input id="inquiry-name" autoComplete="name" maxLength={120} value={name} onChange={(event) => setName(event.currentTarget.value)} required />
         <label htmlFor="inquiry-email">Email</label><input id="inquiry-email" type="email" autoComplete="email" maxLength={254} value={email} onChange={(event) => setEmail(event.currentTarget.value)} />
         <label htmlFor="inquiry-phone">Phone</label><input id="inquiry-phone" type="tel" autoComplete="tel" maxLength={32} value={phone} onChange={(event) => setPhone(formatPhone(event.currentTarget.value))} />
-        <p className="field-hint">Choose one way to reach you: email or phone.</p>
+        <p className="field-hint">Add an email address, phone number, or both.</p>
         <label htmlFor="inquiry-message">What would you like help with?</label><textarea id="inquiry-message" rows={5} maxLength={5000} value={message} onChange={(event) => setMessage(event.currentTarget.value)} required />
         {email.trim() && <label className="followup-choice"><input type="checkbox" checked={followupConsent} onChange={event=>setFollowupConsent(event.currentTarget.checked)}/><span>Send me up to three planning follow-ups by email over fourteen days. I can unsubscribe at any time.</span></label>}
       </fieldset>

@@ -10,7 +10,7 @@ const start=Date.parse('2026-10-05T12:00:00Z');
 const day=86400_000;
 function database(){
   const sql=new DatabaseSync(':memory:');
-  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
+  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql','0006_public_references.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
   const db={prepare(query:string){let values:unknown[]=[];return {bind(...args:unknown[]){values=args;return this;},async first(){return sql.prepare(query).get(...values)??null;},async all(){return {results:sql.prepare(query).all(...values)};},async run(){const result=sql.prepare(query).run(...values);return {success:true,meta:{changes:Number(result.changes)}};}};},async batch(statements:{run:()=>Promise<unknown>}[]){sql.exec('BEGIN');try{const results=[];for(const s of statements)results.push(await s.run());sql.exec('COMMIT');return results;}catch(e){sql.exec('ROLLBACK');throw e;}}};
   return {sql,db:db as unknown as D1Database};
 }

@@ -37,6 +37,10 @@ class MemoryStatement {
   }
 
   async first<T>(): Promise<T | null> {
+    if (this.sql.includes('FROM intake_public_references')) {
+      const reference = this.db.references.get(String(this.values[0]));
+      return (reference ? { reference, receipt_id: this.values[0] } : null) as T | null;
+    }
     if (this.sql.includes('WHERE idempotency_key = ?')) {
       return (this.db.rows.find((row) => row.idempotency_key === this.values[0]) ?? null) as T | null;
     }
@@ -52,6 +56,9 @@ class MemoryStatement {
 
   async run(): Promise<{ success: boolean }> {
     if (this.db.failWrites) return { success: false };
+    if (this.sql.includes('intake_public_references')) {
+      this.db.references.set(String(this.values[1]), String(this.values[0]));
+    }
     if (this.sql.includes('SET payload = NULL')) {
       let changes = 0;
       for (const row of this.db.rows) {
@@ -124,6 +131,7 @@ class MemoryStatement {
 
 class MemoryDatabase {
   rows: IntakeRow[] = [];
+  references = new Map<string, string>();
   failWrites = false;
   prepare(sql: string): MemoryStatement {
     return new MemoryStatement(this, sql);
@@ -164,11 +172,13 @@ function contactRequest(body: unknown, idempotencyKey = key) {
 test('valid inquiry is durably stored and queued before returning a safe receipt', async () => {
   const { env, db, sent } = testEnv();
   const response = await worker.fetch(contactRequest(validPayload), env);
-  const body = await response.json() as { receiptId: string; state: string };
+  const body = await response.json() as { receiptId: string; reference: string; state: string };
 
   assert.equal(response.status, 202);
   assert.match(body.receiptId, /^[a-f0-9-]{36}$/);
   assert.equal(body.state, 'accepted');
+  assert.match(body.reference, /^MR-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/);
+  assert.notEqual(body.reference, body.receiptId);
   assert.equal(db.rows.length, 1);
   assert.deepEqual(sent, [body.receiptId]);
   assert.equal(JSON.stringify(body).includes(validPayload.email), false);
@@ -185,18 +195,20 @@ test('intake is disabled by default and stores no submission', async () => {
   assert.deepEqual(sent, []);
 });
 
-test('invalid fields and malformed JSON never write or enqueue', async () => {
+test('a valid email and phone are both accepted; malformed JSON never writes or enqueues', async () => {
   const { env, db, sent } = testEnv();
-  const invalid = await worker.fetch(contactRequest({ ...validPayload, phone: '(208) 555-0100' }), env);
+  const both = await worker.fetch(contactRequest({ ...validPayload, phone: '(208) 555-0100' }), env);
   const malformed = await worker.fetch(new Request('https://worker.test/intake/contact', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: '{',
   }), env);
 
-  assert.equal(invalid.status, 400);
-  assert.deepEqual(await invalid.json(), { error: 'validation_failed', fields: ['contact'] });
+  assert.equal(both.status, 202);
+  const receiptId = (await both.json() as { receiptId: string }).receiptId;
+  assert.equal(JSON.parse(db.rows[0].payload).email, validPayload.email);
+  assert.equal(JSON.parse(db.rows[0].payload).phone, '+12085550100');
   assert.equal(malformed.status, 400);
-  assert.equal(db.rows.length, 0);
-  assert.deepEqual(sent, []);
+  assert.equal(db.rows.length, 1);
+  assert.deepEqual(sent, [receiptId]);
 });
 
 test('retry with the same idempotency key returns the same receipt without creating another record', async () => {
@@ -206,8 +218,10 @@ test('retry with the same idempotency key returns the same receipt without creat
 
   assert.equal(first.status, 202);
   assert.equal(repeated.status, 202);
-  assert.equal((await repeated.json() as { receiptId: string }).receiptId,
-    (await first.json() as { receiptId: string }).receiptId);
+  const firstBody = await first.json() as { receiptId: string; reference: string };
+  const repeatedBody = await repeated.json() as { receiptId: string; reference: string };
+  assert.equal(repeatedBody.receiptId, firstBody.receiptId);
+  assert.equal(repeatedBody.reference, firstBody.reference);
   assert.equal(db.rows.length, 1);
   assert.equal(sent.length, 2);
 });

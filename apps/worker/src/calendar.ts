@@ -60,8 +60,16 @@ export async function syncCalendar(env: CalendarEnvironment, call: Call): Promis
       for (const event of result.items ?? []) {
         if (!event.id || !/^[a-zA-Z0-9_-]{1,200}$/.test(event.id)) continue;
         const known = await db.prepare('SELECT receipt_id, payload FROM calendar_booking_events WHERE event_id = ?1').bind(event.id).first<{ receipt_id: string; payload: string }>();
-        const matches = [...new Set(event.description?.match(/\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi)?.map((value) => value.toLowerCase()) ?? [])];
-        const receiptId = known?.receipt_id ?? (matches.length === 1 ? matches[0] : undefined);
+        const matches = [...new Set(event.description?.match(/\b(?:MR-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}|[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\b/gi)?.map((value) => value.toUpperCase()) ?? [])];
+        let referencedReceipt: string | undefined;
+        if (!known && matches.length === 1) {
+          const ref = matches[0];
+          if (ref.startsWith('MR-')) {
+            const mapped = await db.prepare('SELECT receipt_id FROM intake_public_references WHERE reference = ?1').bind(ref).first<{ receipt_id: string }>();
+            referencedReceipt = mapped?.receipt_id;
+          } else referencedReceipt = ref.toLowerCase();
+        }
+        const receiptId = known?.receipt_id ?? referencedReceipt;
         if (!receiptId) continue;
         const inquiry = await db.prepare('SELECT receipt_id FROM intake_submissions WHERE receipt_id = ?1').bind(receiptId).first();
         if (!inquiry) continue;

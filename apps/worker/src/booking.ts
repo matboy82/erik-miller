@@ -16,6 +16,8 @@ export async function recordBooking(receiptId: string, input: Input, db: D1Datab
   call: (operation: Record<string, unknown>) => Promise<Record<string, unknown>>): Promise<{ status: number; body: Record<string, unknown> }> {
   const inquiry = await db.prepare('SELECT state, external_job_id FROM intake_submissions WHERE receipt_id = ?1').bind(receiptId).first<{ state: string; external_job_id: string | null }>();
   if (!inquiry) return { status: 404, body: { error: 'not_found' } };
+  const referenceRow = await db.prepare('SELECT reference FROM intake_public_references WHERE receipt_id = ?1').bind(receiptId).first<{ reference: string }>();
+  const reference = referenceRow?.reference ?? `MR05-${receiptId.replace(/-/g, '').slice(-8).toUpperCase()}`;
   if (inquiry.state !== 'delivered' || !inquiry.external_job_id) return { status: 409, body: { error: 'delivery_required' } };
   const existing = await db.prepare('SELECT receipt_id, phase, payload, task_id FROM intake_bookings WHERE event_id = ?1').bind(input.eventId).first<{ receipt_id: string; phase: string; payload: string; task_id: string | null }>();
   const payload = JSON.stringify({ eventId: input.eventId, date: input.date, start: input.start, end: input.end, cancelled: input.cancelled ?? false });
@@ -47,8 +49,8 @@ export async function recordBooking(receiptId: string, input: Input, db: D1Datab
     } else if (taskId) {
       await call({ updateTask: { $: { id: taskId, startDate: input.date, endDate: input.date, startTime: `${input.start}:00`, endTime: `${input.end}:00`, notify: false, updateDependentTasks: false, updateRecurringTasks: false } } });
     } else {
-      const result = await call({ createTask: { $: { name: `Consultation ${receiptId.slice(-8)}`, targetId: inquiry.external_job_id, targetType: 'job',
-        description: `Google Calendar event: ${input.eventId}\nWebsite inquiry: ${receiptId}`, startDate: input.date, endDate: input.date,
+      const result = await call({ createTask: { $: { name: `Consultation ${reference}`, targetId: inquiry.external_job_id, targetType: 'job',
+        description: `Google Calendar event: ${input.eventId}\nWebsite project reference: ${reference}`, startDate: input.date, endDate: input.date,
         startTime: `${input.start}:00`, endTime: `${input.end}:00`, notify: false }, createdTask: { id: {} } } });
       taskId = (result.createTask as { createdTask?: { id?: string } })?.createdTask?.id;
       if (!taskId) throw new Error('booking_result_unknown');

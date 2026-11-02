@@ -200,6 +200,15 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 .wizard-booking iframe { min-height: 600px; border: 0; background: var(--color-surface); }
 .wizard-booking-link { width: fit-content; min-height: 44px; display: inline-flex; align-items: center; }
 .wizard-storage-note { margin-top: 16px; }
+.wizard-review { display: grid; gap: 20px; padding: 20px; border: 1px solid var(--color-decoration); background: var(--color-paper); }
+.wizard-review section + section { padding-top: 18px; border-top: 1px solid var(--color-decoration); }
+.wizard-review h4 { margin: 0 0 14px; font-family: var(--font-display); font-size: 21px; font-weight: 400; }
+.wizard-review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin: 0; }
+.wizard-review-grid div { min-width: 0; }
+.wizard-review-grid dt { margin-bottom: 4px; color: var(--color-muted, #62655c); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.wizard-review-grid dd { margin: 0; overflow-wrap: anywhere; }
+.wizard-review section > p { margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wizard-review .wizard-review-photo { margin: 12px 0 0; font-size: 13px; }
 
 .contact-preview { padding-block: var(--space-section); border: 0; align-items: start; }
 .contact-intro h2 { font-size: clamp(40px, 4.5vw, 64px); }
@@ -213,6 +222,7 @@ a:hover .text-link span, .text-link:hover span { transform: translate(3px, -3px)
 .wizard-progress-row { font-size: 13px; }
 .wizard-storage-note { font-size: 11px; }
 @media (max-width: 1200px) { .site-header { gap: 22px; } .site-nav-list { gap: 18px; } .header-cta { gap: 12px; } }
+@media (max-width: 600px) { .wizard-review { padding: 16px; } .wizard-review-grid { grid-template-columns: 1fr; gap: 12px; } }
 @media (max-width: 1060px) {
  .site-header { min-height: 88px; padding: 18px 24px; gap: 20px; }
  .site-nav { order: 3; margin-left: 0; }

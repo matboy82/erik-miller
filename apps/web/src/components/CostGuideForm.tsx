@@ -19,8 +19,8 @@ export default function CostGuideForm() {
       const token=form.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value??'';
       const response=await fetch(`${intakeUrl}/intake/lead-magnet`,{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':attempt.current.key},body:JSON.stringify({...attempt.current.payload,turnstileToken:token}),signal:AbortSignal.timeout(30000)});
       const result=await response.json();
-      if(response.status!==202||typeof result.receiptId!=='string'||typeof result.downloadUrl!=='string')throw new Error('We could not confirm your guide request. Complete the security check and retry with the same details.');
-      setReceipt(result.receiptId);setDownload(result.downloadUrl);
+      if(response.status!==202||typeof result.reference!=='string'||typeof result.downloadUrl!=='string')throw new Error('We could not confirm your guide request. Complete the security check and retry with the same details.');
+      setReceipt(result.reference);setDownload(result.downloadUrl);
     }catch(e){setError(e instanceof Error?e.message:'Please try again.');resetChallenge();}finally{setBusy(false);}
   }
   async function downloadGuide(){setBusy(true);setError('');try{const r=await fetch(download);if(r.status===425){setError('Your request is received. The guide will be ready once it is recorded. Please try the download again shortly.');return;}if(!r.ok)throw new Error('The guide is unavailable. Call (208) 608-4439 for help.');const blob=await r.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='miller-remodeling-cost-guide.txt';link.click();URL.revokeObjectURL(url);}catch(e){setError(e instanceof Error?e.message:'Please retry the download.');}finally{setBusy(false);}}

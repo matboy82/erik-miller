@@ -12,7 +12,7 @@ class Database {
   raw = new DatabaseSync(':memory:');
   constructor() {
     this.raw.exec('PRAGMA foreign_keys = ON');
-    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
+    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0006_public_references.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
   }
   prepare(sql: string) {
     const statement = this.raw.prepare(sql);
@@ -35,7 +35,7 @@ class Database {
 
 const key = '22222222-2222-4222-8222-222222222222';
 const project = { projectType: 'Kitchen', location: 'Eagle', timeline: 'Still exploring', budget: 'Still estimating', description: 'Synthetic kitchen remodel', experience: 'No', referralSource: 'Search' };
-const lead = { name: 'Synthetic homeowner', email: 'synthetic@example.invalid', project, photos: [] as { type: string; data: string }[] };
+const lead = { name: 'Synthetic homeowner', email: 'synthetic@example.invalid', phone: '(208) 555-0100', project, photos: [] as { type: string; data: string }[] };
 const image = readFileSync(new URL('../../../scripts/test/fixtures/jobtread-probe.png', import.meta.url));
 const photo = { type: 'image/png', data: image.toString('base64') };
 function setup() {
@@ -135,6 +135,8 @@ function vendor(failFile = false) {
   let message = '';
   let accountName = '';
   let locationName = '';
+  let jobName = '';
+  let contactFields: Record<string, string> = {};
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
     if (String(url).startsWith('https://files.test')) {
       assert.equal(init?.redirect, 'manual', 'Workers must reject redirects through response status without following them');
@@ -148,10 +150,10 @@ function vendor(failFile = false) {
     else if (operation === 'account') result.account = { id: 'account', name: accountName, organization: { id: 'org' } };
     else if (operation === 'createLocation') { locationName = query.createLocation.$.name; result.createLocation = { createdLocation: { id: 'location', account: { id: 'account' } } }; }
     else if (operation === 'location') result.location = { id: 'location', name: locationName, account: { id: 'account', organization: { id: 'org' } } };
-    else if (operation === 'createContact') result.createContact = { createdContact: { id: 'contact' } };
-    else if (operation === 'createJob') { message = query.createJob.$.description; result.createJob = { createdJob: { id: 'job', location: { id: 'location', account: { id: 'account' } } } }; }
+    else if (operation === 'createContact') { contactFields = query.createContact.$.customFieldValues; result.createContact = { createdContact: { id: 'contact' } }; }
+    else if (operation === 'createJob') { message = query.createJob.$.description; jobName = query.createJob.$.name; result.createJob = { createdJob: { id: 'job', location: { id: 'location', account: { id: 'account' } } } }; }
     else if (operation === 'contact') {
-      result.contact = { id: 'contact', account: { id: 'account' }, customFieldValues: { nodes: [{ customField: { id: 'email' }, value: lead.email }] } };
+      result.contact = { id: 'contact', account: { id: 'account' }, customFieldValues: { nodes: [{ customField: { id: 'email' }, value: lead.email }, { customField: { id: 'phone' }, value: '+12085550100' }] } };
       result.job = { id: 'job', description: message, location: { id: 'location', account: { id: 'account' } } };
     } else if (operation === 'createUploadRequest') result.createUploadRequest = { createdUploadRequest: { id: 'upload' } };
     else if (operation === 'uploadRequest') result.uploadRequest = { url: 'https://files.test/upload', method: 'PUT', headers: { 'Content-Type': 'image/png' } };
@@ -162,7 +164,7 @@ function vendor(failFile = false) {
     else throw new Error('Unexpected synthetic operation');
     return Response.json(result);
   };
-  return { calls, transport };
+  return { calls, transport, get accountName() { return accountName; }, get locationName() { return locationName; }, get jobName() { return jobName; }, get contactFields() { return contactFields; }, get message() { return message; } };
 }
 async function consume(id: string, env: Parameters<typeof worker.fetch>[1]) {
   await worker.queue({ queue: 'miller-intake-delivery', messages: [{ body: id, ack() {}, retry() {} }] } as unknown as Parameters<typeof worker.queue>[0], env!);
@@ -171,12 +173,17 @@ async function consume(id: string, env: Parameters<typeof worker.fetch>[1]) {
 test('complete project delivery verifies customer/contact/job links, original photo identity and staging deletion', async () => {
   const { db, env, objects } = setup();
   const response = await worker.fetch(request({ ...lead, photos: [photo] }), env);
-  const { receiptId } = await response.json() as { receiptId: string };
+  const { receiptId, reference } = await response.json() as { receiptId: string; reference: string };
   const original = globalThis.fetch;
   const mock = vendor(); globalThis.fetch = mock.transport as typeof fetch;
   try {
     await consume(receiptId, env);
     assert.equal(db.raw.prepare('SELECT state FROM intake_submissions').get()!.state, 'delivered');
+    assert.match(mock.accountName, new RegExp(`\\[${reference}\\]`));
+    assert.match(mock.locationName, new RegExp(`\\[${reference}\\]`));
+    assert.match(mock.jobName, new RegExp(reference));
+    assert.match(mock.message, new RegExp(reference));
+    assert.deepEqual(mock.contactFields, { email: lead.email, phone: '+12085550100' });
     assert.equal(db.raw.prepare('SELECT phase FROM intake_photos').get()!.phase, 'verified');
     assert.equal(objects.size, 0);
     const count = mock.calls.length;
@@ -242,10 +249,10 @@ test('project decoder retains a long description without silently truncating it'
 test('automatic Google sync creates, reschedules and cancels one associated task, including minimal deletion events', async () => {
   const { db, env } = setup();
   const response = await worker.fetch(request(lead), env);
-  const { receiptId } = await response.json() as { receiptId: string };
+  const { receiptId, reference } = await response.json() as { receiptId: string; reference: string };
   db.raw.exec("UPDATE intake_submissions SET state = 'delivered', external_job_id = 'job'");
   Object.assign(env!, { BOOKING_SYNC_ENABLED: 'true', GOOGLE_CLIENT_ID: 'client', GOOGLE_CLIENT_SECRET: 'secret', GOOGLE_REFRESH_TOKEN: 'refresh', GOOGLE_BOOKING_CALENDAR_ID: 'booking-calendar' });
-  let event: Record<string, unknown> | undefined = { id: 'google-event', description: `Project reference: ${receiptId}`, status: 'confirmed', start: { dateTime: '2026-10-20T10:00:00-06:00' }, end: { dateTime: '2026-10-20T10:30:00-06:00' } };
+  let event: Record<string, unknown> | undefined = { id: 'google-event', description: `Project reference: ${reference}`, status: 'confirmed', start: { dateTime: '2026-10-20T10:00:00-06:00' }, end: { dateTime: '2026-10-20T10:30:00-06:00' } };
   const original = globalThis.fetch;
   const calls: string[] = [];
   let task: Record<string, unknown> | null = null;
@@ -269,6 +276,8 @@ test('automatic Google sync creates, reschedules and cancels one associated task
   try {
     await syncCalendar(env!, call);
     assert.deepEqual(calls, ['create']);
+    assert.match(String((task as Record<string, unknown>).name), new RegExp(reference));
+    assert.match(String((task as Record<string, unknown>).description), new RegExp(reference));
     assert.equal(db.raw.prepare('SELECT phase FROM intake_bookings').get()!.phase, 'verified');
     event = undefined;
     await syncCalendar(env!, call);

@@ -5,6 +5,7 @@ import { recordBooking, validBooking } from './booking.ts';
 import { syncCalendar, type CalendarEnvironment } from './calendar.ts';
 import { googleAuthorization } from './google-auth.ts';
 import { approvedConversion, captureConversion, captureCompletedJob, cleanupConversion, conversionOperator, conversionPublic, runConversion, type ConversionEnvironment } from './conversion.ts';
+import { ensurePublicReference } from './public-reference.ts';
 
 export interface IntakeEnvironment extends CalendarEnvironment, ConversionEnvironment {
   INTAKE_ENABLED?: string;
@@ -49,14 +50,12 @@ function validatePayload(value: unknown): { ok: true; payload: Record<string, st
   const phone = rawPhone ? `+1${national}` : '';
   const message = typeof input.message === 'string' ? input.message.trim() : '';
   if (name.length < 1 || name.length > 120) fields.add('name');
-  if ((email.length > 0) === (phone.length > 0)) fields.add('contact');
+  if (!email && !phone) fields.add('contact');
   if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) fields.add('email');
   if (rawPhone && (rawPhone.length > 32 || !/^[+\d().\-\s]+$/.test(rawPhone) || !/^[2-9]\d{2}[2-9]\d{6}$/.test(national)
     || (rawPhone.includes('+') && !/^\+1[^+]*$/.test(rawPhone)))) fields.add('phone');
   if (message.length < 1 || message.length > 5000) fields.add('message');
-  const payload: Record<string, string> = email
-    ? { name, email, message }
-    : { name, phone, message };
+  const payload: Record<string, string> = { name, message, ...(email ? { email } : {}), ...(phone ? { phone } : {}) };
   if (fields.size) return { ok: false, fields: [...fields].sort() };
   return { ok: true, payload };
 }
@@ -145,7 +144,8 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
     if (existing && existing.payload !== serializedPayload) return json({ error: 'idempotency_conflict' }, 409);
     if (!isGuide && existing && (existing.state === 'delivered' || existing.state === 'processing' || existing.delivery_step.endsWith('_writing'))) {
       // The delivery consumer already received this durable inquiry. A browser retry only needs its receipt.
-      return json({ receiptId: existing.receipt_id, state: 'accepted' }, 202);
+      const reference = await ensurePublicReference(env.INTAKE_DB, existing.receipt_id);
+      return json({ receiptId: existing.receipt_id, reference, state: 'accepted' }, 202);
     }
     const receiptId = existing?.receipt_id ?? crypto.randomUUID();
     if (!existing) {
@@ -168,11 +168,12 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
         : await insert.run();
       if (!result.success) return json({ error: 'intake_unavailable' }, 503);
     }
+    const reference = await ensurePublicReference(env.INTAKE_DB, receiptId);
     // Capture opt-in and the exact approved guide before queueing. A retry repairs a failed capture.
     if (isGuide || followupConsent !== undefined) await captureConversion(env,receiptId,payload,isGuide ? `${conversion!.guide.title}\n\n${conversion!.guide.text}\n\nPlanning ranges only, not a quote. Final scope and pricing require a project-specific design and proposal.` : undefined);
     if (!existing || !['delivered','processing'].includes(existing.state)) await env.INTAKE_QUEUE.send(receiptId);
     const guide = isGuide ? await env.INTAKE_DB.prepare('SELECT download_token FROM conversion_leads WHERE receipt_id = ?1').bind(receiptId).first<{download_token:string}>() : null;
-    return json({ receiptId, state: 'accepted', ...(guide ? {downloadUrl:`${new URL(request.url).origin}/conversion/download?token=${guide.download_token}`} : {}) }, 202);
+    return json({ receiptId, reference, state: 'accepted', ...(guide ? {downloadUrl:`${new URL(request.url).origin}/conversion/download?token=${guide.download_token}`} : {}) }, 202);
   } catch {
     return json({ error: 'intake_unavailable' }, 503);
   }
@@ -457,6 +458,12 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
   }
   const payload = JSON.parse(row.payload) as Partial<ProjectPayload> & { name: string; message: string; leadType?: string };
   const alias = receiptId.replace(/-/g, '').slice(-8).toUpperCase();
+  const reference = await ensurePublicReference(db, receiptId);
+  const legacyAccountName = `${payload.name} [MR05-${alias}]`;
+  const accountName = `${payload.name} [${reference}]`;
+  const friendlyLocationName = payload.project ? `${payload.project.location} [${reference}]` : `General inquiry [${reference}]`;
+  const legacyLocationName = payload.project ? `${payload.project.location} ${alias}` : `General inquiry ${alias}`;
+  const jobDescription = `${payload.message}\n\nWebsite project reference: ${reference}`;
   let leaseToken = '';
   const step = async (name: string) => {
     leaseToken = crypto.randomUUID();
@@ -474,7 +481,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     await step('account');
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
       createAccount: {
-        $: { organizationId: env.JOBTREAD_ORGANIZATION_ID, name: `${payload.name} [MR05-${alias}]`, type: 'customer', notify: false },
+        $: { organizationId: env.JOBTREAD_ORGANIZATION_ID, name: accountName, type: 'customer', notify: false },
         createdAccount: { id: {}, name: {}, organization: { id: {} } },
       },
     });
@@ -492,11 +499,11 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
   if (!row.external_location_id) {
     const accountRead = await jobTreadCall(env.JOBTREAD_API_KEY, { account: { $: { id: row.external_account_id }, id: {}, name: {}, organization: { id: {} } } });
     const account = accountRead.account as { id?: string; name?: string; organization?: { id?: string } };
-    if (account?.id !== row.external_account_id || account.name !== `${payload.name} [MR05-${alias}]` || account.organization?.id !== env.JOBTREAD_ORGANIZATION_ID) throw new Error('jobtread_readback_failed');
+    if (account?.id !== row.external_account_id || ![accountName, legacyAccountName].includes(account.name ?? '') || account.organization?.id !== env.JOBTREAD_ORGANIZATION_ID) throw new Error('jobtread_readback_failed');
     await step('location');
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
       createLocation: {
-        $: { accountId: row.external_account_id, name: payload.project ? `${payload.project.location} ${alias}` : `General inquiry ${alias}`, parseAddress: false },
+        $: { accountId: row.external_account_id, name: friendlyLocationName, parseAddress: false },
         createdLocation: { id: {}, account: { id: {} } },
       },
     });
@@ -515,7 +522,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     const locationRead = await jobTreadCall(env.JOBTREAD_API_KEY, { location: { $: { id: row.external_location_id }, id: {}, name: {}, account: { id: {}, organization: { id: {} } } } });
     const location = locationRead.location as { id?: string; name?: string; account?: { id?: string; organization?: { id?: string } } };
     if (location?.id !== row.external_location_id || location.account?.id !== row.external_account_id || location.account.organization?.id !== env.JOBTREAD_ORGANIZATION_ID
-      || location.name !== (payload.project ? `${payload.project.location} ${alias}` : `General inquiry ${alias}`)) throw new Error('jobtread_readback_failed');
+      || ![friendlyLocationName, legacyLocationName].includes(location.name ?? '')) throw new Error('jobtread_readback_failed');
     await step('contact');
     const contactFields = { ...(payload.email ? { [env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID]: payload.email } : {}), ...(payload.phone ? { [env.JOBTREAD_PHONE_CUSTOM_FIELD_ID]: payload.phone } : {}) };
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
@@ -539,7 +546,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     await step('job');
     const result = await jobTreadCall(env.JOBTREAD_API_KEY, {
       createJob: {
-        $: { locationId: row.external_location_id, name: `${payload.leadType === 'lead_magnet' ? 'Cost guide' : payload.project ? 'Project' : 'Inquiry'} ${alias}`, description: payload.message },
+        $: { locationId: row.external_location_id, name: `${payload.leadType === 'lead_magnet' ? 'Cost guide' : payload.project ? 'Project' : 'Inquiry'} ${reference}`, description: jobDescription },
         createdJob: { id: {}, name: {}, location: { id: {}, account: { id: {} } } },
       },
     });
@@ -557,10 +564,10 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     row.external_job_id = id;
     row.delivery_step = 'job_created';
   }
-  const expectedFieldId = payload.email
-    ? env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID
-    : env.JOBTREAD_PHONE_CUSTOM_FIELD_ID;
-  const expectedContactValue = payload.email ?? payload.phone ?? '';
+  const expectedContactFields = [
+    ...(payload.email ? [[env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID, payload.email] as const] : []),
+    ...(payload.phone ? [[env.JOBTREAD_PHONE_CUSTOM_FIELD_ID, payload.phone] as const] : []),
+  ];
   const readback = await jobTreadCall(env.JOBTREAD_API_KEY, {
     contact: {
       $: { id: row.external_contact_id },
@@ -591,15 +598,15 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     contactValues!.nodes = [...(contactValues!.nodes ?? []), ...values.nodes];
     page = values.nextPage;
   }
-  const matchedContactField = contactValues?.nodes?.some((node) =>
-    node.customField?.id === expectedFieldId && node.value === expectedContactValue);
+  const matchedContactFields = expectedContactFields.every(([fieldId, expectedValue]) => contactValues?.nodes?.some((node) =>
+    node.customField?.id === fieldId && node.value === expectedValue));
   const readJob = readback.job as Record<string, unknown> | undefined;
   const readLocation = readJob?.location as Record<string, unknown> | undefined;
   const readAccount = readLocation?.account as Record<string, unknown> | undefined;
   if (contact?.id !== row.external_contact_id || contactAccount?.id !== row.external_account_id
-      || !matchedContactField || readJob?.id !== row.external_job_id
+      || !matchedContactFields || readJob?.id !== row.external_job_id
       || readLocation?.id !== row.external_location_id || readAccount?.id !== row.external_account_id
-      || readJob?.description !== payload.message) {
+      || (readJob?.description !== jobDescription && readJob?.description !== payload.message)) {
     await updateDelivery(db, receiptId, { state: 'failed', error_category: 'jobtread_readback_failed' });
     console.error(JSON.stringify({ event: 'intake_delivery_readback_failed', count: 1 }));
     return;
