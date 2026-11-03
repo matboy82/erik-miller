@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brandCss, resolveBuild, writeBrandFonts } from '../../scripts/brand-build.mjs';
 import { verifyProduction } from '../../scripts/production-artifact.mjs';
-import { verifyLive } from '../../scripts/live-artifact.mjs';
+import { indexedHeaders, verifyLive } from '../../scripts/live-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
 import { prepareProjectArtifacts } from '../../scripts/project-artifact.mjs';
 import { readPageContent } from '../../scripts/page-content.mjs';
@@ -49,8 +49,8 @@ export default defineConfig({
     hooks: { 'astro:build:done': async ({ dir }) => {
       const escapeXml = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
       if (brand.indexed) {
-        const headers = readFileSync(resolve(root, 'apps/web/public/_headers'), 'utf8').replace(/^\s+X-Robots-Tag:.*\r?\n/gm, '');
-        writeFileSync(resolve(fileURLToPath(dir), '_headers'), headers + '\n/qualify/\n  X-Robots-Tag: noindex, nofollow\n\n/qualify/*\n  X-Robots-Tag: noindex, nofollow\n\n/404.html\n  X-Robots-Tag: noindex, nofollow\n');
+        const headers = readFileSync(resolve(root, 'apps/web/public/_headers'), 'utf8');
+        writeFileSync(resolve(fileURLToPath(dir), '_headers'), indexedHeaders(headers));
       }
       writeFileSync(resolve(fileURLToPath(dir), 'robots.txt'), !brand.indexed
         ? 'User-agent: *\nDisallow: /\n'

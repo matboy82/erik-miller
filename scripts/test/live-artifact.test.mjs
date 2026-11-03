@@ -3,7 +3,15 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { verifyLive } from '../live-artifact.mjs';
+import { indexedHeaders, verifyLive } from '../live-artifact.mjs';
+
+test('indexed headers block search indexing on Pages hosts without blocking the business domain', () => {
+  const result = indexedHeaders('/*\n  X-Robots-Tag: noindex, nofollow\n  X-Frame-Options: DENY\n');
+  assert.match(result, /https:\/\/erik-miller-web\.pages\.dev\/\*\n\s+X-Robots-Tag: noindex, nofollow/);
+  assert.match(result, /https:\/\/:version\.erik-miller-web\.pages\.dev\/\*\n\s+X-Robots-Tag: noindex, nofollow/);
+  assert.doesNotMatch(result.match(/^\/\*\n((?:[ \t]+[^\n]*\n)*)/m)?.[1] ?? '', /X-Robots-Tag/i);
+  assert.match(result, /\/qualify\/\n\s+X-Robots-Tag: noindex, nofollow/);
+});
 
 test('live gate checks the actual active paths, not just the number of pages', () => {
   const root = mkdtempSync(join(tmpdir(), 'miller-routes-'));

@@ -1,6 +1,12 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+export function indexedHeaders(source) {
+  return source.replace(/^\s+X-Robots-Tag:.*\r?\n/gm, '')
+    + '\n/qualify/\n  X-Robots-Tag: noindex, nofollow\n\n/qualify/*\n  X-Robots-Tag: noindex, nofollow\n\n/404.html\n  X-Robots-Tag: noindex, nofollow\n'
+    + '\nhttps://erik-miller-web.pages.dev/*\n  X-Robots-Tag: noindex, nofollow\n\nhttps://:version.erik-miller-web.pages.dev/*\n  X-Robots-Tag: noindex, nofollow\n';
+}
+
 export function verifyLive(output, { indexed, paths, currentImageryApproved = false }) {
   const files = [];
   function walk(directory) {
