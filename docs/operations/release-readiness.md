@@ -1,5 +1,14 @@
 # Miller Remodeling go-live checklist
 
+## Domain launch — November 2, 2026
+
+- [x] `millerremodelingidaho.com` and `www.millerremodelingidaho.com` attached to Cloudflare Pages. Matt enabled production indexing and redeployed. Both hostnames served the site over HTTPS when checked via Cloudflare DNS; DNS caches may take time to update.
+- [x] The apex site returned 200 with no site-wide noindex header. Its robots.txt allows crawling and advertises the sitemap. All 16 sitemap pages returned 200 with production canonicals and the Google Analytics tag; `/qualify/` returned 200 with noindex. Portfolio and Kuna returned 404. The live apex origin passed the inquiry Worker CORS preflight. Google Workspace MX remains present.
+- [ ] Verify a real customer inquiry including Turnstile, both contact methods, photo, short reference, JobTread delivery and notification. The CORS preflight alone does not prove submission or delivery. Matt plans to test the funnel; notification is not established.
+- [ ] Set up and verify redirects from `www` and `erik-miller-web.pages.dev` to the apex while preserving paths and query strings. Both returned 200 rather than redirecting when checked at launch; canonical tags point to the apex.
+- [ ] Verify Search Console ownership, submit the sitemap, and confirm indexing over time. Google Analytics tag presence is verified, not receipt of events in the Analytics account.
+- [ ] Complete Erik's staff login, calendar consent and booking synchronization; the verified sender, mailing address, owner approval, and delivery/unsubscribe test are still required for follow-ups. These are not currently established.
+
 ## November 2 SEO and site checklist verification
 
 Source: Miller-Remodeling-SEO-and-Site-Live-Checklist-2026-11-02.md supplied by Matt. Later instructions take precedence: keep the protected staff page, hide the portfolio, and exclude Kuna.
