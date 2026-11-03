@@ -345,7 +345,7 @@ html { scroll-padding-top: 0; }
 [id] { scroll-margin-top: var(--header-height, 110px); }
 .header-phone { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; color: var(--brand-ink); font-size: 13px; text-decoration: none; white-space: nowrap; }
 .header-phone svg { flex: none; }
-.menu-phone, .mobile-call-bar { display: none; }
+.menu-phone, .menu-project, .mobile-call-bar { display: none; }
 @media (max-width: 1060px) {
  .header-phone { margin-left: auto; width: 44px; flex: 0 0 44px; }
  .header-phone span { display: none; }
@@ -359,8 +359,9 @@ html { scroll-padding-top: 0; }
  .site-header .brand-logo { width: clamp(110px, 36vw, 170px); }
  .site-header { gap: 6px; }
  .menu-toggle { width: 44px; }
- .header-cta .cta-full { display: none; }
- .header-cta .cta-short { display: inline; }
+ .header-cta { display: none; }
+ .menu-project { display: list-item; }
+ .menu-project a { font-weight: 600; }
  .button span[aria-hidden="true"]:not(.cta-short), .text-link span[aria-hidden="true"], .cta-arrow { display: none; }
  .hero-actions { flex-direction: column; align-items: stretch; }
  .hero-actions .button { width: 100%; min-height: 48px; }

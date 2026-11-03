@@ -8,7 +8,7 @@ const current = Astro.url.pathname;
 ---
 <nav class="site-nav" aria-label="Main navigation">
   <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation-links"><span class="menu-icon" aria-hidden="true"><span></span><span></span></span><span class="menu-label">Menu</span></button>
-  <ul class="site-nav-list" id="navigation-links"><li class="menu-phone"><a href="tel:+12086084439">Call (208) 608-4439</a></li>{links.map((link) => <li><a href={link.href} aria-current={current === link.href ? 'page' : undefined}>{link.label}</a></li>)}</ul>
+  <ul class="site-nav-list" id="navigation-links"><li class="menu-phone"><a href="tel:+12086084439">Call (208) 608-4439</a></li><li class="menu-project"><a href="/qualify/">Start Your Project</a></li>{links.map((link) => <li><a href={link.href} aria-current={current === link.href ? 'page' : undefined}>{link.label}</a></li>)}</ul>
 </nav>
 <script>
   const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
