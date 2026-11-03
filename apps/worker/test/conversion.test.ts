@@ -114,9 +114,14 @@ test('an incomplete mailing address can be saved as a draft but cannot be approv
   assert.match((await result.json() as {message:string}).message,/mailing address/i);
   assert.equal(await approvedConversion(s.env),null);
   await runConversion(s.env,s.call,start+3*day);assert.equal(s.sent.length,0);
-  const invalid={...incomplete,nurture:{enabled:true,touches:[{day:15,subject:'Hello',text:'Message'}]}};
-  const rejected=await save(invalid);assert.equal(rejected.status,400);
-  assert.match((await rejected.json() as {message:string}).message,/between 1 and 14/);
+  const later={...config(),nurture:{enabled:true,touches:[{day:1,subject:'Thanks',text:'First'},{day:5,subject:'Follow up',text:'Second'},{day:30,subject:'Checking in',text:'Third'}]}};
+  const laterSaved=await save(later);assert.equal(laterSaved.status,200);
+  const laterRevision=(await laterSaved.json() as {revision:string}).revision;
+  const stored=await conversionOperator(new Request('https://worker.test/operator/conversion/config'),s.env,'matt@example.com');
+  assert.deepEqual((await stored.json() as {draft:ConversionConfig}).draft,later);
+  const blocked=await conversionOperator(new Request('https://worker.test/operator/conversion/approve',{method:'POST',body:JSON.stringify({revision:laterRevision})}),s.env,'erik@millerremodelingidaho.com');
+  assert.equal(blocked.status,400);
+  const rejected=await save({...later,sms:true} as unknown as ConversionConfig);assert.equal(rejected.status,400);
 });
 test('guide capture stores both contacts, types JobTread payload, and waits for verified delivery before download',async()=>{
   const c=config();c.guide={enabled:true,title:'Approved guide',text:'Scope and design planning.'};const s=await setup(c);

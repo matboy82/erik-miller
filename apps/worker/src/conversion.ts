@@ -32,6 +32,15 @@ const projectTypes = ['Kitchen', 'Bathroom', 'Whole home', 'Addition', 'ADU or m
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'X-Content-Type-Options': 'nosniff' } });
 const exact = (value: unknown, keys: string[]) => Boolean(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every(k => keys.includes(k)) && keys.every(k => Object.hasOwn(value, k)));
 const text = (value: unknown, max = 3000) => typeof value === 'string' && value.length <= max && !value.includes('\u0000');
+function validConversionDraft(value: unknown): value is ConversionConfig {
+  if (!exact(value, ['budgetBands','guide','sender','replyTo','postalAddress','reviews','nurture'])) return false;
+  const c = value as ConversionConfig;
+  if (!Array.isArray(c.budgetBands) || c.budgetBands.length > 7 || !c.budgetBands.every(b => exact(b,['projectType','min','max','scope']) && text(b.projectType,100) && Number.isSafeInteger(b.min) && Number.isSafeInteger(b.max) && text(b.scope,500))) return false;
+  if (!exact(c.guide,['enabled','title','text']) || typeof c.guide.enabled !== 'boolean' || !text(c.guide.title,160) || !text(c.guide.text,40000)) return false;
+  if (!text(c.sender,254) || !text(c.replyTo,254) || !text(c.postalAddress,500)) return false;
+  if (!exact(c.reviews,['enabled','delayDays','links','subject','ask','thanks']) || typeof c.reviews.enabled !== 'boolean' || !Number.isSafeInteger(c.reviews.delayDays) || !Array.isArray(c.reviews.links) || c.reviews.links.length > 3 || !c.reviews.links.every(l => exact(l,['label','url']) && text(l.label,50) && text(l.url,1000)) || ![c.reviews.subject,c.reviews.ask,c.reviews.thanks].every(t => text(t))) return false;
+  return Boolean(exact(c.nurture,['enabled','touches']) && typeof c.nurture.enabled === 'boolean' && Array.isArray(c.nurture.touches) && c.nurture.touches.length <= 3 && c.nurture.touches.every(t => exact(t,['day','subject','text']) && Number.isSafeInteger(t.day) && text(t.subject,160) && text(t.text)));
+}
 export function validConversionConfig(value: unknown, allowIncomplete = false): value is ConversionConfig {
   if (!exact(value, ['budgetBands','guide','sender','replyTo','postalAddress','reviews','nurture'])) return false;
   const c = value as ConversionConfig;
@@ -218,7 +227,7 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
   if (path === '/operator/conversion/config' && request.method === 'PUT') {
     const raw=await request.text(); if(raw.length>60000) return reply({error:'validation_failed'},400);
     let value:unknown; try{value=JSON.parse(raw);}catch{return reply({error:'validation_failed'},400);}
-    if(!validConversionConfig(value,true))return reply({error:'validation_failed',message:'Check the email addresses and enabled sections. Follow-ups need up to three messages with subjects, text, and increasing days between 1 and 14.'},400);
+    if(!validConversionDraft(value))return reply({error:'validation_failed',message:'The draft contains an unsupported value or is too large to save.'},400);
     const revision=crypto.randomUUID();
     await db.batch([
       db.prepare('INSERT INTO conversion_config(id,revision,draft) VALUES(1,?1,?2) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,draft=excluded.draft,approved=NULL,approved_by=NULL,approved_at=NULL').bind(revision,JSON.stringify(value)),
@@ -234,7 +243,7 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
     const current=await configRow(db);
     if(!current || current.revision!==revision)return reply({error:'revision_changed'},409);
     let draft:unknown;try{draft=JSON.parse(current.draft);}catch{return reply({error:'validation_failed'},400);}
-    if(!validConversionConfig(draft))return reply({error:'approval_incomplete',message:'Add a valid sender, reply-to email and business mailing address before approval.'},400);
+    if(!validConversionConfig(draft))return reply({error:'approval_incomplete',message:'The draft is saved. Before approval, check enabled sections, email addresses, mailing address, and follow-up timing and messages.'},400);
     const result=await db.prepare('UPDATE conversion_config SET approved=draft, approved_by=?1,approved_at=?2 WHERE id=1 AND revision=?3').bind(email,new Date().toISOString(),revision).run();
     return result.meta?.changes===1?reply({approval:'saved'}):reply({error:'revision_changed'},409);
   }
