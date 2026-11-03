@@ -38,6 +38,10 @@ class MemoryStatement {
 
   async first<T>(): Promise<T | null> {
     if (this.sql.includes('FROM intake_public_references')) {
+      if (this.sql.includes('WHERE reference =')) {
+        const entry = [...this.db.references].find(([, reference]) => reference === this.values[0]);
+        return (entry ? { receipt_id: entry[0] } : null) as T | null;
+      }
       const reference = this.db.references.get(String(this.values[0]));
       return (reference ? { reference, receipt_id: this.values[0] } : null) as T | null;
     }
@@ -366,18 +370,22 @@ test('operator status stays unavailable without configured Access identity', asy
   const response = await worker.fetch(new Request(`https://worker.test/operator/intake/${key}`), env);
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: 'operator_unauthorized' });
+  const short = await worker.fetch(new Request('https://worker.test/operator/intake/MR-ABCDE-23456'), env);
+  assert.equal(short.status, 401);
 });
 
 test('operator status accepts a signed allowlisted Access token and omits stored payload', async () => {
-  const { env, db } = testEnv();
+  const { env, db, sent } = testEnv();
   const receiptId = '22222222-2222-4222-8222-222222222222';
   db.rows.push({
     receipt_id: receiptId,
     idempotency_key: key,
     state: 'delayed',
+    delivery_step: 'queued',
     created_at: '2026-10-02T00:00:00.000Z',
     payload: JSON.stringify(validPayload),
   });
+  db.references.set(receiptId, 'MR-ABCDE-23456');
   Object.assign(env, {
     ACCESS_TEAM_DOMAIN: 'miller-test.cloudflareaccess.com',
     ACCESS_AUD: 'test-audience',
@@ -406,6 +414,24 @@ test('operator status accepts a signed allowlisted Access token and omits stored
     assert.equal(body.checkedBy, 'erik@example.invalid');
     assert.equal('payload' in body, false);
     assert.equal(JSON.stringify(body).includes(validPayload.email), false);
+    const short = await worker.fetch(new Request('https://worker.test/operator/intake/mr-abcde-23456', {
+      headers: { 'Cf-Access-Jwt-Assertion': token },
+    }), env);
+    assert.equal(short.status, 200);
+    assert.equal((await short.json() as {receiptId:string}).receiptId, receiptId);
+    const missing = await worker.fetch(new Request('https://worker.test/operator/intake/MR-ABCDE-23457/retry', {
+      method: 'POST', headers: { 'Cf-Access-Jwt-Assertion': token },
+    }), env);
+    assert.equal(missing.status, 404);
+    const invalid = await worker.fetch(new Request('https://worker.test/operator/intake/MR-ABCDE-23450', {
+      headers: { 'Cf-Access-Jwt-Assertion': token },
+    }), env);
+    assert.equal(invalid.status, 404);
+    const retry = await worker.fetch(new Request('https://worker.test/operator/intake/MR-ABCDE-23456/retry', {
+      method: 'POST', headers: { 'Cf-Access-Jwt-Assertion': token },
+    }), env);
+    assert.equal(retry.status, 202);
+    assert.deepEqual(sent, [receiptId]);
   } finally {
     globalThis.fetch = originalFetch;
   }

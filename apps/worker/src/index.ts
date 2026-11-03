@@ -244,10 +244,16 @@ async function operatorRoute(request: Request, env: IntakeEnvironment, path: str
   }
   if ((path === '/operator/' || path === '/operator') && request.method === 'GET') return operatorPage();
   if (!env.INTAKE_DB || !env.INTAKE_QUEUE) return json({ error: 'operator_unavailable' }, 503);
-  const match = /^\/operator\/intake\/([0-9a-f-]{36})(?:\/(retry|reconcile|booking|booking-reconcile))?$/.exec(path);
+  const match = /^\/operator\/intake\/([0-9a-f-]{36}|MR-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5})(?:\/(retry|reconcile|booking|booking-reconcile))?$/i.exec(path);
   if (!match) return json({ error: 'not_found' }, 404);
-  const [, receiptId, action] = match;
+  const [, inputReference, action] = match;
   try {
+    const reference = inputReference.toUpperCase();
+    const lookup = reference.startsWith('MR-')
+      ? await env.INTAKE_DB.prepare('SELECT receipt_id FROM intake_public_references WHERE reference = ?1').bind(reference).first<{receipt_id: string}>()
+      : null;
+    if (reference.startsWith('MR-') && !lookup) return json({ error: 'not_found' }, 404);
+    const receiptId = lookup?.receipt_id ?? inputReference;
     if (action === 'booking-reconcile' && request.method === 'POST') {
       const body = await request.text();
       if (body.length > 2048) return json({ error: 'validation_failed' }, 400);

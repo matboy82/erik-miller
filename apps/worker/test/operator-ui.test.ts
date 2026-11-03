@@ -21,7 +21,10 @@ test('operator settings load before editing and preserve partially entered rows 
   const existing={...structuredClone(defaultConversionConfig),nurture:{enabled:true,touches:[{day:1,subject:'Existing subject',text:'Existing message'}]}};
   saved=existing;
   const calls:string[]=[];
+  const paths:string[]=[];
   const fetch=async (_url:string, options?:{method?:string;body?:string})=>{
+    paths.push(_url);
+    if(_url.startsWith('/operator/intake/'))return {ok:true,json:async()=>({state:'delivered'})};
     const method=options?.method ?? 'GET';calls.push(method);
     if(method==='PUT'){saved=JSON.parse(options!.body!);return {ok:true,json:async()=>({revision:'new-revision'})};}
     return {ok:true,json:async()=>({revision:'old-revision',draft:saved,approvedBy:null,enabled:false,emailBound:false})};
@@ -50,4 +53,14 @@ test('operator settings load before editing and preserve partially entered rows 
   assert.equal(get('link-label-1').value,'Google');
   assert.equal(get('touch-subject-2').value,'Third message draft');
   assert.equal(get('touch-day-2').value,'');
+  get('receipt').value='mr-abcde-23456';
+  await get('lookup').onsubmit!({preventDefault(){}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(paths.at(-1),'/operator/intake/mr-abcde-23456');
+  assert.match(get('status').textContent,/delivered/);
+  get('receipt').value='bad-reference';
+  const before=paths.length;
+  await get('lookup').onsubmit!({preventDefault(){}});
+  assert.equal(paths.length,before);
+  assert.match(get('status').textContent,/Enter the project reference/);
 });
