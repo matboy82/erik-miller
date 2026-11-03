@@ -31,6 +31,7 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FJ2GT6NPLL"></script>
     <script is:inline>
+      /* eslint-disable prefer-rest-params -- Google tag's standard dataLayer snippet. */
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
@@ -69,6 +70,7 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
     <header class="site-header">
       <BrandLogo />
       <SiteNavigation />
+      <a class="header-phone" href="tel:+12086084439" aria-label="Call Miller Remodeling at (208) 608-4439"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.8a2 2 0 0 1-.6 1.8L7.8 9.5a16 16 0 0 0 6.7 6.7l1.2-1.2a2 2 0 0 1 1.8-.6l2.8.5a2 2 0 0 1 1.7 2Z" /></svg><span>(208) 608-4439</span></a>
       <a class="button header-cta" href="/qualify/" aria-label="Start Your Project"><span class="cta-full">Start Your Project</span><span class="cta-short" aria-hidden="true">Start</span><span class="cta-arrow" aria-hidden="true">↗</span></a>
     </header>
     <main id="main" class="page-main">
@@ -79,7 +81,7 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
           <p class="eyebrow">{eyebrow}</p>
           <h1 id="page-title">{heading}</h1>
           <p class="hero-intro">{intro}</p>
-          {home && <><div class="hero-actions"><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/about-process/">See How We Work</a></div><div class="hero-datum"><strong>Miller / Treasure Valley, Idaho</strong><span>Plan sequence / 01–05</span></div><ol class="hero-plan"><li><span>01</span> Consult</li><li><span>02</span> Design</li><li><span>03</span> Select</li><li><span>04</span> Build</li><li><span>05</span> Walk through</li></ol></>}
+          {home && <><div class="hero-actions"><a class="button" href="/qualify/">Start Your Project <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/about-process/">See How We Work</a></div><div class="hero-datum"><strong>Miller / Treasure Valley, Idaho</strong><span>Plan sequence / 01–05</span></div><ol class="hero-plan"><li><span>01</span> Consult</li><li><span>02</span> Design</li><li><span>03</span> Selections</li><li><span>04</span> Build</li><li><span>05</span> Walk through</li></ol></>}
         </div>
         {home && <span class="hero-footnote" aria-hidden="true">Thoughtful design. Lasting craftsmanship.</span>}
       </section>
@@ -87,8 +89,27 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
       {!qualification && <PageFaq faqs={page.faqs} />}
     </main>
     <SiteFooter />
+    <a class="mobile-call-bar" href="tel:+12086084439">Call Erik <span>(208) 608-4439</span></a>
     {brand.review && <span class="review-badge">REVIEW BUILD</span>}
     <script>
+      const header = document.querySelector<HTMLElement>('.site-header');
+      const callBar = document.querySelector<HTMLElement>('.mobile-call-bar');
+      const updateHeaderHeight = () => { if (header) document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`); };
+      updateHeaderHeight();
+      if (header && 'ResizeObserver' in window) new ResizeObserver(updateHeaderHeight).observe(header);
+      window.addEventListener('resize', updateHeaderHeight);
+      const callBarObstructions = document.querySelectorAll<HTMLElement>('.footer-contact, .fit-band');
+      const updateCallBar = () => {
+        if (!callBar) return;
+        const obstructed = [...callBarObstructions].some((element) => { const rect = element.getBoundingClientRect(); return rect.top < window.innerHeight && rect.bottom > 0; });
+        const focusedField = document.activeElement?.matches('input, textarea, select, [contenteditable="true"]');
+        callBar.hidden = obstructed || Boolean(focusedField);
+      };
+      window.addEventListener('scroll', updateCallBar, { passive: true });
+      window.addEventListener('resize', updateCallBar);
+      document.addEventListener('focusin', updateCallBar);
+      document.addEventListener('focusout', () => requestAnimationFrame(updateCallBar));
+      updateCallBar();
       const elements = document.querySelectorAll('.reveal');
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver((entries) => {
