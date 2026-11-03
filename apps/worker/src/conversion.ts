@@ -32,14 +32,15 @@ const projectTypes = ['Kitchen', 'Bathroom', 'Whole home', 'Addition', 'ADU or m
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'X-Content-Type-Options': 'nosniff' } });
 const exact = (value: unknown, keys: string[]) => Boolean(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every(k => keys.includes(k)) && keys.every(k => Object.hasOwn(value, k)));
 const text = (value: unknown, max = 3000) => typeof value === 'string' && value.length <= max && !value.includes('\u0000');
-function validConversionDraft(value: unknown): value is ConversionConfig {
+const draftNumber = (value: unknown) => value === null || (typeof value === 'number' && Number.isFinite(value));
+function validConversionDraft(value: unknown): boolean {
   if (!exact(value, ['budgetBands','guide','sender','replyTo','postalAddress','reviews','nurture'])) return false;
   const c = value as ConversionConfig;
-  if (!Array.isArray(c.budgetBands) || c.budgetBands.length > 7 || !c.budgetBands.every(b => exact(b,['projectType','min','max','scope']) && text(b.projectType,100) && Number.isSafeInteger(b.min) && Number.isSafeInteger(b.max) && text(b.scope,500))) return false;
+  if (!Array.isArray(c.budgetBands) || c.budgetBands.length > 7 || !c.budgetBands.every(b => exact(b,['projectType','min','max','scope']) && text(b.projectType,100) && draftNumber(b.min) && draftNumber(b.max) && text(b.scope,500))) return false;
   if (!exact(c.guide,['enabled','title','text']) || typeof c.guide.enabled !== 'boolean' || !text(c.guide.title,160) || !text(c.guide.text,40000)) return false;
   if (!text(c.sender,254) || !text(c.replyTo,254) || !text(c.postalAddress,500)) return false;
-  if (!exact(c.reviews,['enabled','delayDays','links','subject','ask','thanks']) || typeof c.reviews.enabled !== 'boolean' || !Number.isSafeInteger(c.reviews.delayDays) || !Array.isArray(c.reviews.links) || c.reviews.links.length > 3 || !c.reviews.links.every(l => exact(l,['label','url']) && text(l.label,50) && text(l.url,1000)) || ![c.reviews.subject,c.reviews.ask,c.reviews.thanks].every(t => text(t))) return false;
-  return Boolean(exact(c.nurture,['enabled','touches']) && typeof c.nurture.enabled === 'boolean' && Array.isArray(c.nurture.touches) && c.nurture.touches.length <= 3 && c.nurture.touches.every(t => exact(t,['day','subject','text']) && Number.isSafeInteger(t.day) && text(t.subject,160) && text(t.text)));
+  if (!exact(c.reviews,['enabled','delayDays','links','subject','ask','thanks']) || typeof c.reviews.enabled !== 'boolean' || !draftNumber(c.reviews.delayDays) || !Array.isArray(c.reviews.links) || c.reviews.links.length > 3 || !c.reviews.links.every(l => exact(l,['label','url']) && text(l.label,50) && text(l.url,1000)) || ![c.reviews.subject,c.reviews.ask,c.reviews.thanks].every(t => text(t))) return false;
+  return Boolean(exact(c.nurture,['enabled','touches']) && typeof c.nurture.enabled === 'boolean' && Array.isArray(c.nurture.touches) && c.nurture.touches.length <= 3 && c.nurture.touches.every(t => exact(t,['day','subject','text']) && draftNumber(t.day) && text(t.subject,160) && text(t.text)));
 }
 export function validConversionConfig(value: unknown, allowIncomplete = false): value is ConversionConfig {
   if (!exact(value, ['budgetBands','guide','sender','replyTo','postalAddress','reviews','nurture'])) return false;
@@ -54,6 +55,18 @@ export function validConversionConfig(value: unknown, allowIncomplete = false): 
   if (!exact(c.nurture, ['enabled','touches']) || typeof c.nurture.enabled !== 'boolean' || !Array.isArray(c.nurture.touches) || c.nurture.touches.length > 3 || (c.nurture.enabled && !c.nurture.touches.length)) return false;
   if (!c.nurture.touches.every((t,i,a) => exact(t,['day','subject','text']) && Number.isInteger(t.day) && t.day >= 1 && t.day <= 14 && (!i || t.day > a[i-1].day) && text(t.subject,160) && t.subject.trim() && !/[\r\n]/.test(t.subject) && text(t.text) && t.text.trim())) return false;
   return allowIncomplete || !(c.reviews.enabled || c.nurture.enabled) || Boolean(c.sender && c.postalAddress.trim());
+}
+function approvalMessage(value: unknown): string {
+  if (!validConversionDraft(value)) return 'The saved draft has an unsupported format. Load settings and save it again.';
+  const c = value as ConversionConfig;
+  const issues: string[] = [];
+  for (const b of c.budgetBands) if (!projectTypes.includes(b.projectType) || !Number.isSafeInteger(b.min) || !Number.isSafeInteger(b.max) || b.min <= 0 || b.max < b.min || b.max > 10_000_000 || !b.scope.trim()) issues.push(`${b.projectType}: enter a minimum, a maximum at least as large, and a scope.`);
+  if (c.guide.enabled && (!c.guide.title.trim() || !c.guide.text.trim())) issues.push('Add the guide title and text, or turn off the guide.');
+  if ((c.sender && !emailPattern.test(c.sender)) || !emailPattern.test(c.replyTo) || ((c.nurture.enabled || c.reviews.enabled) && !c.sender)) issues.push('Enter valid sender and reply-to email addresses.');
+  if ((c.nurture.enabled || c.reviews.enabled) && !c.postalAddress.trim()) issues.push('Add a business mailing address for email footers.');
+  if (c.nurture.enabled && (!c.nurture.touches.length || !c.nurture.touches.every((t,i,a) => Number.isInteger(t.day) && t.day >= 1 && t.day <= 14 && (!i || t.day > a[i-1].day) && t.subject.trim() && !/[\r\n]/.test(t.subject) && t.text.trim()))) issues.push('For follow-ups, enter a subject and message for each, with days in increasing order from 1 to 14.');
+  if (c.reviews.enabled) issues.push('Check review-request links, subject, messages, and timing.');
+  return `Your draft is saved. Before approval: ${issues.join(' ') || 'Check the enabled settings and their values.'}`;
 }
 type ConfigRow = { revision: string; draft: string; approved: string | null; approved_by: string | null; approved_at: string | null };
 async function configRow(db: D1Database): Promise<ConfigRow | null> { return db.prepare('SELECT * FROM conversion_config WHERE id = 1').first<ConfigRow>(); }
@@ -243,7 +256,7 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
     const current=await configRow(db);
     if(!current || current.revision!==revision)return reply({error:'revision_changed'},409);
     let draft:unknown;try{draft=JSON.parse(current.draft);}catch{return reply({error:'validation_failed'},400);}
-    if(!validConversionConfig(draft))return reply({error:'approval_incomplete',message:'The draft is saved. Before approval, check enabled sections, email addresses, mailing address, and follow-up timing and messages.'},400);
+    if(!validConversionConfig(draft))return reply({error:'approval_incomplete',message:approvalMessage(draft)},400);
     const result=await db.prepare('UPDATE conversion_config SET approved=draft, approved_by=?1,approved_at=?2 WHERE id=1 AND revision=?3').bind(email,new Date().toISOString(),revision).run();
     return result.meta?.changes===1?reply({approval:'saved'}):reply({error:'revision_changed'},409);
   }

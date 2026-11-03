@@ -123,6 +123,20 @@ test('an incomplete mailing address can be saved as a draft but cannot be approv
   assert.equal(blocked.status,400);
   const rejected=await save({...later,sms:true} as unknown as ConversionConfig);assert.equal(rejected.status,400);
 });
+test('partial budget, guide, review and follow-up settings round-trip without becoming approved',async()=>{
+  const s=await setup();
+  const partial={...config(),budgetBands:[{projectType:'Kitchen',min:null,max:85000,scope:''},{projectType:'Bathroom',min:null,max:null,scope:'Tile and layout'}],guide:{enabled:true,title:'Guide',text:''},postalAddress:'',reviews:{...config().reviews,delayDays:null,links:[{label:'Google',url:''}]},nurture:{enabled:true,touches:[{day:null,subject:'Thinking about the project',text:''}]}};
+  const request=new Request('https://worker.test/operator/conversion/config',{method:'PUT',body:JSON.stringify(partial)});
+  const saved=await conversionOperator(request,s.env,'matt@example.com');assert.equal(saved.status,200);
+  const revision=(await saved.json() as {revision:string}).revision;
+  const loaded=await conversionOperator(new Request('https://worker.test/operator/conversion/config'),s.env,'matt@example.com');
+  assert.deepEqual((await loaded.json() as {draft:unknown}).draft,partial);
+  const approval=await conversionOperator(new Request('https://worker.test/operator/conversion/approve',{method:'POST',body:JSON.stringify({revision})}),s.env,'erik@millerremodelingidaho.com');
+  assert.equal(approval.status,400);
+  const message=(await approval.json() as {message:string}).message;
+  assert.match(message,/Kitchen/);assert.match(message,/Bathroom/);assert.match(message,/guide/i);assert.match(message,/mailing address/i);assert.match(message,/follow-ups/i);
+  assert.equal(await approvedConversion(s.env),null);
+});
 test('guide capture stores both contacts, types JobTread payload, and waits for verified delivery before download',async()=>{
   const c=config();c.guide={enabled:true,title:'Approved guide',text:'Scope and design planning.'};const s=await setup(c);
   const key=crypto.randomUUID();const request=()=>new Request('https://worker.test/intake/lead-magnet',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':key,Origin:'https://web.test'},body:JSON.stringify({name:'Guide homeowner',email:'guide@example.com',phone:'(208) 555-0123',followupConsent:false})});
