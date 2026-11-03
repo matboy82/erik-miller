@@ -37,10 +37,11 @@ test('development output is auditable without allowing crawling; launch excludes
 test('indexed launch honors explicit approval of stock images without marking them as client photography', () => {
   assert.equal(identity.launch.currentImageryApproved, true);
   assert.equal(identity.launch.clientPhotographyVerified, false);
-  assert.throws(() => verifyLaunchFacts(), /verified business facts/);
+  assert.doesNotThrow(() => verifyLaunchFacts());
   const ready = JSON.parse(JSON.stringify(identity));
+  ready.launch.businessFactsVerified = false;
+  assert.throws(() => verifyLaunchFacts(ready), /verified business facts/);
   ready.launch.businessFactsVerified = true;
-  assert.doesNotThrow(() => verifyLaunchFacts(ready));
   ready.launch.currentImageryApproved = false;
   assert.throws(() => verifyLaunchFacts(ready), /approved current imagery/);
 });

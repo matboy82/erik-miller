@@ -17,6 +17,6 @@
   "launch": {
     "clientPhotographyVerified": false,
     "currentImageryApproved": true,
-    "businessFactsVerified": false
+    "businessFactsVerified": true
   }
 }

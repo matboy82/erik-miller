@@ -24,9 +24,12 @@ test('indexed artifacts allow stock imagery only with explicit approval and stil
   try {
     writeFileSync(join(root, 'index.html'), '<img src="/_astro/stock-kitchen.webp" alt="">');
     writeFileSync(join(root, 'robots.txt'), 'User-agent: *\nAllow: /');
-    writeFileSync(join(root, '_headers'), '/qualify/*\n  X-Robots-Tag: noindex');
+    writeFileSync(join(root, '_headers'), '/*\n  X-Frame-Options: DENY\n\n/qualify/\n  X-Robots-Tag: noindex\n\n/qualify/*\n  X-Robots-Tag: noindex');
     assert.throws(() => verifyLive(root, { indexed: true, paths: ['/'] }), /Stock photography/);
     assert.doesNotThrow(() => verifyLive(root, { indexed: true, paths: ['/'], currentImageryApproved: true }));
+    writeFileSync(join(root, '_headers'), '/*\n  X-Robots-Tag: noindex\n\n/qualify/\n  X-Robots-Tag: noindex');
+    assert.throws(() => verifyLive(root, { indexed: true, paths: ['/'], currentImageryApproved: true }), /site-wide noindex/);
+    writeFileSync(join(root, '_headers'), '/qualify/\n  X-Robots-Tag: noindex');
     writeFileSync(join(root, 'index.html'), '<p>[Unresolved fact]</p>');
     assert.throws(() => verifyLive(root, { indexed: true, paths: ['/'], currentImageryApproved: true }), /Unresolved business facts/);
   } finally { rmSync(root, { recursive: true, force: true }); }

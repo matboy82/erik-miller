@@ -32,5 +32,6 @@ export function verifyLive(output, { indexed, paths, currentImageryApproved = fa
   const robots = readFileSync(join(output, 'robots.txt'), 'utf8');
   const headers = readFileSync(join(output, '_headers'), 'utf8');
   if (!indexed && (!robots.includes('Disallow: /') || !headers.includes('X-Robots-Tag: noindex, nofollow'))) throw Error('Unindexed live hosting requires crawler and response-header controls.');
-  if (indexed && headers.split('/qualify/*')[0].includes('X-Robots-Tag: noindex')) throw Error('Indexed live hosting cannot send a site-wide noindex header.');
+  const wildcardHeaders = headers.match(/^\/\*\r?\n((?:[ \t]+[^\n]*(?:\n|$))*)/m)?.[1] ?? '';
+  if (indexed && /^\s*X-Robots-Tag:\s*.*\bnoindex\b/im.test(wildcardHeaders)) throw Error('Indexed live hosting cannot send a site-wide noindex header.');
 }
