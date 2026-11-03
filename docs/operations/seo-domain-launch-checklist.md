@@ -19,13 +19,13 @@ Updated October 4, 2026. Domain: **https://millerremodelingidaho.com**. DNS is u
 | Error route | Dedicated noindex 404 document without homepage canonical; verify real HTTP status after deployment |
 | Cache | Hashed Astro assets and font files immutable; robots/sitemap/llms and stable social URLs have one-hour cache |
 | Favicon / viewport | Existing client favicon set, responsive viewport and user zoom preserved |
-| Safety | Launch check requires real client imagery and verified business facts/location; indexed HTML also rejects used stock assets and bracketed facts |
+| Safety | Launch check requires owner-approved current imagery and verified business facts; indexed HTML rejects unapproved stock and bracketed facts. Portfolio authenticity protections remain separate. |
 
 Run `npm run check:seo` after a live dev build. Run lint, type checks and the test suite for structural changes. The indexed launch cannot be enabled just to make an SEO audit green.
 
 ## Owner inputs before domain cutover
 
-- [ ] Erik supplies real project photographs and permissioned before/after stories. Replace every used development stock image; do not merely set a verification boolean.
+- [x] Matt confirmed he and Erik approved the current imagery for launch on November 2. Replace stock with permissioned real project photographs as they become available; do not present stock imagery as completed Miller work. The approval flag is not tied to image hashes: reset and reapprove it when changing imagery.
 - [ ] Confirm legal/display name, published phone/email, license, hours, service coverage and every bracketed fact in `erik-facts.md`.
 - [ ] Matt supplied the address and explicitly authorized publishing it in LocalBusiness structured data, while keeping it out of visible page content. Structured data is public and search engines can read it. Do not add coordinates or suggest customers can visit without confirmation; verify the other business facts with Erik.
 - [ ] Add only official verified profile URLs to `officialProfiles` and visible profile links. Check website/GBP/directories for consistent identity.
@@ -40,8 +40,8 @@ Run `npm run check:seo` after a live dev build. Run lint, type checks and the te
 1. **Before DNS:** keep Pages Production `SITE_BUILD=live` and `PUBLIC_INDEXING_ENABLED=false`. Leave forms enabled and calendar sync disabled until separately verified. Turnstile and Worker CORS already permit apex and www.
 2. **Domain setup:** add apex/www through Cloudflare Pages Custom domains and follow actual provider targets. Record prior web DNS/TTLs; preserve mail records. Verify HTTPS on both hostnames and choose apex as canonical.
 3. **Redirects:** verify www/protocol/slash normalization and old URL redirects; preserve path/query. Two invented paths must return genuine 404, not homepage 200. Pages fallback hostname must not become a duplicate indexed business site; verify provider canonical-host handling, or leave its responses noindex separately.
-4. **Content/data readiness:** replace images and unresolved copy, display verified business details, then set `launch.clientPhotographyVerified` and `launch.businessFactsVerified` in `site.json`. The booleans record checks; they cannot replace the actual work.
-5. **Indexing switch:** Pages Production `PUBLIC_SITE_URL=https://millerremodelingidaho.com`, `SITE_BUILD=live`, `PUBLIC_INDEXING_ENABLED=true`; rebuild. This permits public robots, removes the global noindex header, and activates index/follow meta. Qualification/error routes retain noindex. Indexed generation fails if launch facts or used stock/bracketed content remain.
+4. **Content/data readiness:** current imagery is owner-approved; verify remaining business details and resolve bracketed facts, then set `launch.businessFactsVerified` in `site.json`. `clientPhotographyVerified` remains false until real project photography is verified.
+5. **Indexing switch:** Pages Production `PUBLIC_SITE_URL=https://millerremodelingidaho.com`, `SITE_BUILD=live`, `PUBLIC_INDEXING_ENABLED=true`; rebuild. This permits public robots, removes the global noindex header, and activates index/follow meta. Qualification/error routes retain noindex. Indexed generation fails if approval, business-fact verification or bracketed content checks fail.
 6. **Verify actual domain:** raw HTML, canonical/OG/schema URLs, share images, robots/sitemap/llms, TLS, status codes, redirected variants, private Access protection, mobile/keyboard controls, form/photo delivery and booking.
 7. **Validate schema:** Schema.org Validator on each template; Google's Rich Results Test where supported. Full Google LocalBusiness eligibility requires the real address; syntax does not establish visibility.
 8. **Search registration:** verify Search Console and Bing ownership using the actual domain, submit sitemap and priority URLs after acceptance. Preserve mail/DNS records when adding verification TXT. No verification token is invented in code.

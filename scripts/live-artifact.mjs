@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-export function verifyLive(output, { indexed, paths }) {
+export function verifyLive(output, { indexed, paths, currentImageryApproved = false }) {
   const files = [];
   function walk(directory) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -23,7 +23,7 @@ export function verifyLive(output, { indexed, paths }) {
       if (text.includes('REVIEW BUILD')) throw Error('Review badge found in live output.');
       if (!indexed && !/<meta\s+name="robots"\s+content="noindex, nofollow"/.test(text)) throw Error('Unindexed live page is missing its robots control.');
       if (indexed) {
-        if (/\/_astro\/stock-[^" ]+/.test(text)) throw Error('Stock photography blocks the business launch. Replace used imagery with client work.');
+        if (!currentImageryApproved && /\/_astro\/stock-[^" ]+/.test(text)) throw Error('Stock photography blocks the business launch until current imagery is approved.');
         const visible = text.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ');
         if (/\[[^\]]+\]/.test(visible)) throw Error('Unresolved business facts block the business launch.');
       }

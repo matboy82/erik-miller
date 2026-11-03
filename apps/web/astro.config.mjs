@@ -9,7 +9,7 @@ import { verifyLive } from '../../scripts/live-artifact.mjs';
 import { readProjectContent, contentFile } from '../../scripts/project-content.mjs';
 import { prepareProjectArtifacts } from '../../scripts/project-artifact.mjs';
 import { readPageContent } from '../../scripts/page-content.mjs';
-import { siteOrigin, prepareSocialImages, crawlerOutput, verifyLaunchFacts } from '../../scripts/site-seo.mjs';
+import { identity, siteOrigin, prepareSocialImages, crawlerOutput, verifyLaunchFacts } from '../../scripts/site-seo.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 let brand;
@@ -103,7 +103,7 @@ export default defineConfig({
         writeFileSync(resolve(fileURLToPath(dir), 'llms.txt'), crawlers.llms);
       }
       if (brand.live) {
-        try { verifyLive(fileURLToPath(dir), { ...brand, paths: [...pageContent.map((page) => page.path), '/qualify/'] }); }
+        try { verifyLive(fileURLToPath(dir), { ...brand, currentImageryApproved: identity.launch.currentImageryApproved === true, paths: [...pageContent.map((page) => page.path), '/qualify/'] }); }
         catch (error) { rmSync(resolve(root, 'apps/web/dist'), { recursive: true, force: true }); throw error; }
       }
     } },

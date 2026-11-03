@@ -18,3 +18,16 @@ test('live gate checks the actual active paths, not just the number of pages', (
     assert.throws(() => verifyLive(root, { indexed: false, paths: ['/', '/terms/'] }), /routes do not match/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test('indexed artifacts allow stock imagery only with explicit approval and still reject placeholders', () => {
+  const root = mkdtempSync(join(tmpdir(), 'miller-approved-images-'));
+  try {
+    writeFileSync(join(root, 'index.html'), '<img src="/_astro/stock-kitchen.webp" alt="">');
+    writeFileSync(join(root, 'robots.txt'), 'User-agent: *\nAllow: /');
+    writeFileSync(join(root, '_headers'), '/qualify/*\n  X-Robots-Tag: noindex');
+    assert.throws(() => verifyLive(root, { indexed: true, paths: ['/'] }), /Stock photography/);
+    assert.doesNotThrow(() => verifyLive(root, { indexed: true, paths: ['/'], currentImageryApproved: true }));
+    writeFileSync(join(root, 'index.html'), '<p>[Unresolved fact]</p>');
+    assert.throws(() => verifyLive(root, { indexed: true, paths: ['/'], currentImageryApproved: true }), /Unresolved business facts/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

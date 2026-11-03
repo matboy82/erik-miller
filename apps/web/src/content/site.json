@@ -16,6 +16,7 @@
   "officialProfiles": [],
   "launch": {
     "clientPhotographyVerified": false,
+    "currentImageryApproved": true,
     "businessFactsVerified": false
   }
 }

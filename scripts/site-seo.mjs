@@ -89,7 +89,7 @@ export function crawlerOutput(pages, indexed) {
 
 export function verifyLaunchFacts(facts = identity) {
   const missing = [];
-  if (!facts.launch.clientPhotographyVerified) missing.push('real client photography');
+  if (facts.launch.currentImageryApproved !== true) missing.push('approved current imagery');
   if (!facts.launch.businessFactsVerified) missing.push('verified business facts');
   if (missing.length) throw Error(`Business launch is not ready: ${missing.join('; ')}. Keep PUBLIC_INDEXING_ENABLED=false.`);
 }
