@@ -27,8 +27,7 @@ Run `npm run check:seo` after a live dev build. Run lint, type checks and the te
 
 - [ ] Erik supplies real project photographs and permissioned before/after stories. Replace every used development stock image; do not merely set a verification boolean.
 - [ ] Confirm legal/display name, published phone/email, license, hours, service coverage and every bracketed fact in `erik-facts.md`.
-- [ ] Confirm a legitimate public customer-facing business address and coordinates before adding GeneralContractor/LocalBusiness. If this is a service-area business with a private home address, resolve that explicitly with Matt; do not publish the home address or invent a storefront to satisfy schema.
-- [ ] Preserve the service-area business privacy decision: do not publish Erik's street address or coordinates in page content or structured data. Verify the listed service areas and business facts with Erik.
+- [ ] Matt supplied the address and explicitly authorized publishing it in LocalBusiness structured data, while keeping it out of visible page content. Structured data is public and search engines can read it. Do not add coordinates or suggest customers can visit without confirmation; verify the other business facts with Erik.
 - [ ] Add only official verified profile URLs to `officialProfiles` and visible profile links. Check website/GBP/directories for consistent identity.
 - [ ] Source real reviews with exact wording and permission. No review or aggregate-rating markup now. Self-serving LocalBusiness reviews are not a Google review-star entitlement.
 - [ ] Check FAQs with Erik. Replace guessed local claims with actual service details and examples. Area pages need meaningful local evidence; do not add more town pages just for keywords.

@@ -6,6 +6,13 @@
   "email": "erik@millerremodelingidaho.com",
   "description": "Miller Remodeling plans and builds kitchens, bathrooms, additions and whole-home remodels in Idaho’s Treasure Valley. Design comes before construction.",
   "publicLocation": null,
+  "schemaAddress": {
+    "streetAddress": "1514 W Colville Ct",
+    "addressLocality": "Eagle",
+    "addressRegion": "ID",
+    "postalCode": "83616",
+    "addressCountry": "US"
+  },
   "officialProfiles": [],
   "launch": {
     "clientPhotographyVerified": false,

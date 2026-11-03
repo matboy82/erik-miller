@@ -16,12 +16,15 @@ export function pageSeo(page, { qualification = false } = {}) {
   const description = qualification ? 'Share your Treasure Valley remodeling goals, timing and photos with Erik at Miller Remodeling.' : page.description;
   const image = absolute(`/social/${qualification ? 'qualify' : page.id}.jpg`);
   const organization = {
-    '@type': 'Organization', '@id': absolute('/#organization'), name: identity.name,
+    '@type': 'LocalBusiness', '@id': absolute('/#organization'), name: identity.name,
     url: siteOrigin, telephone: identity.telephone, email: identity.email,
     description: identity.description, logo: { '@type': 'ImageObject', '@id': absolute('/#logo'), url: absolute('/miller-logo.png') },
+    address: { '@type': 'PostalAddress', ...identity.schemaAddress },
+    openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:30', closes: '17:30' }],
+    areaServed: ['Eagle', 'Star', 'Meridian', 'Boise', 'Middleton'].map(name => ({ '@type': 'City', name })),
     ...(identity.officialProfiles.length ? { sameAs: identity.officialProfiles } : {}),
   };
-  // This service-area business does not publish a street address or coordinates.
+  // The owner authorized the address in public structured data, not visible page copy.
   const webPage = {
     '@type': page.kind === 'contact' ? 'ContactPage' : page.id === 'process' ? 'AboutPage' : page.kind === 'portfolio' ? 'CollectionPage' : 'WebPage',
     '@id': `${url}#webpage`, url, name: title, description,

@@ -13,6 +13,12 @@ npm run dev
 
 Site: `http://127.0.0.1:4321`. In another terminal, run `npm run dev:worker`; health: `http://127.0.0.1:8787/health`.
 
+## Budget ranges
+
+In the protected staff page, Erik can enter a minimum, maximum and scope for each project type and save unfinished entries as a draft. After he approves the complete conversion settings, the matching range appears on the final review step of the project inquiry, before submission, and again on the confirmation screen. It is labeled as a planning range, not a quote. An empty or unapproved range does not appear to customers.
+
+Approval applies to the whole settings draft. For example, if email follow-ups are enabled, their required sender, mailing address and messages must also be complete before the ranges can go live. See [lead conversion setup](docs/operations/lead-conversion-setup.md) and the [go-live checklist](docs/operations/release-readiness.md).
+
 ```sh
 npm run check
 npm run lighthouse

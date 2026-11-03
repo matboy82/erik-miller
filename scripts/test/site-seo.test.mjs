@@ -5,12 +5,13 @@ import { crawlerOutput, pageSeo, identity, verifyLaunchFacts } from '../site-seo
 const page = { id: 'kitchen', kind: 'service', path: '/kitchen-remodeling/', title: 'Kitchen Remodeling in Treasure Valley | Miller Remodeling',
   heading: 'Kitchen remodeling, designed first.', description: 'Plan your kitchen with Miller Remodeling.', faqs: [{ question: 'When do we design?', answer: 'Before construction.' }] };
 
-test('SEO uses the production entity and route URLs while omitting unknown location and fake ratings', () => {
+test('SEO uses the supplied business address in structured data without invented coordinates or ratings', () => {
   const seo = pageSeo(page);
   assert.equal(seo.url, 'https://millerremodelingidaho.com/kitchen-remodeling/');
-  const org = seo.graph['@graph'].find(n => n['@type'] === 'Organization');
+  const org = seo.graph['@graph'].find(n => n['@type'] === 'LocalBusiness');
   assert.equal(org.telephone, identity.telephone);
-  for (const key of ['address', 'geo', 'aggregateRating', 'sameAs']) assert.equal(Object.hasOwn(org, key), false);
+  assert.deepEqual(org.address, { '@type': 'PostalAddress', streetAddress: '1514 W Colville Ct', addressLocality: 'Eagle', addressRegion: 'ID', postalCode: '83616', addressCountry: 'US' });
+  for (const key of ['geo', 'aggregateRating', 'sameAs']) assert.equal(Object.hasOwn(org, key), false);
   const service = seo.graph['@graph'].find(n => n['@type'] === 'Service');
   assert.equal(service.provider['@id'], org['@id']);
   const faq = seo.graph['@graph'].find(n => n['@type'] === 'FAQPage');
