@@ -32,7 +32,7 @@ Run `npm run check:seo` after a live dev build. Run lint, type checks and the te
 - [ ] Source real reviews with exact wording and permission. No review or aggregate-rating markup now. Self-serving LocalBusiness reviews are not a Google review-star entitlement.
 - [ ] Check FAQs with Erik. Replace guessed local claims with actual service details and examples. Area pages need meaningful local evidence; do not add more town pages just for keywords.
 - [ ] Supply current WordPress URL inventory and old-to-new redirect map; preserve inbound service links.
-- [ ] Finalize privacy/contact-data notice and any required legal links. Analytics/pixels remain unconfigured; do not add them just to claim measurement readiness.
+- [ ] Review the privacy/contact-data notice and legal links. Google Analytics is installed with the owner-supplied measurement ID; confirm real-time data and domain stream settings after the domain switch.
 - [ ] Complete Erik's calendar consent and real booking-reference synchronization before claiming the booking integration ready.
 
 ## Switches with the domain move
