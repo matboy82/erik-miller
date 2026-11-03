@@ -32,19 +32,19 @@ const projectTypes = ['Kitchen', 'Bathroom', 'Whole home', 'Addition', 'ADU or m
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'X-Content-Type-Options': 'nosniff' } });
 const exact = (value: unknown, keys: string[]) => Boolean(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every(k => keys.includes(k)) && keys.every(k => Object.hasOwn(value, k)));
 const text = (value: unknown, max = 3000) => typeof value === 'string' && value.length <= max && !value.includes('\u0000');
-export function validConversionConfig(value: unknown): value is ConversionConfig {
+export function validConversionConfig(value: unknown, allowIncomplete = false): value is ConversionConfig {
   if (!exact(value, ['budgetBands','guide','sender','replyTo','postalAddress','reviews','nurture'])) return false;
   const c = value as ConversionConfig;
   if (!Array.isArray(c.budgetBands) || c.budgetBands.length > 7 || new Set(c.budgetBands.map(b => b?.projectType)).size !== c.budgetBands.length
     || !c.budgetBands.every(b => exact(b, ['projectType','min','max','scope']) && projectTypes.includes(b.projectType) && Number.isSafeInteger(b.min) && Number.isSafeInteger(b.max) && b.min > 0 && b.max >= b.min && b.max <= 10_000_000 && text(b.scope, 500) && b.scope.trim())) return false;
   if (!exact(c.guide, ['enabled','title','text']) || typeof c.guide.enabled !== 'boolean' || !text(c.guide.title, 160) || !text(c.guide.text, 40000) || (c.guide.enabled && (!c.guide.title.trim() || !c.guide.text.trim()))) return false;
-  if (!text(c.sender, 254) || (c.sender && !emailPattern.test(c.sender)) || !text(c.replyTo, 254) || !emailPattern.test(c.replyTo) || !text(c.postalAddress, 500)) return false;
+  if (!text(c.sender, 254) || (c.sender && !emailPattern.test(c.sender)) || !text(c.replyTo, 254) || (c.replyTo ? !emailPattern.test(c.replyTo) : !allowIncomplete) || !text(c.postalAddress, 500)) return false;
   if (!exact(c.reviews, ['enabled','delayDays','links','subject','ask','thanks']) || typeof c.reviews.enabled !== 'boolean' || !Number.isInteger(c.reviews.delayDays) || c.reviews.delayDays < 0 || c.reviews.delayDays > 30 || !Array.isArray(c.reviews.links) || c.reviews.links.length > 3) return false;
   if (!c.reviews.links.every(l => { try { const u = new URL(l.url); return exact(l, ['label','url']) && text(l.label, 50) && l.label.trim() && u.protocol === 'https:' && !u.username && !u.password && ['search.google.com','g.page','www.google.com','www.facebook.com','facebook.com','www.houzz.com','houzz.com'].includes(u.hostname) && l.url.length <= 1000; } catch { return false; } })) return false;
   if (![c.reviews.subject,c.reviews.ask,c.reviews.thanks].every(t => text(t)) || /[\r\n]/.test(c.reviews.subject) || (c.reviews.enabled && (!c.reviews.links.length || !c.reviews.subject.trim() || !c.reviews.ask.trim() || !c.reviews.thanks.trim()))) return false;
   if (!exact(c.nurture, ['enabled','touches']) || typeof c.nurture.enabled !== 'boolean' || !Array.isArray(c.nurture.touches) || c.nurture.touches.length > 3 || (c.nurture.enabled && !c.nurture.touches.length)) return false;
   if (!c.nurture.touches.every((t,i,a) => exact(t,['day','subject','text']) && Number.isInteger(t.day) && t.day >= 1 && t.day <= 14 && (!i || t.day > a[i-1].day) && text(t.subject,160) && t.subject.trim() && !/[\r\n]/.test(t.subject) && text(t.text) && t.text.trim())) return false;
-  return !(c.reviews.enabled || c.nurture.enabled) || Boolean(c.sender && c.postalAddress.trim());
+  return allowIncomplete || !(c.reviews.enabled || c.nurture.enabled) || Boolean(c.sender && c.postalAddress.trim());
 }
 type ConfigRow = { revision: string; draft: string; approved: string | null; approved_by: string | null; approved_at: string | null };
 async function configRow(db: D1Database): Promise<ConfigRow | null> { return db.prepare('SELECT * FROM conversion_config WHERE id = 1').first<ConfigRow>(); }
@@ -218,7 +218,7 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
   if (path === '/operator/conversion/config' && request.method === 'PUT') {
     const raw=await request.text(); if(raw.length>60000) return reply({error:'validation_failed'},400);
     let value:unknown; try{value=JSON.parse(raw);}catch{return reply({error:'validation_failed'},400);}
-    if(!validConversionConfig(value))return reply({error:'validation_failed'},400);
+    if(!validConversionConfig(value,true))return reply({error:'validation_failed',message:'Check the email addresses and enabled sections. Follow-ups need up to three messages with subjects, text, and increasing days between 1 and 14.'},400);
     const revision=crypto.randomUUID();
     await db.batch([
       db.prepare('INSERT INTO conversion_config(id,revision,draft) VALUES(1,?1,?2) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,draft=excluded.draft,approved=NULL,approved_by=NULL,approved_at=NULL').bind(revision,JSON.stringify(value)),
@@ -231,6 +231,10 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
     const raw=await request.text(); if(raw.length>200)return reply({error:'validation_failed'},400);
     let revision:unknown;try{revision=JSON.parse(raw).revision;}catch{return reply({error:'validation_failed'},400);}
     if(typeof revision!=='string')return reply({error:'validation_failed'},400);
+    const current=await configRow(db);
+    if(!current || current.revision!==revision)return reply({error:'revision_changed'},409);
+    let draft:unknown;try{draft=JSON.parse(current.draft);}catch{return reply({error:'validation_failed'},400);}
+    if(!validConversionConfig(draft))return reply({error:'approval_incomplete',message:'Add a valid sender, reply-to email and business mailing address before approval.'},400);
     const result=await db.prepare('UPDATE conversion_config SET approved=draft, approved_by=?1,approved_at=?2 WHERE id=1 AND revision=?3').bind(email,new Date().toISOString(),revision).run();
     return result.meta?.changes===1?reply({approval:'saved'}):reply({error:'revision_changed'},409);
   }
@@ -240,9 +244,17 @@ export async function conversionOperator(request: Request, env: ConversionEnviro
   }
   if(path==='/operator/conversion/stop' && request.method==='POST') {
     const raw=await request.text();if(raw.length>200)return reply({error:'validation_failed'},400);
-    let receipt:unknown;try{receipt=JSON.parse(raw).receiptId;}catch{return reply({error:'validation_failed'},400);}
-    if(typeof receipt!=='string'||!/^[a-f0-9-]{36}$/i.test(receipt))return reply({error:'validation_failed'},400);
-    await stopNurture(db,receipt,'operator_stopped');return reply({stopped:true});
+    let input:unknown;try{input=JSON.parse(raw).receiptId;}catch{return reply({error:'validation_failed'},400);}
+    if(typeof input!=='string')return reply({error:'validation_failed'},400);
+    const reference=input.trim().toUpperCase();
+    const isPublic=/^MR-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/.test(reference);
+    const isReceipt=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.trim());
+    if(!isPublic&&!isReceipt)return reply({error:'validation_failed'},400);
+    const found=isPublic
+      ? await db.prepare('SELECT c.receipt_id FROM conversion_leads c JOIN intake_public_references r ON r.receipt_id=c.receipt_id WHERE r.reference=?1').bind(reference).first<{receipt_id:string}>()
+      : await db.prepare('SELECT receipt_id FROM conversion_leads WHERE receipt_id=?1').bind(input.trim().toLowerCase()).first<{receipt_id:string}>();
+    if(!found)return reply({error:'not_found'},404);
+    await stopNurture(db,found.receipt_id,'operator_stopped');return reply({stopped:true});
   }
   if(path==='/operator/conversion/completed-job' && request.method==='POST' && call){
     const raw=await request.text();if(raw.length>500)return reply({error:'validation_failed'},400);

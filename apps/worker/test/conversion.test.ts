@@ -52,6 +52,17 @@ test('unsubscribe stops pending touches immediately, including after a prior boo
   assert.equal(s.sql.prepare('SELECT stop_reason FROM conversion_leads').get()?.stop_reason,'unsubscribed');
   await runConversion(s.env,s.call,start+8*day);assert.equal(s.sent.length,0);
 });
+test('operator can stop follow-ups using the customer reference, while unknown references fail',async()=>{
+  const s=await setup();
+  s.sql.prepare('INSERT INTO intake_public_references(reference,receipt_id,created_at) VALUES(?,?,?)').run('MR-ABCDE-23456',receipt,new Date(start).toISOString());
+  await runConversion(s.env,s.call,start);
+  const request=(value:string)=>new Request('https://worker.test/operator/conversion/stop',{method:'POST',body:JSON.stringify({receiptId:value})});
+  assert.equal((await conversionOperator(request('MR-AAAAA-23456'),s.env,'matt@example.com')).status,404);
+  assert.equal(s.sql.prepare('SELECT stopped_at FROM conversion_leads WHERE receipt_id=?').get(receipt)?.stopped_at,null);
+  assert.equal((await conversionOperator(request('mr-abcde-23456'),s.env,'matt@example.com')).status,200);
+  assert.equal(s.sql.prepare('SELECT stop_reason FROM conversion_leads WHERE receipt_id=?').get(receipt)?.stop_reason,'operator_stopped');
+  assert.equal(s.sql.prepare("SELECT count(*) n FROM conversion_messages WHERE state='cancelled'").get()?.n,3);
+});
 test('inquiry enrollment is distinct from consent and unsubscribe suppresses future inquiries for the same email',async()=>{
   const s=await setup();
   s.sql.exec('UPDATE conversion_leads SET nurture_consent=0, inquiry_nurture=1');
@@ -91,6 +102,21 @@ test('draft edits invalidate approval; only Erik may approve the exact current r
   assert.equal((await conversionOperator(approve('old'),s.env,'erik@millerremodelingidaho.com')).status,409);
   assert.equal((await conversionOperator(approve(revision),s.env,'erik@millerremodelingidaho.com')).status,200);assert.ok(await approvedConversion(s.env));
   assert.equal((await worker.fetch(new Request(url),s.env)).status,401);
+});
+test('an incomplete mailing address can be saved as a draft but cannot be approved or sent',async()=>{
+  const s=await setup();
+  const save=(c:ConversionConfig)=>conversionOperator(new Request('https://worker.test/operator/conversion/config',{method:'PUT',body:JSON.stringify(c)}),s.env,'matt@example.com');
+  const incomplete={...config(),postalAddress:''};
+  const saved=await save(incomplete);assert.equal(saved.status,200);
+  const {revision}=await saved.json() as {revision:string};
+  const approve=()=>conversionOperator(new Request('https://worker.test/operator/conversion/approve',{method:'POST',body:JSON.stringify({revision})}),s.env,'erik@millerremodelingidaho.com');
+  const result=await approve();assert.equal(result.status,400);
+  assert.match((await result.json() as {message:string}).message,/mailing address/i);
+  assert.equal(await approvedConversion(s.env),null);
+  await runConversion(s.env,s.call,start+3*day);assert.equal(s.sent.length,0);
+  const invalid={...incomplete,nurture:{enabled:true,touches:[{day:15,subject:'Hello',text:'Message'}]}};
+  const rejected=await save(invalid);assert.equal(rejected.status,400);
+  assert.match((await rejected.json() as {message:string}).message,/between 1 and 14/);
 });
 test('guide capture stores both contacts, types JobTread payload, and waits for verified delivery before download',async()=>{
   const c=config();c.guide={enabled:true,title:'Approved guide',text:'Scope and design planning.'};const s=await setup(c);
