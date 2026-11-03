@@ -33,12 +33,28 @@
   "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
   "faqs": [
     {
-      "question": "How do I start a home remodel project?",
-      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+      "question": "How much does a whole-home remodel cost in the Treasure Valley?",
+      "answer": "It depends on square footage, how many kitchens and baths are involved, whether systems and structure change, and finish level — which is why a per-square-foot guess is useless for your house. Two similar-size homes can need very different work once walls open. The design phase scopes your house room by room, locks selections, and then prices it, so the number you approve is tied to an actual plan."
     },
     {
-      "question": "Are design and selections part of the planning phase?",
-      "answer": "Yes. The paid design phase covers floorplans, selections and project renderings before construction. Discuss the deliverables for your particular scope during consultation."
+      "question": "Where do I start with a whole-home remodel?",
+      "answer": "With the plan for the whole house, then a build order that makes sense. Starting with the kitchen while the bath layout is still undecided is how projects stall. One design, one set of selections, one accountable team — then we sequence the work so each phase sets up the next."
+    },
+    {
+      "question": "Do I have to move out during a whole-home remodel?",
+      "answer": "Sometimes, sometimes not — and that decision belongs in the design phase, not on demo day. Phasing, dust control, and which rooms stay usable are planned before construction, so you know what living through it actually looks like before you commit to it. A full gut, with kitchen, baths, power, and water offline at once, is a different answer than a phased room-by-room remodel."
+    },
+    {
+      "question": "How do you remodel an older home without losing its character?",
+      "answer": "By designing to the house that's already there: trim profiles, window proportions, floor levels, and materials that belong. A whole-home remodel should look like the house was always meant to be this way, not like a new house wearing an old address. Renderings let you judge that before we build it."
+    },
+    {
+      "question": "Should I hire a design-build remodeler or hire trades separately?",
+      "answer": "If you hire each trade separately, design, selections, and construction are split — and nobody owns the result. One design-build team means one plan, one schedule, and one person accountable when a detail doesn't line up. After 25 years, that's the difference between a finished home and a project you have to manage yourself."
+    },
+    {
+      "question": "Why do whole-home remodels go over budget?",
+      "answer": "Almost always because finishes were decided mid-build, or because what was behind the walls wasn't planned for. Whole-home creep comes from deciding tile, cabinets, and fixtures after demo instead of before it. Lock the design and selections in the paid design phase, and the construction price stays honest across every room."
     }
   ]
 }

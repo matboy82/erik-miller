@@ -33,12 +33,28 @@
   "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
   "faqs": [
     {
-      "question": "How do I start a home repair project?",
-      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+      "question": "How much does home water damage repair cost?",
+      "answer": "It depends on the source, the extent, and what has to dry out, be replaced, and be finished — which is why a phone quote for water damage is a guess. The visible stain is rarely the whole job. An assessment first — source, structure, finishes — is what turns a repair into a real price instead of a first invoice that grows."
     },
     {
-      "question": "Are design and selections part of the planning phase?",
-      "answer": "Yes. The paid design phase covers floorplans, selections and project renderings before construction. Discuss the deliverables for your particular scope during consultation."
+      "question": "Do you do handyman work in Boise?",
+      "answer": "Honestly, no — that's not the work we built this company around. Our best fits are kitchen and bath remodels and additions, projects where thoughtful design pays for itself. Home repair with us means repairs that belong inside a remodel or a larger scope: structural, water-related, and system repairs where doing it right matters more than doing it fast."
+    },
+    {
+      "question": "How do you repair water damage and rot in a home?",
+      "answer": "You fix the source first, then the structure. The visible damage is the symptom; where the water came from is the job. Patching over a leak is how a small repair becomes a second, bigger repair. We find the source, repair it properly, and only then close the wall back up."
+    },
+    {
+      "question": "When should I repair vs. remodel a room?",
+      "answer": "When the layout, the systems, or the finishes are all at the end of their life at once, repair stops making sense. If we're opening walls to fix plumbing and the room still won't work when we're done, that's a design conversation, not a repair ticket. We'll say so in consultation rather than sell you a repair you'll redo in three years."
+    },
+    {
+      "question": "Can you fix a bad remodel from another contractor?",
+      "answer": "Sometimes — but it starts with an honest assessment, not a patch. We look at what's actually there, scope the correction properly, and design the fix so it lasts. If the right fix is a remodel of that room, we'll tell you that instead of charging you twice."
+    },
+    {
+      "question": "What do I need for a home repair estimate?",
+      "answer": "The same as any project: goals, location, and photos through the project inquiry, plus what you've noticed and when it started. That lets the first conversation focus on cause and scope, not on scheduling a drive just to look at a photo you could have sent."
     }
   ]
 }

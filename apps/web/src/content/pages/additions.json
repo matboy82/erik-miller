@@ -33,12 +33,28 @@
   "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
   "faqs": [
     {
-      "question": "How do I start an addition project?",
-      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+      "question": "How much does a home addition cost per square foot in Idaho?",
+      "answer": "Per-square-foot pricing is a trap for additions. Small additions often cost more per square foot because fixed costs — permits, engineering, mobilization — are spread over fewer feet, while a larger addition spreads them further. What actually drives cost is foundation, roof tie-in, structure, and finishes for your lot and house. The design phase gives you a real price for your addition, not a per-foot average borrowed from someone else's project."
     },
     {
-      "question": "Are design and selections part of the planning phase?",
-      "answer": "Yes. The paid design phase covers floorplans, selections and project renderings before construction. Discuss the deliverables for your particular scope during consultation."
+      "question": "Is it cheaper to add on or move?",
+      "answer": "That depends on your lot, your house, and what you actually need — more bedrooms, a primary suite, a real living space. An addition only makes sense if the house and lot can carry it well, and if you like the location enough to stay. Bring the goal to consultation and we'll test it honestly, including when moving is the better call."
+    },
+    {
+      "question": "How do you make an addition look like part of the original house?",
+      "answer": "By designing it to the existing house, not onto it. Roof lines, siding, windows, and floor levels are where additions give themselves away. We design the addition to match and show it in renderings first, so you can see whether it reads as one home before we pour anything."
+    },
+    {
+      "question": "Do I need a permit for a home addition in the Treasure Valley?",
+      "answer": "Yes for structural, plumbing, and electrical work — and setbacks, lot coverage, and height limits are checked in the design phase, city by city. Eagle, Star, Meridian, Boise, and Middleton don't all play by the same rules. We don't price construction around an addition your lot can't legally hold. Feasibility comes before finishes."
+    },
+    {
+      "question": "Can I live in my house during an addition?",
+      "answer": "Usually, yes, with a clear plan for access, dust, and noise. The addition is built as its own phase, then tied into the existing house at the right point in the sequence. That sequence is set in the design, not improvised once the foundation is in."
+    },
+    {
+      "question": "How do you tie a new addition into an existing house?",
+      "answer": "Through the unglamorous parts that decide whether it lasts: foundations, roof tie-ins, and matching floor levels. That's 25 years of judgment, not a line item. The design phase is where those connections get solved on paper, before they become expensive problems in the field."
     }
   ]
 }

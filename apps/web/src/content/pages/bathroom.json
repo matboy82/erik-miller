@@ -33,12 +33,28 @@
   "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
   "faqs": [
     {
-      "question": "How do I start a bathroom remodeling project?",
-      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+      "question": "How much does a bathroom remodel cost in Boise?",
+      "answer": "It depends on whether the layout moves, what tile and fixtures you choose, and what's hiding behind the walls. A refresh in the same footprint is a different project from a primary bath with a new layout, a custom shower, and a waterproofing system. National averages hide all of that. The design phase prices your bathroom — layout, waterproofing, ventilation, finishes — so you're comparing a finished room, not a partial quote."
     },
     {
-      "question": "Are design and selections part of the planning phase?",
-      "answer": "Yes. The paid design phase covers floorplans, selections and project renderings before construction. Discuss the deliverables for your particular scope during consultation."
+      "question": "How can I make a small bathroom feel bigger without moving plumbing?",
+      "answer": "Usually, you can — layout is where small bathrooms are won or lost. A few inches on a vanity, a better shower footprint, or a door swing change can change how the whole room works. We draw it first so you can see it, rather than discovering after tile is set that it still feels cramped."
+    },
+    {
+      "question": "How do you waterproof a shower so it doesn't leak?",
+      "answer": "Tile isn't waterproofing — the system behind it is. Bathrooms are small rooms with big decisions: layout, waterproofing, tile, fixtures, and ventilation, and getting one wrong means living with it for 20 years. We systematize bath remodels so nothing gets missed, and you see the whole plan in renderings before construction."
+    },
+    {
+      "question": "Should I replace my tub with a walk-in shower?",
+      "answer": "It depends on who uses the room and for how long. A primary bath for a couple planning to stay put is a different decision than a hall bath for kids or guests. We'll talk through daily use, aging-in-place, and resale in consultation — then design the room around that answer, not around a trend."
+    },
+    {
+      "question": "Why do bathroom remodel quotes vary so much?",
+      "answer": "Fixtures, tile, waterproofing, ventilation, and what's hiding behind the walls. A quote that skips the waterproofing system or the ventilation fix looks cheaper until the mold or the leak shows up. A design-first quote prices the whole system, so you're comparing finished rooms, not partial ones."
+    },
+    {
+      "question": "Can I live in my house during a bathroom remodel?",
+      "answer": "Yes, with a plan — especially if it's your only full bath, which we sequence around. The design phase sets the order of work before demo, so you're not guessing which bathroom is usable on which week. Tell us how many baths you have in the inquiry and we'll plan around it."
     }
   ]
 }

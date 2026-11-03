@@ -33,12 +33,28 @@
   "draftReason": "Test copy for Erik review. This page is not approved for customer use or production.",
   "faqs": [
     {
-      "question": "How do I start an ADU project?",
-      "answer": "Start by sharing your goals, location and photos through the project inquiry. Erik reviews the brief so the first conversation can focus on what needs to change."
+      "question": "How much does it cost to build an ADU in Idaho?",
+      "answer": "It depends on detached vs. conversion, size, utilities, site access, and finishes — and on permit and impact fees, which vary by city. A garage conversion and a detached unit on a lot that needs a long utility run are not the same project, even at the same square footage. The design phase tests your lot first, then prices the ADU you're actually building, instead of quoting a national average that fits nobody's lot."
     },
     {
-      "question": "Are design and selections part of the planning phase?",
-      "answer": "Yes. The paid design phase covers floorplans, selections and project renderings before construction. Discuss the deliverables for your particular scope during consultation."
+      "question": "Can I build an ADU on my lot in Boise?",
+      "answer": "Maybe — and that's the first thing to check, not the last. Zoning, setbacks, lot coverage, access, and utilities all vary by city and by lot. The design phase tests feasibility for your specific property before you pay for construction drawings or fall in love with a layout your lot can't hold. Bring your address, goals, and photos to the inquiry and we'll start with feasibility, not finishes."
+    },
+    {
+      "question": "Detached ADU vs. garage conversion: which is better?",
+      "answer": "Each has real tradeoffs: light and privacy in a detached unit, cost and speed in a conversion, limits in both. The right answer depends on the lot, the main house, and what the ADU is for. We design around the use case, not around a one-size-fits-all unit."
+    },
+    {
+      "question": "Does ADU design change for family vs. rental vs. home office?",
+      "answer": "Yes. A parent suite needs different access and bathroom thinking than a rental, and a rental needs different durability and separation thinking than an office. Tell us the intended use in the project inquiry — goals, location, and photos — and the design will be built for that life, not a generic floorplan. Rental rules themselves are city-specific and are confirmed during feasibility, not assumed."
+    },
+    {
+      "question": "How long does it take to get an ADU permit and build an ADU?",
+      "answer": "Permitting is the wildcard, and it varies by jurisdiction — anyone promising a firm ADU timeline before checking your city and lot is guessing. What we control is submitting a complete, designed project the first time, which is what keeps a permit review from turning into round after round of corrections. Build time then follows from the approved design, not from a sales promise made before it."
+    },
+    {
+      "question": "Will an ADU match my existing house?",
+      "answer": "It should. Scale, roof form, siding, and window proportions are designed to match the main house, and renderings let you judge that before construction. An ADU that looks like it belongs protects both how you live with it and how the property reads long-term."
     }
   ]
 }
