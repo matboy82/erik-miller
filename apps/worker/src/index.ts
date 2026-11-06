@@ -6,8 +6,9 @@ import { syncCalendar, type CalendarEnvironment } from './calendar.ts';
 import { googleAuthorization } from './google-auth.ts';
 import { approvedConversion, captureConversion, captureCompletedJob, cleanupConversion, conversionOperator, conversionPublic, runConversion, type ConversionEnvironment } from './conversion.ts';
 import { ensurePublicReference } from './public-reference.ts';
+import { queueOwnerNotice, deliverOwnerNotice, retryOwnerNotices, type OwnerNotificationEnvironment } from './owner-notifications.ts';
 
-export interface IntakeEnvironment extends CalendarEnvironment, ConversionEnvironment {
+export interface IntakeEnvironment extends CalendarEnvironment, ConversionEnvironment, OwnerNotificationEnvironment {
   INTAKE_ENABLED?: string;
   INTAKE_DB?: D1Database;
   INTAKE_QUEUE?: Queue<string>;
@@ -169,6 +170,7 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
       if (!result.success) return json({ error: 'intake_unavailable' }, 503);
     }
     const reference = await ensurePublicReference(env.INTAKE_DB, receiptId);
+    if (!isGuide) await queueOwnerNotice(env, receiptId);
     // Capture opt-in and the exact approved guide before queueing. A retry repairs a failed capture.
     if (isGuide || followupConsent !== undefined || validated.payload.email) await captureConversion(env,receiptId,{ ...payload, inquiryNurture: !isGuide && Boolean(validated.payload.email) },isGuide ? `${conversion!.guide.title}\n\n${conversion!.guide.text}\n\nPlanning ranges only, not a quote. Final scope and pricing require a project-specific design and proposal.` : undefined);
     if (!existing || !['delivered','processing'].includes(existing.state)) await env.INTAKE_QUEUE.send(receiptId);
@@ -645,6 +647,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
 async function consumeQueue(batch: MessageBatch<string>, env: IntakeEnvironment): Promise<void> {
   for (const message of batch.messages) {
     try {
+      try { await deliverOwnerNotice(env, message.body); } catch { console.error(JSON.stringify({ event: 'owner_notice_processing_failed' })); }
       if (env.INTAKE_DB) {
         await env.INTAKE_DB.prepare(
           'UPDATE intake_submissions SET attempts = attempts + 1, updated_at = ?1 WHERE receipt_id = ?2',
@@ -829,6 +832,7 @@ export default {
     else await consumeQueue(batch, env);
   },
   async scheduled(_controller: ScheduledController, env: IntakeEnvironment): Promise<void> {
+    try { await retryOwnerNotices(env); } catch { console.error(JSON.stringify({ event: 'owner_notice_processing_failed' })); }
     if (!_controller.cron || _controller.cron === '0 * * * *') {
       if(env.INTAKE_DB && env.CONVERSION_ENABLED!==undefined)await cleanupConversion(env.INTAKE_DB);
       await cleanupExpired(env);

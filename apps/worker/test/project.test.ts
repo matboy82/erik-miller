@@ -12,7 +12,7 @@ class Database {
   raw = new DatabaseSync(':memory:');
   constructor() {
     this.raw.exec('PRAGMA foreign_keys = ON');
-    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0005_lead_conversion.sql', '0006_public_references.sql', '0007_inquiry_nurture.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
+    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0005_lead_conversion.sql', '0006_public_references.sql', '0007_inquiry_nurture.sql', '0008_owner_notifications.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
   }
   prepare(sql: string) {
     const statement = this.raw.prepare(sql);
@@ -58,6 +58,34 @@ function setup() {
 function request(body: unknown, origin?: string, endpoint = 'project') {
   return new Request(`https://worker.test/intake/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, ...(origin ? { Origin: origin } : {}) }, body: JSON.stringify(body) });
 }
+
+test('both public inquiry forms queue one owner alert without requiring conversion approval', async () => {
+  for (const [endpoint, body] of [['project', lead], ['contact', {name:lead.name,email:lead.email,phone:lead.phone,message:'Please contact me'}]] as const) {
+    const {db,env}=setup();
+    Object.assign(env!,{OWNER_EMAIL_ENABLED:'true'});
+    const result=await worker.fetch(request(body,'https://site.test',endpoint),env);
+    assert.equal(result.status,202);
+    const first=await result.json() as {receiptId:string};
+    const second=await worker.fetch(request(body,'https://site.test',endpoint),env);
+    assert.equal(second.status,202);
+    assert.equal(db.raw.prepare('SELECT COUNT(*) AS n FROM owner_notifications WHERE receipt_id=?').get(first.receiptId)?.n,1);
+  }
+});
+
+test('owner email sends even when JobTread delivery fails and is not duplicated on queue retry', async () => {
+  const {db,env}=setup();const messages:{to:string;subject:string;text:string}[]=[];
+  Object.assign(env!,{OWNER_EMAIL_ENABLED:'true',OWNER_NOTIFICATION_EMAIL:{async send(message:typeof messages[number]){messages.push(message);return {messageId:'sent-one'};}}});
+  const response=await worker.fetch(request(lead,'https://site.test'),env);
+  const {receiptId,reference}=await response.json() as {receiptId:string;reference:string};
+  const original=globalThis.fetch;globalThis.fetch=async()=>{throw Error('simulated JobTread outage');};
+  try {
+    await consume(receiptId,env);await consume(receiptId,env);
+    assert.equal(messages.length,1);assert.equal(messages[0].to,'erik@millerremodelingidaho.com');
+    assert.match(messages[0].subject,new RegExp(reference));
+    assert.equal(db.raw.prepare('SELECT state FROM owner_notifications').get()?.state,'sent');
+    assert.notEqual(db.raw.prepare('SELECT state FROM intake_submissions').get()?.state,'delivered');
+  } finally {globalThis.fetch=original;}
+});
 
 test('project acceptance stores a complete brief and private photo descriptors atomically; retry reuses receipt', async () => {
   const { db, env, objects, sent } = setup();

@@ -6,6 +6,7 @@
   "workers_dev": true,
   "keep_vars": true,
   "vars": {
+    "OWNER_EMAIL_ENABLED": "true",
     "CONVERSION_ENABLED": "true",
     "CONVERSION_OWNER_EMAIL": "erik@millerremodelingidaho.com",
     "CONVERSION_OPERATOR_EMAIL": "erik@millerremodelingidaho.com",
@@ -20,6 +21,7 @@
     "GOOGLE_OAUTH_REDIRECT_URI": "https://erik-miller-worker.matt-boyer.workers.dev/operator/google/callback"
   },
   "observability": { "enabled": true },
+  "send_email": [{ "name": "OWNER_NOTIFICATION_EMAIL", "destination_address": "erik@millerremodelingidaho.com" }],
   "r2_buckets": [{ "binding": "INTAKE_PHOTOS", "bucket_name": "miller-intake-photos" }],
   "d1_databases": [
     {
