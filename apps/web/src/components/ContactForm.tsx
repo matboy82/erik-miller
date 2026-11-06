@@ -26,8 +26,8 @@ export default function ContactForm() {
     attempt.current ??= { key: crypto.randomUUID(), payload: { name: name.trim(), ...(email.trim() ? { email: email.trim() } : {}), ...(phone.trim() ? { phone: phone.trim() } : {}), message: message.trim() } };
     try {
       const token = form.current?.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '';
-      const receipt = await sendInquiry('contact', attempt.current.payload, attempt.current.key, token);
-      setReceived(true); setStatus(`Thank you. We received your inquiry and will follow up. Your reference is ${receipt}.`);
+      await sendInquiry('contact', attempt.current.payload, attempt.current.key, token);
+      setReceived(true); setStatus('Thank you. We received your inquiry and will follow up.');
     } catch (error) {
       setErrors([error instanceof Error ? error.message : 'Please try again or call (208) 608-4439.']);
       setStatus(''); resetChallenge();
