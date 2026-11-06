@@ -14,11 +14,13 @@ export function validBooking(value: unknown): value is Input {
 
 export async function recordBooking(receiptId: string, input: Input, db: D1Database,
   call: (operation: Record<string, unknown>) => Promise<Record<string, unknown>>): Promise<{ status: number; body: Record<string, unknown> }> {
-  const inquiry = await db.prepare('SELECT state, external_job_id FROM intake_submissions WHERE receipt_id = ?1').bind(receiptId).first<{ state: string; external_job_id: string | null }>();
+  const inquiry = await db.prepare('SELECT state, external_job_id, external_account_id FROM intake_submissions WHERE receipt_id = ?1').bind(receiptId).first<{ state: string; external_job_id: string | null; external_account_id: string | null }>();
   if (!inquiry) return { status: 404, body: { error: 'not_found' } };
   const referenceRow = await db.prepare('SELECT reference FROM intake_public_references WHERE receipt_id = ?1').bind(receiptId).first<{ reference: string }>();
   const reference = referenceRow?.reference ?? `MR05-${receiptId.replace(/-/g, '').slice(-8).toUpperCase()}`;
-  if (inquiry.state !== 'delivered' || !inquiry.external_job_id) return { status: 409, body: { error: 'delivery_required' } };
+  if (inquiry.state !== 'delivered' || (!inquiry.external_job_id && !inquiry.external_account_id)) return { status: 409, body: { error: 'delivery_required' } };
+  const targetType = inquiry.external_job_id ? 'job' : 'account';
+  const targetId = inquiry.external_job_id ?? inquiry.external_account_id;
   const existing = await db.prepare('SELECT receipt_id, phase, payload, task_id FROM intake_bookings WHERE event_id = ?1').bind(input.eventId).first<{ receipt_id: string; phase: string; payload: string; task_id: string | null }>();
   const payload = JSON.stringify({ eventId: input.eventId, date: input.date, start: input.start, end: input.end, cancelled: input.cancelled ?? false });
   if (existing && existing.receipt_id !== receiptId) return { status: 409, body: { error: 'booking_conflict' } };
@@ -39,9 +41,9 @@ export async function recordBooking(receiptId: string, input: Input, db: D1Datab
   let taskId = existing?.task_id;
   if (existing?.phase !== 'created') {
     if (taskId) {
-      const ownership = await call({ task: { $: { id: taskId }, id: {}, job: { id: {} } } });
-      const owned = ownership.task as { id?: string; job?: { id?: string } } | null;
-      if (owned && (owned.id !== taskId || owned.job?.id !== inquiry.external_job_id)) throw new Error('booking_ownership_failed');
+      const ownership = await call({ task: { $: { id: taskId }, id: {}, job: { id: {} }, account: { id: {} } } });
+      const owned = ownership.task as { id?: string; job?: { id?: string }; account?: { id?: string } } | null;
+      if (owned && (owned.id !== taskId || (targetType === 'job' ? owned.job?.id : owned.account?.id) !== targetId)) throw new Error('booking_ownership_failed');
       if (!owned && !input.cancelled) throw new Error('booking_task_missing');
     }
     if (input.cancelled) {
@@ -49,7 +51,7 @@ export async function recordBooking(receiptId: string, input: Input, db: D1Datab
     } else if (taskId) {
       await call({ updateTask: { $: { id: taskId, startDate: input.date, endDate: input.date, startTime: `${input.start}:00`, endTime: `${input.end}:00`, notify: false, updateDependentTasks: false, updateRecurringTasks: false } } });
     } else {
-      const result = await call({ createTask: { $: { name: `Consultation ${reference}`, targetId: inquiry.external_job_id, targetType: 'job',
+      const result = await call({ createTask: { $: { name: `Consultation ${reference}`, targetId, targetType,
         description: `Google Calendar event: ${input.eventId}\nWebsite project reference: ${reference}`, startDate: input.date, endDate: input.date,
         startTime: `${input.start}:00`, endTime: `${input.end}:00`, notify: false }, createdTask: { id: {} } } });
       taskId = (result.createTask as { createdTask?: { id?: string } })?.createdTask?.id;
@@ -58,9 +60,9 @@ export async function recordBooking(receiptId: string, input: Input, db: D1Datab
     const saved = await db.prepare("UPDATE intake_bookings SET task_id = ?1, phase = 'created' WHERE event_id = ?2 AND phase = 'writing'").bind(taskId ?? null, input.eventId).run();
     if (!saved.success || saved.meta?.changes !== 1) throw new Error('booking_checkpoint_failed');
   }
-  const result = taskId ? await call({ task: { $: { id: taskId }, id: {}, job: { id: {} }, startDate: {}, endDate: {}, startTime: {}, endTime: {} } }) : { task: null };
-  const task = result.task as { id?: string; job?: { id?: string }; startDate?: string; endDate?: string; startTime?: string; endTime?: string };
-  if (input.cancelled ? result.task !== null : task?.id !== taskId || task.job?.id !== inquiry.external_job_id || task.startDate !== input.date || task.endDate !== input.date
+  const result = taskId ? await call({ task: { $: { id: taskId }, id: {}, job: { id: {} }, account: { id: {} }, startDate: {}, endDate: {}, startTime: {}, endTime: {} } }) : { task: null };
+  const task = result.task as { id?: string; job?: { id?: string }; account?: { id?: string }; startDate?: string; endDate?: string; startTime?: string; endTime?: string };
+  if (input.cancelled ? result.task !== null : task?.id !== taskId || (targetType === 'job' ? task.job?.id : task.account?.id) !== targetId || task.startDate !== input.date || task.endDate !== input.date
     || task.startTime?.slice(0, 5) !== input.start || task.endTime?.slice(0, 5) !== input.end) throw new Error('booking_readback_failed');
   const saved = await db.prepare("UPDATE intake_bookings SET phase = 'verified' WHERE event_id = ?1 AND phase = 'created'").bind(input.eventId).run();
   if (!saved.success || saved.meta?.changes !== 1) throw new Error('booking_checkpoint_failed');

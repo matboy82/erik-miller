@@ -10,7 +10,7 @@ const start=Date.parse('2026-10-05T12:00:00Z');
 const day=86400_000;
 function database(){
   const sql=new DatabaseSync(':memory:');
-  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql','0006_public_references.sql','0007_inquiry_nurture.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
+  for(const name of ['0001_intake.sql','0002_photos.sql','0003_bookings.sql','0004_calendar_sync.sql','0005_lead_conversion.sql','0006_public_references.sql','0007_inquiry_nurture.sql','0008_owner_notifications.sql','0009_customer_inquiries.sql'])sql.exec(readFileSync(new URL(`../migrations/${name}`,import.meta.url),'utf8'));
   const db={prepare(query:string){let values:unknown[]=[];return {bind(...args:unknown[]){values=args;return this;},async first(){return sql.prepare(query).get(...values)??null;},async all(){return {results:sql.prepare(query).all(...values)};},async run(){const result=sql.prepare(query).run(...values);return {success:true,meta:{changes:Number(result.changes)}};}};},async batch(statements:{run:()=>Promise<unknown>}[]){sql.exec('BEGIN');try{const results=[];for(const s of statements)results.push(await s.run());sql.exec('COMMIT');return results;}catch(e){sql.exec('ROLLBACK');throw e;}}};
   return {sql,db:db as unknown as D1Database};
 }
@@ -36,6 +36,20 @@ test('three scheduled touches, verified job first, internal JobTread timeline, t
   assert.ok(s.sent.every(m=>m.text.includes('Stop these follow-ups:')));
   await runConversion(s.env,s.call,start+30*day);assert.equal(s.sent.length,3);
   const comment=(s.timeline[0].createComment as {$:Record<string,unknown>}).$;assert.equal(comment.isVisibleToCustomerRoles,false);assert.equal(comment.targetId,'job-one');
+});
+test('customer inquiry follow-ups use the customer timeline without requiring a job',async()=>{
+  const s=await setup();
+  s.sql.prepare("UPDATE intake_submissions SET external_job_id=NULL,external_account_id='account-one'").run();
+  let timeline=0;
+  const call=async(operation:Record<string,unknown>)=>{
+    assert.ok(operation.createComment);
+    const args=(operation.createComment as {$:Record<string,unknown>}).$;
+    assert.equal(args.targetType,'account');assert.equal(args.targetId,'account-one');timeline++;
+    return {createComment:{createdComment:{id:'comment-one',account:{id:'account-one'}}}};
+  };
+  await runConversion(s.env,call,start);await runConversion(s.env,call,start+3*day);
+  assert.equal(s.sent.length,1);assert.equal(timeline,1);
+  assert.equal(s.sql.prepare('SELECT timeline_state FROM conversion_messages WHERE state=?').get('sent')?.timeline_state,'logged');
 });
 test('booking waiting for JobTread synchronization stops nurture before sending',async()=>{
   const s=await setup();await runConversion(s.env,s.call,start);

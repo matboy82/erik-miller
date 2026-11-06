@@ -28,7 +28,7 @@ export async function deliverOwnerNotice(env:OwnerNotificationEnvironment, recei
     const p=JSON.parse(row.payload) as {name?:string;email?:string;phone?:string;message?:string;photos?:unknown[];project?:unknown};
     const lines=[`New ${p.project?'project inquiry':'contact inquiry'}: ${row.reference}`,`Name: ${p.name??''}`,
       `Email: ${p.email??'Not supplied'}`,`Phone: ${p.phone??'Not supplied'}`,'',p.message??'', '',
-      `Photos: ${p.photos?.length??0}. Find the inquiry in JobTread using ${row.reference}.`];
+      `Photos: ${p.photos?.length??0}. Find the customer by name in JobTread; the inquiry reference is in its notes.`];
     const result=await email.send({to:recipient,from:sender,subject:`New website inquiry ${row.reference}`,text:lines.join('\n')});
     if(!result?.messageId)throw Error('owner_notice_result_unknown');
     await db.prepare("UPDATE owner_notifications SET state='sent',provider_id=?1,updated_at=?2 WHERE receipt_id=?3 AND state='sending'")

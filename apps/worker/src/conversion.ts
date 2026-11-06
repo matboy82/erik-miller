@@ -91,7 +91,7 @@ export async function captureConversion(env: ConversionEnvironment, receipt: str
   if (!result.success) throw new Error('conversion_capture_failed');
 }
 type Lead = { receipt_id: string; email: string | null; nurture_consent: number; inquiry_nurture: number; unsubscribe_email_hash: string | null; unsubscribe_token: string; enrolled_at: string | null; stopped_at: string | null; stop_reason: string | null; completed_at: string | null; review_reported_at: string | null; review_source: string | null };
-type Inquiry = { state: string; external_job_id: string | null; delivered_at: string | null; created_at: string };
+type Inquiry = { state: string; external_job_id: string | null; external_account_id: string | null; delivered_at: string | null; created_at: string };
 async function enqueue(db: D1Database, receipt: string, kind: string, recipient: string, subject: string, body: string, due: string, expires: string) {
   const saved = await db.prepare(`INSERT OR IGNORE INTO conversion_messages (id,receipt_id,kind,recipient,subject,body,due_at,expires_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)`).bind(crypto.randomUUID(),receipt,kind,recipient,subject,body,due,expires).run();
   if (!saved.success) throw new Error('conversion_checkpoint_failed');
@@ -166,8 +166,8 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
   const db = env.INTAKE_DB;
   const leads = await db.prepare(`SELECT c.* FROM conversion_leads c JOIN intake_submissions i ON i.receipt_id = c.receipt_id WHERE i.state = 'delivered' AND c.email IS NOT NULL ORDER BY i.created_at DESC LIMIT 100`).all<Lead>();
   for (const lead of leads.results) {
-    const inquiry = await db.prepare('SELECT state, external_job_id, delivered_at, created_at FROM intake_submissions WHERE receipt_id = ?1').bind(lead.receipt_id).first<Inquiry>();
-    if (!inquiry?.external_job_id || !inquiry.delivered_at) continue;
+    const inquiry = await db.prepare('SELECT state, external_job_id, external_account_id, delivered_at, created_at FROM intake_submissions WHERE receipt_id = ?1').bind(lead.receipt_id).first<Inquiry>();
+    if ((!inquiry?.external_job_id && !inquiry?.external_account_id) || !inquiry.delivered_at) continue;
     if (!lead.stopped_at && await hasBooking(db, lead.receipt_id)) { await stopNurture(db,lead.receipt_id,'consultation_booked'); lead.stopped_at = new Date(now).toISOString(); }
     const suppressed = await db.prepare('SELECT email_hash FROM conversion_unsubscribed WHERE email_hash = ?1').bind(lead.unsubscribe_email_hash ?? await emailHash(lead.email!)).first();
     if (c.nurture.enabled && env.BOOKING_SYNC_ENABLED === 'true' && (lead.nurture_consent || lead.inquiry_nurture) && !suppressed && !lead.enrolled_at && !lead.stopped_at && now - Date.parse(inquiry.created_at) <= DAY) {
@@ -175,7 +175,7 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
       for (const touch of scheduled) await enqueue(db,lead.receipt_id,`nurture_${touch.day}`,lead.email!,touch.subject,touch.text + footer(c,env,lead.unsubscribe_token),touch.dueAt,touch.expiresAt);
       await db.prepare('UPDATE conversion_leads SET enrolled_at = ?1 WHERE receipt_id = ?2 AND enrolled_at IS NULL').bind(new Date(now).toISOString(),lead.receipt_id).run();
     }
-    if (c.reviews.enabled && !lead.completed_at) {
+    if (c.reviews.enabled && inquiry.external_job_id && !lead.completed_at) {
       const result = await call({ job: { $: { id: inquiry.external_job_id }, id: {}, closedOn: {}, organization: { id: {} } } });
       const job = result.job as { id?: string; closedOn?: string };
       if (job?.id === inquiry.external_job_id && job.closedOn && /^\d{4}-\d{2}-\d{2}$/.test(job.closedOn)) {
@@ -193,10 +193,10 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
   const messages = await db.prepare("SELECT * FROM conversion_messages WHERE state IN ('pending','failed') AND due_at <= ?1 AND attempts < 5 ORDER BY due_at LIMIT 20").bind(new Date(now).toISOString()).all<Message>();
   for (const m of messages.results) {
     const lead = await db.prepare('SELECT * FROM conversion_leads WHERE receipt_id = ?1').bind(m.receipt_id).first<Lead>();
-    const inquiry = await db.prepare('SELECT state, external_job_id FROM intake_submissions WHERE receipt_id = ?1').bind(m.receipt_id).first<Inquiry>();
+    const inquiry = await db.prepare('SELECT state, external_job_id, external_account_id FROM intake_submissions WHERE receipt_id = ?1').bind(m.receipt_id).first<Inquiry>();
     const optedOut = Boolean(lead?.stopped_at && lead.stop_reason === 'unsubscribed') || (m.kind !== 'operator_review' && Boolean(await db.prepare('SELECT email_hash FROM conversion_unsubscribed WHERE email_hash = ?1').bind(await emailHash(m.recipient)).first()));
     const nurtureBlocked = m.kind.startsWith('nurture_') && (!c.nurture.enabled || env.BOOKING_SYNC_ENABLED !== 'true' || !(lead?.nurture_consent || lead?.inquiry_nurture) || lead.stopped_at || await hasBooking(db,m.receipt_id));
-    if (!lead || inquiry?.state !== 'delivered' || !inquiry.external_job_id || now > Date.parse(m.expires_at) || optedOut || nurtureBlocked || (m.kind.startsWith('review_') && !c.reviews.enabled)) {
+    if (!lead || inquiry?.state !== 'delivered' || (!inquiry.external_job_id && !inquiry.external_account_id) || now > Date.parse(m.expires_at) || optedOut || nurtureBlocked || (m.kind.startsWith('review_') && !c.reviews.enabled)) {
       await db.prepare("UPDATE conversion_messages SET state = 'cancelled' WHERE id = ?1 AND state IN ('pending','failed')").bind(m.id).run(); continue;
     }
     const claim = await db.prepare(`UPDATE conversion_messages SET state = 'sending', attempts = attempts + 1, claimed_at = ?2 WHERE id = ?1 AND state IN ('pending','failed')
@@ -217,15 +217,18 @@ export async function runConversion(env: ConversionEnvironment, call: JobTread, 
     }
   }
   // Comments are internal only. Ambiguous comment writes require reconciliation, never blind replay.
-  const sent = await db.prepare("SELECT m.*, i.external_job_id FROM conversion_messages m JOIN intake_submissions i ON i.receipt_id = m.receipt_id WHERE m.state = 'sent' AND m.timeline_state = 'pending' LIMIT 20").all<Message & {external_job_id:string}>();
+  const sent = await db.prepare("SELECT m.*, i.external_job_id, i.external_account_id FROM conversion_messages m JOIN intake_submissions i ON i.receipt_id = m.receipt_id WHERE m.state = 'sent' AND m.timeline_state = 'pending' LIMIT 20").all<Message & {external_job_id:string|null;external_account_id:string|null}>();
   for (const m of sent.results) {
     const claim = await db.prepare("UPDATE conversion_messages SET timeline_state = 'writing' WHERE id = ?1 AND timeline_state = 'pending'").bind(m.id).run();
     if (claim.meta?.changes !== 1) continue;
     try {
+      const targetType = m.external_job_id ? 'job' : 'account';
+      const targetId = m.external_job_id ?? m.external_account_id;
+      if (!targetId) throw new Error('timeline_target_missing');
       const timelineText=`${m.kind} email sent at ${m.sent_at}.\n${m.subject}\n\n${m.body}`;
-      const result = await call({ createComment:{ $:{ targetType:'job',targetId:m.external_job_id,name:'Website lead follow-up',message:timelineText.length>4096?timelineText.slice(0,4030)+'\n[Full message retained in the delivery record.]':timelineText,isVisibleToAll:false,isVisibleToCustomerRoles:false,isVisibleToVendorRoles:false,isVisibleToInternalRoles:true }, createdComment:{id:{},job:{id:{}}} } });
-      const comment = (result.createComment as {createdComment?: {id?:string;job?:{id?:string}}})?.createdComment;
-      if (!comment?.id || comment.job?.id !== m.external_job_id) throw new Error('timeline_result_unknown');
+      const result = await call({ createComment:{ $:{ targetType,targetId,name:'Website lead follow-up',message:timelineText.length>4096?timelineText.slice(0,4030)+'\n[Full message retained in the delivery record.]':timelineText,isVisibleToAll:false,isVisibleToCustomerRoles:false,isVisibleToVendorRoles:false,isVisibleToInternalRoles:true }, createdComment:{id:{},job:{id:{}},account:{id:{}}} } });
+      const comment = (result.createComment as {createdComment?: {id?:string;job?:{id?:string};account?:{id?:string}}})?.createdComment;
+      if (!comment?.id || (targetType === 'job' ? comment.job?.id : comment.account?.id) !== targetId) throw new Error('timeline_result_unknown');
       await db.prepare("UPDATE conversion_messages SET timeline_state = 'logged' WHERE id = ?1").bind(m.id).run();
     } catch { await db.prepare("UPDATE conversion_messages SET timeline_state = 'unknown' WHERE id = ?1").bind(m.id).run(); }
   }

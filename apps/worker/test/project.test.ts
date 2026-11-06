@@ -12,7 +12,7 @@ class Database {
   raw = new DatabaseSync(':memory:');
   constructor() {
     this.raw.exec('PRAGMA foreign_keys = ON');
-    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0005_lead_conversion.sql', '0006_public_references.sql', '0007_inquiry_nurture.sql', '0008_owner_notifications.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
+    for (const file of ['0001_intake.sql', '0002_photos.sql', '0003_bookings.sql', '0004_calendar_sync.sql', '0005_lead_conversion.sql', '0006_public_references.sql', '0007_inquiry_nurture.sql', '0008_owner_notifications.sql', '0009_customer_inquiries.sql']) this.raw.exec(readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8'));
   }
   prepare(sql: string) {
     const statement = this.raw.prepare(sql);
@@ -168,6 +168,7 @@ function vendor(failFile = false) {
   let locationName = '';
   let jobName = '';
   let contactFields: Record<string, string> = {};
+  const comments = new Map<string, string>();
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
     if (String(url).startsWith('https://files.test')) {
       assert.equal(init?.redirect, 'manual', 'Workers must reject redirects through response status without following them');
@@ -182,16 +183,19 @@ function vendor(failFile = false) {
     else if (operation === 'createLocation') { locationName = query.createLocation.$.name; result.createLocation = { createdLocation: { id: 'location', account: { id: 'account' } } }; }
     else if (operation === 'location') result.location = { id: 'location', name: locationName, account: { id: 'account', organization: { id: 'org' } } };
     else if (operation === 'createContact') { contactFields = query.createContact.$.customFieldValues; result.createContact = { createdContact: { id: 'contact' } }; }
+    else if (operation === 'createComment') { assert.equal(query.createComment.$.targetType, 'account'); assert.equal(query.createComment.$.targetId, 'account'); const id = `comment-${comments.size}`; comments.set(id, query.createComment.$.message); message += query.createComment.$.message; result.createComment = { createdComment: { id } }; }
+    else if (operation === 'comment') result.comment = { id: query.comment.$.id, message: comments.get(query.comment.$.id), account: { id: 'account' } };
     else if (operation === 'createJob') { message = query.createJob.$.description; jobName = query.createJob.$.name; result.createJob = { createdJob: { id: 'job', location: { id: 'location', account: { id: 'account' } } } }; }
     else if (operation === 'contact') {
-      result.contact = { id: 'contact', account: { id: 'account' }, customFieldValues: { nodes: [{ customField: { id: 'email' }, value: lead.email }, { customField: { id: 'phone' }, value: '+12085550100' }] } };
+      result.contact = { id: 'contact', name: lead.name, account: { id: 'account' }, customFieldValues: { nodes: [{ customField: { id: 'email' }, value: lead.email }, { customField: { id: 'phone' }, value: '+12085550100' }] } };
       result.job = { id: 'job', description: message, location: { id: 'location', account: { id: 'account' } } };
     } else if (operation === 'createUploadRequest') result.createUploadRequest = { createdUploadRequest: { id: 'upload' } };
     else if (operation === 'uploadRequest') result.uploadRequest = { url: 'https://files.test/upload', method: 'PUT', headers: { 'Content-Type': 'image/png' } };
     else if (operation === 'createFile') {
+      assert.equal(query.createFile.$.targetType, 'account'); assert.equal(query.createFile.$.targetId, 'account');
       if (failFile) throw new Error('synthetic transport failure');
       result.createFile = { createdFile: { id: 'file' } };
-    } else if (operation === 'file') result.file = { id: 'file', job: { id: 'job' }, url: 'https://files.test/original' };
+    } else if (operation === 'file') result.file = { id: 'file', job: { id: 'job' }, account: { id: 'account' }, url: 'https://files.test/original' };
     else throw new Error('Unexpected synthetic operation');
     return Response.json(result);
   };
@@ -201,7 +205,7 @@ async function consume(id: string, env: Parameters<typeof worker.fetch>[1]) {
   await worker.queue({ queue: 'miller-intake-delivery', messages: [{ body: id, ack() {}, retry() {} }] } as unknown as Parameters<typeof worker.queue>[0], env!);
 }
 
-test('complete project delivery verifies customer/contact/job links, original photo identity and staging deletion', async () => {
+test('complete project delivery verifies customer and contact, customer photos and staging deletion', async () => {
   const { db, env, objects } = setup();
   const response = await worker.fetch(request({ ...lead, photos: [photo] }), env);
   const { receiptId, reference } = await response.json() as { receiptId: string; reference: string };
@@ -210,9 +214,9 @@ test('complete project delivery verifies customer/contact/job links, original ph
   try {
     await consume(receiptId, env);
     assert.equal(db.raw.prepare('SELECT state FROM intake_submissions').get()!.state, 'delivered');
-    assert.match(mock.accountName, new RegExp(`\\[${reference}\\]`));
-    assert.match(mock.locationName, new RegExp(`\\[${reference}\\]`));
-    assert.match(mock.jobName, new RegExp(reference));
+    assert.equal(mock.accountName, lead.name);
+    assert.equal(mock.calls.includes('createLocation'), false);
+    assert.equal(mock.calls.includes('createJob'), false);
     assert.match(mock.message, new RegExp(reference));
     assert.deepEqual(mock.contactFields, { email: lead.email, phone: '+12085550100' });
     assert.equal(db.raw.prepare('SELECT phase FROM intake_photos').get()!.phase, 'verified');
@@ -221,6 +225,71 @@ test('complete project delivery verifies customer/contact/job links, original ph
     await consume(receiptId, env);
     assert.equal(mock.calls.length, count);
   } finally { globalThis.fetch = original; }
+});
+
+test('an uncertain customer comment is not created again without reconciliation', async () => {
+  const { db, env } = setup();
+  const response = await worker.fetch(request(lead), env);
+  const { receiptId } = await response.json() as { receiptId: string };
+  const original = globalThis.fetch; const mock = vendor(); let writes = 0;
+  globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+    if (String(url).includes('api.jobtread.com') && JSON.parse(String(init?.body)).query.createComment) { writes++; throw new Error('unknown outcome'); }
+    return mock.transport(url, init);
+  }) as typeof fetch;
+  try {
+    await consume(receiptId, env); await consume(receiptId, env);
+    assert.equal(writes, 1);
+    const row = db.raw.prepare('SELECT state,delivery_step FROM intake_submissions').get()!;
+    assert.equal(row.state, 'failed'); assert.equal(row.delivery_step, 'comment_0_writing');
+  } finally { globalThis.fetch = original; }
+});
+
+test('partially delivered legacy inquiries without a job are held without external writes', async () => {
+  const { db, env } = setup();
+  const response = await worker.fetch(request(lead), env);
+  const { receiptId } = await response.json() as { receiptId: string };
+  db.raw.exec("UPDATE intake_submissions SET delivery_mode='legacy',delivery_step='account_created',external_account_id='account'");
+  const original = globalThis.fetch; let calls = 0;
+  globalThis.fetch = async () => { calls++; throw new Error('unexpected write'); };
+  try {
+    await consume(receiptId, env);
+    assert.equal(calls, 0);
+    assert.equal(db.raw.prepare('SELECT error_category FROM intake_submissions').get()!.error_category, 'legacy_inquiry_requires_review');
+  } finally { globalThis.fetch = original; }
+});
+
+test('long inquiry is fully preserved in customer comments', async () => {
+  const { env } = setup();
+  const description = 'long description '.repeat(280);
+  const response = await worker.fetch(request({ ...lead, project: { ...project, description } }), env);
+  const { receiptId } = await response.json() as { receiptId: string };
+  const original = globalThis.fetch; const mock = vendor(); globalThis.fetch = mock.transport as typeof fetch;
+  try {
+    await consume(receiptId, env);
+    assert.ok(mock.message.includes(description.trim()));
+    assert.ok(mock.calls.filter(call => call === 'createComment').length > 1);
+    assert.equal(mock.calls.includes('createJob'), false);
+  } finally { globalThis.fetch = original; }
+});
+
+test('customer-only consultation creates and verifies a customer task', async () => {
+  const { db, env } = setup();
+  const response = await worker.fetch(request(lead), env);
+  const { receiptId } = await response.json() as { receiptId: string };
+  db.raw.exec("UPDATE intake_submissions SET state='delivered', external_account_id='account'");
+  const input = { eventId: 'customer-event', date: '2026-10-20', start: '10:00', end: '10:30' };
+  let created = 0;
+  const call = async (operation: Record<string, unknown>) => {
+    if (operation.createTask) {
+      const args = (operation.createTask as { $: { targetId: string; targetType: string } }).$;
+      assert.equal(args.targetId, 'account'); assert.equal(args.targetType, 'account'); created++;
+      return { createTask: { createdTask: { id: 'task' } } };
+    }
+    return { task: { id: 'task', account: { id: 'account' }, startDate: input.date, endDate: input.date, startTime: '10:00:00', endTime: '10:30:00' } };
+  };
+  assert.equal((await recordBooking(receiptId, input, db as unknown as D1Database, call)).status, 200);
+  assert.equal((await recordBooking(receiptId, input, db as unknown as D1Database, call)).status, 200);
+  assert.equal(created, 1);
 });
 
 test('unknown photo attachment outcome stops replay and preserves bytes for reconciliation', async () => {

@@ -12,7 +12,7 @@ function transferUrl(value: unknown, origins: string[]): string {
   return value;
 }
 
-export async function deliverPhotos(receiptId: string, jobId: string, photos: Photo[], env: Environment, call: Call): Promise<void> {
+export async function deliverPhotos(receiptId: string, jobId: string, photos: Photo[], env: Environment, call: Call, targetType: 'job' | 'account' = 'job'): Promise<void> {
   const origins = (env.JOBTREAD_TRANSFER_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
   if (!origins.length) throw new Error('photo_delivery_not_configured');
   for (const [index, photo] of photos.entries()) {
@@ -70,15 +70,15 @@ export async function deliverPhotos(receiptId: string, jobId: string, photos: Ph
       }
       if (!response.ok) throw new Error(`photo_upload_failed_${response.status}`);
       await claim('file_writing');
-      const fileResult = await call({ createFile: { $: { name: `Project photo ${index + 1}`, targetId: jobId, targetType: 'job', uploadRequestId: row.upload_id }, createdFile: { id: {} } } });
+      const fileResult = await call({ createFile: { $: { name: `Project photo ${index + 1}`, targetId: jobId, targetType, uploadRequestId: row.upload_id }, createdFile: { id: {} } } });
       const id = (fileResult.createFile as { createdFile?: { id?: string } })?.createdFile?.id;
       if (!id) throw new Error('photo_result_unknown');
       await checkpoint('file_created', 'file_id', id);
       row.file_id = id;
     }
-    const readback = await call({ file: { $: { id: row.file_id }, id: {}, job: { id: {} }, url: { $: { original: true } } } });
-    const file = readback.file as { id?: string; job?: { id?: string }; url?: string };
-    if (file?.id !== row.file_id || file.job?.id !== jobId) throw new Error('photo_readback_failed');
+    const readback = await call({ file: { $: { id: row.file_id }, id: {}, job: { id: {} }, account: { id: {} }, url: { $: { original: true } } } });
+    const file = readback.file as { id?: string; job?: { id?: string }; account?: { id?: string }; url?: string };
+    if (file?.id !== row.file_id || (targetType === 'job' ? file.job?.id : file.account?.id) !== jobId) throw new Error('photo_readback_failed');
     if (file.url?.includes(env.JOBTREAD_API_KEY)) throw new Error('photo_transfer_invalid');
     const download = await fetch(transferUrl(file.url, origins), { redirect: 'manual', signal: AbortSignal.timeout(30_000) });
     if (!download.ok || Number(download.headers.get('Content-Length')) > photo.size) throw new Error('photo_readback_failed');

@@ -159,8 +159,8 @@ async function acceptInquiry(request: Request, env: IntakeEnvironment, isProject
       const metadataExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
       const insert = env.INTAKE_DB.prepare(
         `INSERT INTO intake_submissions
-          (receipt_id, idempotency_key, state, created_at, updated_at, payload_expires_at, metadata_expires_at, payload)
-         VALUES (?1, ?2, 'accepted', ?3, ?3, ?4, ?5, ?6)`,
+          (receipt_id, idempotency_key, state, created_at, updated_at, payload_expires_at, metadata_expires_at, payload, delivery_mode)
+         VALUES (?1, ?2, 'accepted', ?3, ?3, ?4, ?5, ?6, 'customer')`,
       ).bind(receiptId, key, now, payloadExpiresAt, metadataExpiresAt, serializedPayload);
       const result = projectData?.photos.length
         ? (await env.INTAKE_DB.batch([insert, ...projectData.photos.map((_, index) => env.INTAKE_DB!.prepare(
@@ -345,17 +345,31 @@ async function operatorRoute(request: Request, env: IntakeEnvironment, path: str
         const result = await env.INTAKE_DB.batch([
           env.INTAKE_DB.prepare(`UPDATE intake_photos SET phase = ?1, ${column} = ?2, lease_until = NULL WHERE receipt_id = ?3 AND photo_index = ?4 AND phase = ?5`)
             .bind(input.outcome === 'present' ? `${phase}_created` : phase === 'upload' ? 'staged' : 'upload_created', input.outcome === 'present' ? input.recordId! : null, receiptId, index, `${phase}_writing`),
-          env.INTAKE_DB.prepare("UPDATE intake_submissions SET delivery_step = 'job_created', state = 'delayed', delivery_lease_until = NULL, delivery_lease_token = NULL, error_category = 'reconciled', last_reconciled_at = ?1, last_operator_email = ?2 WHERE receipt_id = ?3 AND state = 'failed' AND delivery_step = ?4")
+          env.INTAKE_DB.prepare("UPDATE intake_submissions SET delivery_step = CASE WHEN delivery_mode = 'customer' THEN 'comments_created' ELSE 'job_created' END, state = 'delayed', delivery_lease_until = NULL, delivery_lease_token = NULL, error_category = 'reconciled', last_reconciled_at = ?1, last_operator_email = ?2 WHERE receipt_id = ?3 AND state = 'failed' AND delivery_step = ?4")
             .bind(now, email, receiptId, current.delivery_step),
         ]);
         if (result.some((item) => !item.success || item.meta?.changes !== 1)) return json({ error: 'reconciliation_conflict' }, 409);
         await env.INTAKE_QUEUE.send(receiptId);
         return json({ receiptId, state: 'delayed' }, 202);
       }
+      const commentStep = /^comment_(\d+)$/.exec(stepName);
+      if (commentStep) {
+        if (input.outcome === 'present' && !/^[A-Za-z0-9_-]{1,128}$/.test(input.recordId ?? '')) return json({ error: 'validation_failed', fields: ['recordId'] }, 400);
+        const index = Number(commentStep[1]);
+        const results = await env.INTAKE_DB.batch([
+          env.INTAKE_DB.prepare('INSERT INTO intake_customer_comments (receipt_id, comment_index, external_comment_id) VALUES (?1, ?2, ?3) ON CONFLICT(receipt_id, comment_index) DO UPDATE SET external_comment_id = excluded.external_comment_id')
+            .bind(receiptId, index, input.outcome === 'present' ? input.recordId! : null),
+          env.INTAKE_DB.prepare("UPDATE intake_submissions SET delivery_step = 'contact_created', state = 'delayed', delivery_lease_until = NULL, delivery_lease_token = NULL, error_category = 'reconciled', last_reconciled_at = ?1, last_operator_email = ?2 WHERE receipt_id = ?3 AND state = 'failed' AND delivery_step = ?4")
+            .bind(now, email, receiptId, current.delivery_step),
+        ]);
+        if (results.some((item) => !item.success || item.meta?.changes !== 1)) return json({ error: 'reconciliation_conflict' }, 409);
+        await env.INTAKE_QUEUE.send(receiptId);
+        return json({ receiptId, state: 'delayed' }, 202);
+      }
       const steps = {
         account: ['external_account_id', 'queued', 'account_created'],
         location: ['external_location_id', 'account_created', 'location_created'],
-        contact: ['external_contact_id', 'location_created', 'contact_created'],
+        contact: ['external_contact_id', 'account_created', 'contact_created'],
         job: ['external_job_id', 'contact_created', 'job_created'],
       } as const;
       const definition = steps[stepName as keyof typeof steps];
@@ -413,6 +427,7 @@ type DeliveryRow = {
   receipt_id: string;
   state: string;
   payload: string | null;
+  delivery_mode: string;
   delivery_step: string;
   delivery_lease_until: string | null;
   delivery_lease_token: string | null;
@@ -448,7 +463,7 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
   if (!env.INTAKE_DB) throw new Error('ledger_unavailable');
   const db = env.INTAKE_DB;
   const row = await db.prepare(
-    `SELECT receipt_id, state, payload, delivery_step, external_account_id,
+    `SELECT receipt_id, state, payload, delivery_mode, delivery_step, external_account_id,
             external_location_id, external_contact_id, external_job_id,
             delivery_lease_until, delivery_lease_token
      FROM intake_submissions WHERE receipt_id = ?1`,
@@ -464,11 +479,17 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     await updateDelivery(db, receiptId, { state: 'failed', error_category: 'external_result_unknown' });
     return;
   }
+  // Never create a new job for an inquiry already partly delivered under the old workflow.
+  // Existing external records need an operator decision; do not rename or delete them.
+  if (row.delivery_mode === 'legacy' && !row.external_job_id) {
+    await updateDelivery(db, receiptId, { state: 'failed', error_category: 'legacy_inquiry_requires_review' });
+    return;
+  }
   const payload = JSON.parse(row.payload) as Partial<ProjectPayload> & { name: string; message: string; leadType?: string };
   const alias = receiptId.replace(/-/g, '').slice(-8).toUpperCase();
   const reference = await ensurePublicReference(db, receiptId);
   const legacyAccountName = `${payload.name} [MR05-${alias}]`;
-  const accountName = `${payload.name} [${reference}]`;
+  const accountName = row.delivery_mode === 'customer' ? payload.name : `${payload.name} [${reference}]`;
   const friendlyLocationName = payload.project ? `${payload.project.location} [${reference}]` : `General inquiry [${reference}]`;
   const legacyLocationName = payload.project ? `${payload.project.location} ${alias}` : `General inquiry ${alias}`;
   const jobDescription = `${payload.message}\n\nWebsite project reference: ${reference}`;
@@ -503,6 +524,10 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     if (!saved.success || saved.meta?.changes !== 1) throw new Error('ledger_write_failed');
     row.external_account_id = id;
     row.delivery_step = 'account_created';
+  }
+  if (row.delivery_mode === 'customer') {
+    await deliverCustomerInquiry(row, payload, reference, env, step, () => leaseToken);
+    return;
   }
   if (!row.external_location_id) {
     const accountRead = await jobTreadCall(env.JOBTREAD_API_KEY, { account: { $: { id: row.external_account_id }, id: {}, name: {}, organization: { id: {} } } });
@@ -642,6 +667,70 @@ async function deliverOne(receiptId: string, env: IntakeEnvironment): Promise<vo
     payload_expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     delivery_lease_until: null, delivery_lease_token: null, error_category: null,
   });
+}
+
+async function deliverCustomerInquiry(
+  row: DeliveryRow, payload: Partial<ProjectPayload> & { name: string; message: string }, reference: string,
+  env: IntakeEnvironment, step: (name: string) => Promise<void>, token: () => string,
+): Promise<void> {
+  const db = env.INTAKE_DB!;
+  const call = (operation: Record<string, unknown>) => jobTreadCall(env.JOBTREAD_API_KEY!, operation);
+  const accountResult = await call({ account: { $: { id: row.external_account_id }, id: {}, name: {}, organization: { id: {} } } });
+  const account = accountResult.account as { id?: string; name?: string; organization?: { id?: string } };
+  if (account?.id !== row.external_account_id || account.name !== payload.name || account.organization?.id !== env.JOBTREAD_ORGANIZATION_ID) throw new Error('jobtread_readback_failed');
+  if (!row.external_contact_id) {
+    await step('contact');
+    const customFieldValues = { ...(payload.email ? { [env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID!]: payload.email } : {}), ...(payload.phone ? { [env.JOBTREAD_PHONE_CUSTOM_FIELD_ID!]: payload.phone } : {}) };
+    const result = await call({ createContact: { $: { accountId: row.external_account_id, name: payload.name, customFieldValues }, createdContact: { id: {} } } });
+    const id = (result.createContact as { createdContact?: { id?: string } })?.createdContact?.id;
+    if (!id) throw new Error('jobtread_response_unknown');
+    const saved = await db.prepare("UPDATE intake_submissions SET delivery_step = 'contact_created', external_contact_id = ?1, delivery_lease_until = NULL, delivery_lease_token = NULL, updated_at = ?2 WHERE receipt_id = ?3 AND delivery_step = 'contact_writing' AND delivery_lease_token = ?4").bind(id, new Date().toISOString(), row.receipt_id, token()).run();
+    if (!saved.success || saved.meta?.changes !== 1) throw new Error('ledger_write_failed');
+    row.external_contact_id = id;
+    row.delivery_step = 'contact_created';
+  }
+  const contactResult = await call({ contact: { $: { id: row.external_contact_id }, id: {}, name: {}, account: { id: {} }, customFieldValues: { $: { size: 100 }, nextPage: {}, nodes: { customField: { id: {} }, value: {} } } } });
+  const contact = contactResult.contact as { id?: string; name?: string; account?: { id?: string }; customFieldValues?: { nextPage?: string; nodes?: { customField?: { id?: string }; value?: unknown }[] } };
+  const fields = contact?.customFieldValues;
+  if (!fields?.nodes || fields.nextPage || contact.id !== row.external_contact_id || contact.name !== payload.name || contact.account?.id !== row.external_account_id
+      || (payload.email && !fields.nodes.some(n => n.customField?.id === env.JOBTREAD_EMAIL_CUSTOM_FIELD_ID && n.value === payload.email))
+      || (payload.phone && !fields.nodes.some(n => n.customField?.id === env.JOBTREAD_PHONE_CUSTOM_FIELD_ID && n.value === payload.phone))) throw new Error('jobtread_readback_failed');
+  const message = `${payload.message}\n\nWebsite inquiry reference: ${reference}`;
+  const parts = message.match(/[\s\S]{1,2000}/gu) ?? [''];
+  for (const [index, part] of parts.entries()) {
+    const saved = await db.prepare('SELECT external_comment_id FROM intake_customer_comments WHERE receipt_id = ?1 AND comment_index = ?2').bind(row.receipt_id, index).first<{ external_comment_id: string | null }>();
+    let id = saved?.external_comment_id;
+    if (!id) {
+      await step(`comment_${index}`);
+      const result = await call({ createComment: { $: { targetType: 'account', targetId: row.external_account_id, message: part, name: `Website inquiry ${reference} (${index + 1}/${parts.length})`, isVisibleToAll: false, isVisibleToInternalRoles: true, isVisibleToCustomerRoles: false, isVisibleToVendorRoles: false }, createdComment: { id: {} } } });
+      id = (result.createComment as { createdComment?: { id?: string } })?.createdComment?.id;
+      if (!id) throw new Error('jobtread_response_unknown');
+      const results = await db.batch([
+        db.prepare('INSERT INTO intake_customer_comments (receipt_id, comment_index, external_comment_id) VALUES (?1, ?2, ?3) ON CONFLICT(receipt_id, comment_index) DO UPDATE SET external_comment_id = excluded.external_comment_id').bind(row.receipt_id, index, id),
+        db.prepare("UPDATE intake_submissions SET delivery_step = 'contact_created', delivery_lease_until = NULL, delivery_lease_token = NULL, updated_at = ?1 WHERE receipt_id = ?2 AND delivery_step = ?3 AND delivery_lease_token = ?4").bind(new Date().toISOString(), row.receipt_id, `comment_${index}_writing`, token()),
+      ]);
+      if (results.some(item => !item.success || item.meta?.changes !== 1)) throw new Error('ledger_write_failed');
+      row.delivery_step = 'contact_created';
+    }
+    const readback = await call({ comment: { $: { id }, id: {}, message: {}, account: { id: {} } } });
+    const comment = readback.comment as { id?: string; message?: string; account?: { id?: string } };
+    if (comment?.id !== id || comment.message !== part || comment.account?.id !== row.external_account_id) throw new Error('jobtread_readback_failed');
+  }
+  if (payload.photos?.length) {
+    if (!env.INTAKE_PHOTOS) throw new Error('photo_delivery_not_configured');
+    try {
+      await deliverPhotos(row.receipt_id, row.external_account_id!, payload.photos, {
+        INTAKE_DB: db, INTAKE_PHOTOS: env.INTAKE_PHOTOS, JOBTREAD_ORGANIZATION_ID: env.JOBTREAD_ORGANIZATION_ID!, JOBTREAD_TRANSFER_ORIGINS: env.JOBTREAD_TRANSFER_ORIGINS, JOBTREAD_API_KEY: env.JOBTREAD_API_KEY!,
+      }, call, 'account');
+    } catch (error) {
+      if (error instanceof Error && error.message === 'photo_claimed') return;
+      const state = await db.prepare('SELECT photo_index, phase FROM intake_photos WHERE receipt_id = ?1 AND phase LIKE ?2 LIMIT 1').bind(row.receipt_id, '%_writing').first<{ photo_index: number; phase: string }>();
+      if (state) { await updateDelivery(db, row.receipt_id, { state: 'failed', error_category: 'external_result_unknown', delivery_step: `photo_${state.photo_index}_${state.phase}` }); return; }
+      throw error;
+    }
+  }
+  const now = new Date();
+  await updateDelivery(db, row.receipt_id, { state: 'delivered', delivery_step: 'verified', delivered_at: now.toISOString(), payload_expires_at: new Date(now.getTime() + 7 * 86400000).toISOString(), delivery_lease_until: null, delivery_lease_token: null, error_category: null });
 }
 
 async function consumeQueue(batch: MessageBatch<string>, env: IntakeEnvironment): Promise<void> {
