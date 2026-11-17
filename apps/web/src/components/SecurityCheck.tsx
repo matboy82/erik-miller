@@ -15,11 +15,11 @@ function load(): Promise<Turnstile> {
   return scriptReady;
 }
 
-export default function SecurityCheck() {
+export default function SecurityCheck({ enabled = true }: { enabled?: boolean }) {
   const container = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
-    if (!turnstileSiteKey) return;
+    if (!turnstileSiteKey || !enabled) return;
     let active = true;
     let widget: string | undefined;
     let api: Turnstile | undefined;
@@ -28,6 +28,6 @@ export default function SecurityCheck() {
       if (active && container.current) widget = api.render(container.current, { sitekey: turnstileSiteKey });
     }).catch(() => { if (active) setFailed(true); });
     return () => { active = false; if (widget !== undefined) api?.remove(widget); };
-  }, []);
+  }, [enabled]);
   return turnstileSiteKey ? <><div ref={container} />{failed && <p role="alert">The security check could not load. Refresh the page or call (208) 608-4439.</p>}</> : null;
 }

@@ -4,7 +4,7 @@ import SiteNavigation from '../components/SiteNavigation.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import BrandLogo from '../components/BrandLogo.astro';
 import { images, services } from '../content/design';
-import { brand, css } from 'virtual:miller-brand';
+import { brand, css, fonts } from 'virtual:miller-brand';
 import '../styles/global.css';
 import { pageSeo } from '../../../../scripts/site-seo.mjs';
 import PageFaq from '../components/PageFaq.astro';
@@ -28,21 +28,37 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {fonts.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FJ2GT6NPLL"></script>
     <script is:inline>
       /* eslint-disable prefer-rest-params -- Google tag's standard dataLayer snippet. */
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-FJ2GT6NPLL');
+      (() => {
+        let loaded = false;
+        const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+        const loadGtag = () => {
+          if (loaded) return;
+          loaded = true;
+          events.forEach((type) => window.removeEventListener(type, loadGtag));
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-FJ2GT6NPLL';
+          document.head.appendChild(script);
+        };
+        events.forEach((type) => window.addEventListener(type, loadGtag, { once: true, passive: true }));
+        if (document.readyState === 'complete') setTimeout(loadGtag, 3500);
+        else window.addEventListener('load', () => setTimeout(loadGtag, 3500), { once: true });
+      })();
     </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#1B2420" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content={brand.indexed && !qualification ? 'index, follow' : 'noindex, nofollow'} />
     {!qualification && <link rel="canonical" href={seo.url} />}
     <meta property="og:type" content="website" />
@@ -94,30 +110,58 @@ const eyebrow = qualification ? 'Start with a conversation' : home ? 'Treasure V
     <script>
       const header = document.querySelector<HTMLElement>('.site-header');
       const callBar = document.querySelector<HTMLElement>('.mobile-call-bar');
-      const updateHeaderHeight = () => { if (header) document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`); };
-      updateHeaderHeight();
-      if (header && 'ResizeObserver' in window) new ResizeObserver(updateHeaderHeight).observe(header);
-      window.addEventListener('resize', updateHeaderHeight);
-      const callBarObstructions = document.querySelectorAll<HTMLElement>('.footer-contact, .fit-band');
-      const updateCallBar = () => {
-        if (!callBar) return;
-        const obstructed = [...callBarObstructions].some((element) => { const rect = element.getBoundingClientRect(); return rect.top < window.innerHeight && rect.bottom > 0; });
-        const focusedField = document.activeElement?.matches('input, textarea, select, [contenteditable="true"]');
-        callBar.hidden = obstructed || Boolean(focusedField);
+      let lastHeaderHeight = -1;
+      const setHeaderHeight = (height: number) => {
+        const rounded = Math.round(height);
+        if (rounded > 0 && rounded !== lastHeaderHeight) {
+          lastHeaderHeight = rounded;
+          document.documentElement.style.setProperty('--header-height', `${rounded}px`);
+        }
       };
-      window.addEventListener('scroll', updateCallBar, { passive: true });
-      window.addEventListener('resize', updateCallBar);
-      document.addEventListener('focusin', updateCallBar);
-      document.addEventListener('focusout', () => requestAnimationFrame(updateCallBar));
-      updateCallBar();
-      const elements = document.querySelectorAll('.reveal');
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+      if (header) {
+        if (typeof ResizeObserver !== 'undefined') {
+          new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+            const blockSize = entry.borderBoxSize?.[0]?.blockSize;
+            setHeaderHeight(typeof blockSize === 'number' ? blockSize : entry.contentRect.height);
+          }).observe(header);
+        } else {
+          const update = () => setHeaderHeight(header.offsetHeight);
+          update();
+          window.addEventListener('resize', update);
+        }
+      }
+      if (callBar) {
+        const intersectingObstructions = new Set<Element>();
+        const syncCallBar = () => {
+          const focusedField = document.activeElement?.matches('input, textarea, select, [contenteditable="true"]');
+          callBar.hidden = intersectingObstructions.size > 0 || Boolean(focusedField);
+        };
+        const callBarObstructions = document.querySelectorAll<HTMLElement>('.footer-contact, .fit-band');
+        if (callBarObstructions.length && 'IntersectionObserver' in window) {
+          const obstructionObserver = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) intersectingObstructions.add(entry.target);
+              else intersectingObstructions.delete(entry.target);
+            }
+            syncCallBar();
           });
-        }, { threshold: 0.08 });
-        elements.forEach((element) => { element.classList.add('will-reveal'); observer.observe(element); });
+          callBarObstructions.forEach((element) => obstructionObserver.observe(element));
+        }
+        document.addEventListener('focusin', syncCallBar);
+        document.addEventListener('focusout', () => requestAnimationFrame(syncCallBar));
+      }
+      const elements = document.querySelectorAll('.reveal');
+      if (elements.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        requestAnimationFrame(() => {
+          const observer = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+            }
+          }, { threshold: 0.08 });
+          elements.forEach((element) => { element.classList.add('will-reveal'); observer.observe(element); });
+        });
       }
     </script>
   </body>

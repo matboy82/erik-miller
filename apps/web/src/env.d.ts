@@ -9,6 +9,7 @@ declare module 'virtual:miller-brand' {
     content: { tagline: string; headline: string; description: string; process: string };
   };
   export const css: string;
+  export const fonts: string[];
 }
 
 declare module 'virtual:miller-project-image' {

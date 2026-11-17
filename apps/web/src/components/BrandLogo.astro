@@ -7,6 +7,6 @@ const { tone = 'color' } = Astro.props as Props;
 const logo = tone === 'white' ? logoWhite : logoColor;
 ---
 <a href="/" class="wordmark">
-  <Image class="brand-logo" src={logo} alt="Miller Remodeling" widths={[400, 800]} sizes="(max-width: 360px) 185px, (max-width: 600px) 210px, 360px" width={1200} height={355} quality={85} loading="eager" />
+  <Image class="brand-logo" src={logo} alt="Miller Remodeling" widths={[200, 360, 720]} sizes="(max-width: 360px) 185px, (max-width: 600px) 210px, 360px" width={1200} height={355} quality={75} loading={tone === 'white' ? 'lazy' : 'eager'} />
   <small>Treasure Valley, Idaho</small>
 </a>

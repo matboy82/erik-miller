@@ -12,6 +12,7 @@ export default function ContactForm() {
   const [busy, setBusy] = useState(false);
   const [received, setReceived] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [interacted, setInteracted] = useState(false);
   const attempt = useRef<{ key: string; payload: Record<string, unknown> } | null>(null);
   const form = useRef<HTMLFormElement>(null);
 
@@ -36,7 +37,7 @@ export default function ContactForm() {
 
   return <section className="contact-preview" aria-labelledby="contact-title">
     <div className="contact-intro"><p className="eyebrow">General inquiries</p><h2 id="contact-title">Let’s make room for your next chapter.</h2><p>Tell us what you have in mind. We’ll take it from there.</p></div>
-    <form ref={form} className="contact-card" onSubmit={submit} noValidate>
+    <form ref={form} className="contact-card" onSubmit={submit} onFocus={() => setInteracted(true)} onPointerDown={() => setInteracted(true)} noValidate>
       {!intakeUrl && <p className="demo-note">This form is being prepared for launch. Call (208) 608-4439 for now.</p>}
       <fieldset disabled={busy || received || Boolean(attempt.current)} style={{ border: 0, padding: 0, margin: 0 }}>
         <label htmlFor="inquiry-name">Your name</label><input id="inquiry-name" autoComplete="name" maxLength={120} value={name} onChange={(event) => setName(event.currentTarget.value)} required />
@@ -45,7 +46,7 @@ export default function ContactForm() {
         <p className="field-hint">Add an email address, phone number, or both.</p>
         <label htmlFor="inquiry-message">What would you like help with?</label><textarea id="inquiry-message" rows={5} maxLength={5000} value={message} onChange={(event) => setMessage(event.currentTarget.value)} required />
       </fieldset>
-      {!received && <SecurityCheck />}
+      {!received && <SecurityCheck enabled={interacted} />}
       {errors.length > 0 && <div role="alert" className="wizard-errors"><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
       {!received && <button type="submit" className="button" disabled={busy}>{busy ? 'Sending…' : attempt.current ? 'Retry inquiry' : 'Send inquiry'}</button>}
       <p className="form-status" role="status" aria-live="polite" aria-atomic="true">{status}</p>
