@@ -1,2 +1,3 @@
-https://erik-miller-web.pages.dev/* https://millerremodelingidaho.com/:splat 301
+# pages.dev mirror is handled by the Cloudflare Bulk Redirect list miller_pages_redirect (account level) - _redirects cannot redirect across hosts, so do NOT add a https://erik-miller-web.pages.dev/* line here; it is silently ignored.
 /portfolio / 301
+/portfolio/ / 301
